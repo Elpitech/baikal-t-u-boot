@@ -169,17 +169,6 @@ static void boot_prep_linux(bootm_headers_t *images)
 			printf("FDT creation failed! hanging...");
 			hang();
 		}
-
-		if (image_setup_libfdt(images, images->ft_addr,	images->ft_len, &images->lmb))
-			fprintf(stderr, "FDT image update failed\n");
-
-		/* Fixup for initrd memory. Linux uses physical memory in DTB */
-		printf("Use InitRD in memory (%x, %x)\n", virt_to_phys((void *)images->initrd_start),
-			virt_to_phys((void *)images->initrd_end));
-
-		fdt_initrd(images->ft_addr, virt_to_phys((void *)images->initrd_start),
-			virt_to_phys((void *)images->initrd_end));
-
 #ifdef CONFIG_OF_UPDATE_FREQ
 		do_fixup_by_compat_u32(images->ft_addr, "mti,gic-timer",
 				"clock-frequency", gd->arch.cpu_clk / 2, 1);
