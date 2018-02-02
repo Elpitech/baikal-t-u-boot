@@ -4,6 +4,47 @@
 # Created: 22.08.2014
 # -----------------------------------------------
 
+menu "Baikal-T SoC options"
+	depends on TARGET_BAIKAL_MIPS
+
+# -----------------------------------------------
+# Board Selection
+# -----------------------------------------------
+choice
+        prompt "Board type"
+        default BAIKAL_QEMU
+
+config BAIKAL_QEMU
+	bool "Baikal-T for QEMU"
+	help
+	  Select this option for Baikal-T for QEMU support
+
+config BAIKAL_FPGA
+	bool "Baikal-T for HAPS FPGA"
+	help
+	  Select this option for Baikal-T for HAPS FPGA board
+
+config BAIKAL_BFK
+	bool "Baikal-T for BFK Board"
+	help
+	  Select this option for Baikal-T for BFK board
+
+config BAIKAL_BFK3
+	bool "Baikal-T1 for BFK3 Board"
+	help
+	  Select this option for Baikal-T1 for BFK3 board
+ 
+config BAIKAL_BFKX
+	bool "Baikal-T1 for BFKX Board"
+	help
+	  Select this option for Baikal-T1 for BFK board
+
+config BAIKAL_MODULE
+	bool "Baikal-T for 'Module' Board"
+	help
+	  Select this option for Baikal-T for 'Module' board
+
+endchoice # Board type
 
 if TARGET_BAIKAL_MIPS
 
