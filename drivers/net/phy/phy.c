@@ -244,7 +244,7 @@ int genphy_update_link(struct phy_device *phydev)
 			if ((i++ % 500) == 0)
 				printf(".");
 
-			udelay(1000);	/* 1 ms */
+			udelay(10000);	/* 1 ms */
 			mii_reg = phy_read(phydev, MDIO_DEVAD_NONE, MII_BMSR);
 		}
 		printf(" done\n");
@@ -669,7 +669,7 @@ static struct phy_device *get_phy_device(struct mii_dev *bus, int addr,
 int phy_reset(struct phy_device *phydev)
 {
 	int reg;
-	int timeout = 500;
+	int timeout = 8000;
 	int devad = MDIO_DEVAD_NONE;
 
 #ifdef CONFIG_PHYLIB_10G
@@ -710,7 +710,7 @@ int phy_reset(struct phy_device *phydev)
 			debug("PHY status read failed\n");
 			return -1;
 		}
-		udelay(1000);
+		udelay(10000);
 	}
 
 	if (reg & BMCR_RESET) {

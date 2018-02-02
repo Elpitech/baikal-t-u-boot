@@ -478,7 +478,7 @@ static int davinci_eth_open(struct eth_device *dev, bd_t *bis)
 	emac_rx_active_head = emac_rx_desc;
 	for (cnt = 0; cnt < EMAC_MAX_RX_BUFFERS; cnt++) {
 		rx_desc->next = BD_TO_HW((u_int32_t)(rx_desc + 1));
-		rx_desc->buffer = &emac_rx_buffers[cnt * EMAC_RXBUF_SIZE];
+		rx_desc->buffer = KSEG1ADDR(&emac_rx_buffers[cnt * EMAC_RXBUF_SIZE]);
 		rx_desc->buff_off_len = EMAC_MAX_ETHERNET_PKT_SIZE;
 		rx_desc->pkt_flag_len = EMAC_CPPI_OWNERSHIP_BIT;
 		rx_desc++;
