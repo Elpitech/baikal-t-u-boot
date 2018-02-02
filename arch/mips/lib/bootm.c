@@ -8,9 +8,11 @@
 #include <common.h>
 #include <command.h>
 #include <image.h>
+#include <fdt_support.h>
 #include <u-boot/zlib.h>
 #include <asm/byteorder.h>
 #include <asm/addrspace.h>
+#include <asm/io.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -160,6 +162,31 @@ static void boot_prep_linux(bootm_headers_t *images)
 	const char *cp;
 	ulong rd_start, rd_size;
 
+	if (IMAGE_ENABLE_OF_LIBFDT && images->ft_len) {
+#ifdef CONFIG_OF_LIBFDT
+		debug("using: FDT\n");
+		if (image_setup_linux(images)) {
+			printf("FDT creation failed! hanging...");
+			hang();
+		}
+
+		if (image_setup_libfdt(images, images->ft_addr,	images->ft_len, &images->lmb))
+			fprintf(stderr, "FDT image update failed\n");
+
+		/* Fixup for initrd memory. Linux uses physical memory in DTB */
+		printf("Use InitRD in memory (%x, %x)\n", virt_to_phys((void *)images->initrd_start),
+			virt_to_phys((void *)images->initrd_end));
+
+		fdt_initrd(images->ft_addr, virt_to_phys((void *)images->initrd_start),
+			virt_to_phys((void *)images->initrd_end));
+
+#ifdef CONFIG_OF_UPDATE_FREQ
+		do_fixup_by_compat_u32(images->ft_addr, "mti,gic-timer",
+				"clock-frequency", gd->arch.cpu_clk / 2, 1);
+#endif
+#endif
+	}
+
 #ifdef CONFIG_MEMSIZE_IN_BYTES
 	sprintf(env_buf, "%lu", (ulong)gd->ram_size);
 	debug("## Giving linux memsize in bytes, %lu\n", (ulong)gd->ram_size);
@@ -196,17 +223,23 @@ static void boot_prep_linux(bootm_headers_t *images)
 	if (cp)
 		linux_env_set("eth1addr", cp);
 
+	cp = getenv("eth2addr");
+	if (cp)
+		linux_env_set("eth2addr", cp);
+
+
 	if (mips_boot_malta) {
 		sprintf(env_buf, "%un8r", gd->baudrate);
 		linux_env_set("modetty0", env_buf);
 	}
 }
 
-static void boot_jump_linux(bootm_headers_t *images)
+static void boot_jump_linux(bootm_headers_t *images, int flag)
 {
 	typedef void __noreturn (*kernel_entry_t)(int, ulong, ulong, ulong);
 	kernel_entry_t kernel = (kernel_entry_t) images->ep;
 	ulong linux_extra = 0;
+ 	int fake = (flag & BOOTM_STATE_OS_FAKE_GO);
 
 	debug("## Transferring control to Linux (at address %p) ...\n", kernel);
 
@@ -215,10 +248,21 @@ static void boot_jump_linux(bootm_headers_t *images)
 	if (mips_boot_malta)
 		linux_extra = gd->ram_size;
 
-	/* we assume that the kernel is in place */
-	printf("\nStarting kernel ...\n\n");
+	/* We assume that the kernel is in place */
+	printf("\nStarting kernel ...%s\n\n", fake ?
+			"(fake run for tracing)" : "");
 
-	kernel(linux_argc, (ulong)linux_argv, (ulong)linux_env, linux_extra);
+	/* Cleanup befor linux */
+	disable_interrupts();
+
+	/* Check FDT */
+	if (IMAGE_ENABLE_OF_LIBFDT && images->ft_len){
+ 		linux_extra = virt_to_phys(images->ft_addr);
+		debug("## Use FDT at %x\n", virt_to_phys(images->ft_addr));
+	}
+
+	if (!fake)
+		kernel(linux_argc, (ulong)linux_argv, (ulong)linux_env, linux_extra);
 }
 
 int do_bootm_linux(int flag, int argc, char * const argv[],
@@ -239,13 +283,13 @@ int do_bootm_linux(int flag, int argc, char * const argv[],
 	}
 
 	if (flag & BOOTM_STATE_OS_GO) {
-		boot_jump_linux(images);
+		boot_jump_linux(images, flag);
 		return 0;
 	}
 
 	boot_cmdline_linux(images);
 	boot_prep_linux(images);
-	boot_jump_linux(images);
+	boot_jump_linux(images, flag);
 
 	/* does not return */
 	return 1;
