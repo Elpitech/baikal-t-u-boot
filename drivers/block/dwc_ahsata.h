@@ -17,6 +17,12 @@
 /* Max port number per host controller */
 #define SATA_HC_MAX_PORT	16
 
+#ifdef CONFIG_TARGET_BAIKAL_MIPS
+#define MIPS_SYNC       asm volatile("sync");
+#else           
+#define MIPS_SYNC
+#endif /* CONFIG_TARGTET_BAIKAL_MIPS */
+
 /* Generic Host Register */
 
 /* HBA Capabilities Register */

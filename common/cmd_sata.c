@@ -14,15 +14,19 @@
 #include <command.h>
 #include <part.h>
 #include <sata.h>
+#include <asm/io.h>
 
 static int sata_curr_device = -1;
-block_dev_desc_t sata_dev_desc[CONFIG_SYS_SATA_MAX_DEVICE];
+block_dev_desc_t _sata_dev_desc_ [CONFIG_SYS_SATA_MAX_DEVICE];
+block_dev_desc_t *sata_dev_desc;
+
+extern int do_sata_phy(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]);
 
 int __sata_initialize(void)
 {
 	int rc;
 	int i;
-
+	sata_dev_desc = (void*)KSEG1ADDR(_sata_dev_desc_);
 	for (i = 0; i < CONFIG_SYS_SATA_MAX_DEVICE; i++) {
 		memset(&sata_dev_desc[i], 0, sizeof(struct block_dev_desc));
 		sata_dev_desc[i].if_type = IF_TYPE_SATA;
@@ -48,6 +52,20 @@ int __sata_initialize(void)
 }
 int sata_initialize(void) __attribute__((weak,alias("__sata_initialize")));
 
+int __sata_reset(void)
+{
+    int i, err = 0;
+
+    for (i = 0; i < CONFIG_SYS_SATA_MAX_DEVICE; i++)
+        err |= reset_sata(i);
+
+    if (err)
+        printf("SATA reset: could not reset some SATA devices\n");
+
+    return err;
+}
+int sata_reset(void) __attribute__((weak, alias("__sata_reset")));
+
 #ifdef CONFIG_PARTITIONS
 block_dev_desc_t *sata_get_dev(int dev)
 {
@@ -62,6 +80,14 @@ static int do_sata(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	if (argc == 2 && strcmp(argv[1], "init") == 0)
 		return sata_initialize();
 
+    if (argc == 2 && strcmp(argv[1], "reset") == 0)
+        return sata_reset();
+
+#ifdef CONFIG_CMD_SATA_PHY
+	/* Board / SoC specific SATA PHY commands */
+	if (argc > 1 && strcmp(argv[1], "phy") == 0)
+		return do_sata_phy(cmdtp, flag, argc - 1, &argv[1]);
+#endif
 	/* If the user has not yet run `sata init`, do it now */
 	if (sata_curr_device == -1)
 		if (sata_initialize())
@@ -182,12 +208,16 @@ static int do_sata(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 }
 
 U_BOOT_CMD(
-	sata, 5, 1, do_sata,
+	sata, 6, 1, do_sata,
 	"SATA sub system",
 	"init - init SATA sub system\n"
+	"sata reset - reset SATA sub system\n"
 	"sata info - show available SATA devices\n"
 	"sata device [dev] - show or set current device\n"
 	"sata part [dev] - print partition table\n"
 	"sata read addr blk# cnt\n"
 	"sata write addr blk# cnt"
+#ifdef CONFIG_CMD_SATA_PHY
+	"sata phy <channel> <command> - SATA PHY subsystem"
+#endif
 );

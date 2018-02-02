@@ -170,6 +170,19 @@ int board_late_init(void)
 	sprintf(buf,"%x", get_ddr_highmem_size());
 	setenv("memory_high_size", buf);
 
+#ifdef CONFIG_SATA_PHY_INIT
+	unsigned int phy = getenv_ulong("sataphy", 10, 0);
+
+	/* Init SATA PHY */
+	if (phy) {
+	sata_phy_init_val(0, phy);
+	sata_phy_init_val(1, phy);
+	}
+	else
+	sata_phy_init();
+	printf("SATA:  PHY init complete\n");
+#endif
+
 	return 0;
 }
 #endif /* CONFIG_BOARD_LATE_INIT */

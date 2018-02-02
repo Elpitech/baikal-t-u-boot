@@ -75,8 +75,13 @@ struct sata_host_regs {
 
 #define MAX_DATA_BYTES_PER_SG  (4 * 1024 * 1024)
 #define MAX_BYTES_PER_TRANS (AHCI_MAX_SG * MAX_DATA_BYTES_PER_SG)
+#define writel_with_flush(a, b)	\
+do { \
+	writel(a, b); \
+	flush_dcache_range((ulong)b, (ulong)b + sizeof(a)); \
+} while (0)
 
-#define writel_with_flush(a, b)	do { writel(a, b); readl(b); } while (0)
+//#define writel_with_flush(a, b)	do { writel(a, b); readl(b); } while (0)
 
 static int is_ready;
 
@@ -90,16 +95,17 @@ static int waiting_for_cmd_completed(u8 *offset,
 					u32 sign)
 {
 	int i;
-	u32 status;
+	volatile u32 status;
 
 	for (i = 0;
-		((status = readl(offset)) & sign) && i < timeout_msec;
+		((status = readl(offset)) & sign) && i < (timeout_msec);
 		++i)
 		mdelay(1);
 
 	return (i < timeout_msec) ? 0 : -1;
 }
 
+/*
 static int ahci_setup_oobr(struct ahci_probe_ent *probe_ent,
 						int clk)
 {
@@ -111,6 +117,7 @@ static int ahci_setup_oobr(struct ahci_probe_ent *probe_ent,
 
 	return 0;
 }
+*/
 
 static int ahci_host_init(struct ahci_probe_ent *probe_ent)
 {
@@ -119,10 +126,11 @@ static int ahci_host_init(struct ahci_probe_ent *probe_ent)
 	struct sata_port_regs *port_mmio = NULL;
 	struct sata_host_regs *host_mmio =
 		(struct sata_host_regs *)probe_ent->mmio_base;
-	int clk = mxc_get_clock(MXC_SATA_CLK);
 
 	cap_save = readl(&(host_mmio->cap));
 	cap_save |= SATA_HOST_CAP_SSS;
+
+    printf("SATA: ahci host init\n");
 
 	/* global controller reset */
 	tmp = readl(&(host_mmio->ghc));
@@ -138,10 +146,17 @@ static int ahci_host_init(struct ahci_probe_ent *probe_ent)
 		return -1;
 	}
 
-	/* Set timer 1ms */
-	writel(clk / 1000, &(host_mmio->timer1ms));
+    /* Get clock value for setting Timer1ms and OOBR */
+    /* TODO: Currently not used due to disabled timer and oobr initialization */
+	/* int clk = mxc_get_clock(MXC_SATA_CLK); */
 
-	ahci_setup_oobr(probe_ent, 0);
+	/* Set Timer1ms value, SATA spec recommends "AMBA_CLK_FREQ*1000" */
+    /* TODO: u-boot now sets incorrect value */
+	/* writel(clk / 1000, &(host_mmio->timer1ms)); */
+
+    /* Setup OOBR values */
+    /* TODO: has problem with boot (debian) from SATA channel 0 with current oobr value */
+	/* ahci_setup_oobr(probe_ent, 0); */
 
 	writel_with_flush(SATA_HOST_GHC_AE, &(host_mmio->ghc));
 	writel(cap_save, &(host_mmio->cap));
@@ -201,7 +216,7 @@ static int ahci_host_init(struct ahci_probe_ent *probe_ent)
 				;
 
 			if (timeout <= 0) {
-				debug("port reset failed (0x%x)\n", tmp);
+				debug("port %d: port reset failed (0x%x)\n", i, tmp);
 				return -1;
 			}
 		}
@@ -256,8 +271,8 @@ static int ahci_host_init(struct ahci_probe_ent *probe_ent)
 
 		writel(1 << i, &(host_mmio->is));
 
-		/* set irq mask (enables interrupts) */
-		writel(DEF_PORT_IRQ, &(port_mmio->ie));
+		/* set irq mask (disable interrupts) */
+		writel(0, &(port_mmio->ie));
 
 		/* register linkup ports */
 		tmp = readl(&(port_mmio->ssts));
@@ -293,6 +308,8 @@ static void ahci_print_info(struct ahci_probe_ent *probe_ent)
 		speed_s = "1.5";
 	else if (speed == 2)
 		speed_s = "3";
+	else if (speed == 3)
+		speed_s = "6";
 	else
 		speed_s = "?";
 
@@ -333,7 +350,11 @@ static int ahci_init_one(int pdev)
 	int rc;
 	struct ahci_probe_ent *probe_ent = NULL;
 
+    printf("SATA: ahci init one: dev %d\n", pdev);
+
 	probe_ent = malloc(sizeof(struct ahci_probe_ent));
+	if(!probe_ent)
+		return -1;
 	memset(probe_ent, 0, sizeof(struct ahci_probe_ent));
 	probe_ent->dev = pdev;
 
@@ -378,7 +399,7 @@ static int ahci_fill_sg(struct ahci_probe_ent *probe_ent,
 
 	for (i = 0; i < sg_count; i++) {
 		ahci_sg->addr =
-			cpu_to_le32((u32)buf + i * max_bytes);
+			cpu_to_le32((u32)(virt_to_phys((void *)buf)) + i * max_bytes);
 		ahci_sg->addr_hi = 0;
 		ahci_sg->flags_size = cpu_to_le32(0x3fffff &
 					(buf_len < max_bytes
@@ -387,6 +408,8 @@ static int ahci_fill_sg(struct ahci_probe_ent *probe_ent,
 		ahci_sg++;
 		buf_len -= max_bytes;
 	}
+
+	flush_dcache_range((ulong)(pp->cmd_tbl_sg), (ulong)ahci_sg + sizeof(*ahci_sg));
 
 	return sg_count;
 }
@@ -399,7 +422,7 @@ static void ahci_fill_cmd_slot(struct ahci_ioports *pp, u32 cmd_slot, u32 opts)
 	memset(cmd_hdr, 0, AHCI_CMD_SLOT_SZ);
 	cmd_hdr->opts = cpu_to_le32(opts);
 	cmd_hdr->status = 0;
-	cmd_hdr->tbl_addr = cpu_to_le32(pp->cmd_tbl & 0xffffffff);
+	cmd_hdr->tbl_addr = cpu_to_le32(virt_to_phys((void *)pp->cmd_tbl) & 0xffffffff);
 	cmd_hdr->tbl_addr_hi = 0;
 }
 
@@ -434,24 +457,35 @@ static int ahci_exec_ata_cmd(struct ahci_probe_ent *probe_ent,
 	opts = (sizeof(struct sata_fis_h2d) >> 2) | (sg_count << 16);
 	if (is_write) {
 		opts |= 0x40;
+#ifndef CONFIG_TARGET_BAIKAL_MIPS
 		flush_cache((ulong)buf, buf_len);
+#endif /* CONFIG_TARGET_BAIKAL_MIPS */
 	}
 	ahci_fill_cmd_slot(pp, cmd_slot, opts);
 
-	flush_cache((int)(pp->cmd_slot), AHCI_PORT_PRIV_DMA_SZ);
-	writel_with_flush(1 << cmd_slot, &(port_mmio->ci));
+#ifndef CONFIG_TARGET_BAIKAL_MIPS
+//	flush_cache((int)(pp->cmd_slot), AHCI_PORT_PRIV_DMA_SZ);
+	flush_dcache_range((ulong)(pp->cmd_slot), (ulong)(pp->cmd_slot) + AHCI_PORT_PRIV_DMA_SZ);
+#endif /* CONFIG_TARGET_BAIKAL_MIPS */
+
+		writel_with_flush(1 << cmd_slot, &(port_mmio->ci));
 
 	if (waiting_for_cmd_completed((u8 *)&(port_mmio->ci),
 				10000, 0x1 << cmd_slot)) {
-		printf("timeout exit!\n");
+		printf("timeout exit! ci=0x%x status=0x%x\n", port_mmio->ci, pp->cmd_slot->status);
+		printf("serr = 0x%x sact=0x%x tfd=0x%x\n", readl(&(port_mmio->serr)), readl(&(port_mmio->sact)), readl(&(port_mmio->tfd)));
 		return -1;
 	}
-	invalidate_dcache_range((int)(pp->cmd_slot),
-				(int)(pp->cmd_slot)+AHCI_PORT_PRIV_DMA_SZ);
+
 	debug("ahci_exec_ata_cmd: %d byte transferred.\n",
 	      pp->cmd_slot->status);
+
+#ifndef CONFIG_TARGET_BAIKAL_MIPS
+	invalidate_dcache_range((int)(pp->cmd_slot),
+				(int)(pp->cmd_slot)+AHCI_PORT_PRIV_DMA_SZ);
 	if (!is_write)
 		invalidate_dcache_range((ulong)buf, (ulong)buf+buf_len);
+#endif /* CONFIG_TARGET_BAIKAL_MIPS */
 
 	return buf_len;
 }
@@ -460,8 +494,9 @@ static void ahci_set_feature(u8 dev, u8 port)
 {
 	struct ahci_probe_ent *probe_ent =
 		(struct ahci_probe_ent *)sata_dev_desc[dev].priv;
-	struct sata_fis_h2d h2d __aligned(ARCH_DMA_MINALIGN);
-	struct sata_fis_h2d *cfis = &h2d;
+	ALLOC_CACHE_ALIGN_BUFFER(struct sata_fis_h2d, cfis, 1);
+
+    printf("SATA: ahci set feature: dev %d, port %d\n", dev, port);
 
 	memset(cfis, 0, sizeof(struct sata_fis_h2d));
 	cfis->fis_type = SATA_FIS_TYPE_REGISTER_H2D;
@@ -483,6 +518,8 @@ static int ahci_port_start(struct ahci_probe_ent *probe_ent,
 	u32 mem;
 	int timeout = 10000000;
 
+    printf("SATA: ahci port start: port %d\n", port);
+
 	debug("Enter start port: %d\n", port);
 	port_status = readl(&(port_mmio->ssts));
 	debug("Port %d status: %x\n", port, port_status);
@@ -491,14 +528,13 @@ static int ahci_port_start(struct ahci_probe_ent *probe_ent,
 		return -1;
 	}
 
-	mem = (u32)malloc(AHCI_PORT_PRIV_DMA_SZ + 1024);
+	mem = (u32)memalign(1024, AHCI_PORT_PRIV_DMA_SZ);   /* Aligned to 1024-bytes */
 	if (!mem) {
 		free(pp);
 		printf("No mem for table!\n");
 		return -ENOMEM;
 	}
 
-	mem = (mem + 0x400) & (~0x3ff);	/* Aligned to 1024-bytes */
 	memset((u8 *)mem, 0, AHCI_PORT_PRIV_DMA_SZ);
 
 	/*
@@ -526,8 +562,10 @@ static int ahci_port_start(struct ahci_probe_ent *probe_ent,
 
 	writel_with_flush(0x00004444, &(port_mmio->dmacr));
 	pp->cmd_tbl_sg = (struct ahci_sg *)mem;
-	writel_with_flush((u32)pp->cmd_slot, &(port_mmio->clb));
-	writel_with_flush(pp->rx_fis, &(port_mmio->fb));
+	/* Convert virtual address to physical.  */
+	writel_with_flush((u32)virt_to_phys((void *)pp->cmd_slot), &(port_mmio->clb));
+	writel_with_flush(virt_to_phys((void *)pp->rx_fis), &(port_mmio->fb));
+	debug("clb = 0x%x fb = 0x%x\n", readl(&(port_mmio->clb)), readl( &(port_mmio->fb)));
 
 	/* Enable FRE */
 	writel_with_flush((SATA_PORT_CMD_FRE | readl(&(port_mmio->cmd))),
@@ -558,6 +596,17 @@ int init_sata(int dev)
 	int i;
 	u32 linkmap;
 	struct ahci_probe_ent *probe_ent = NULL;
+	unsigned int use_port = 0;
+	char *sport = getenv("sata_port");
+	if (sport) {
+		use_port = simple_strtol(sport, NULL, 10);
+		if (use_port > 1) {
+			printf("SATA: invalid port number %d (resetting to port 0)\n", use_port);
+			use_port = 0;
+		}
+	}
+
+	printf("SATA: init sata: dev %d, port %d\n", dev, use_port);
 
 #if defined(CONFIG_MX6)
 	if (!is_cpu_type(MXC_CPU_MX6Q) && !is_cpu_type(MXC_CPU_MX6D))
@@ -585,11 +634,50 @@ int init_sata(int dev)
 				return 1;
 			}
 			probe_ent->hard_port_no = i;
-			break;
+			if (i == use_port)
+				break;
 		}
 	}
 
 	return 0;
+}
+
+int reset_sata(int dev)
+{
+    struct ahci_probe_ent *probe_ent;
+    struct sata_host_regs *host_mmio;
+	u32 tmp;
+	int timeout = 100;
+
+    if (dev < 0 || dev > (CONFIG_SYS_SATA_MAX_DEVICE - 1)) {
+        printf("SATA: reset: device index %d is out of range\n\r", dev);
+        return -1;
+    }
+
+    probe_ent = (struct ahci_probe_ent *)sata_dev_desc[dev].priv;
+    if (NULL == probe_ent) {
+        /* not initialized, so nothing to reset */
+        printf("SATA: reset: nothing to do\n");
+        return 0;
+    }
+
+    host_mmio = (struct sata_host_regs *)probe_ent->mmio_base;
+    /* XXX: Reset code from u-boot "2017.01": setbits_le32(&host_mmio->ghc, SATA_HOST_GHC_HR); */
+    tmp = readl(&(host_mmio->ghc));
+    if ((tmp & SATA_HOST_GHC_HR) == 0)
+        writel_with_flush(tmp | SATA_HOST_GHC_HR, &(host_mmio->ghc));
+
+    while (readl(&host_mmio->ghc) & SATA_HOST_GHC_HR) {
+        timeout--;
+        udelay(100);
+        if (timeout <= 0) {
+            debug("SATA: reset: controller reset failed (0x08%x)\n", tmp);
+            return -1;
+        }
+    }
+
+    printf("SATA: reset: device %d: Ok\n", dev);
+    return 0;
 }
 
 static void dwc_ahsata_print_info(int dev)
@@ -612,10 +700,8 @@ static void dwc_ahsata_identify(int dev, u16 *id)
 {
 	struct ahci_probe_ent *probe_ent =
 		(struct ahci_probe_ent *)sata_dev_desc[dev].priv;
-	struct sata_fis_h2d h2d __aligned(ARCH_DMA_MINALIGN);
-	struct sata_fis_h2d *cfis = &h2d;
 	u8 port = probe_ent->hard_port_no;
-
+	ALLOC_CACHE_ALIGN_BUFFER(struct sata_fis_h2d, cfis, 1);
 	memset(cfis, 0, sizeof(struct sata_fis_h2d));
 
 	cfis->fis_type = SATA_FIS_TYPE_REGISTER_H2D;
@@ -643,8 +729,7 @@ static u32 dwc_ahsata_rw_cmd(int dev, u32 start, u32 blkcnt,
 {
 	struct ahci_probe_ent *probe_ent =
 		(struct ahci_probe_ent *)sata_dev_desc[dev].priv;
-	struct sata_fis_h2d h2d __aligned(ARCH_DMA_MINALIGN);
-	struct sata_fis_h2d *cfis = &h2d;
+	ALLOC_CACHE_ALIGN_BUFFER(struct sata_fis_h2d, cfis, 1);
 	u8 port = probe_ent->hard_port_no;
 	u32 block;
 
@@ -674,8 +759,8 @@ void dwc_ahsata_flush_cache(int dev)
 {
 	struct ahci_probe_ent *probe_ent =
 		(struct ahci_probe_ent *)sata_dev_desc[dev].priv;
-	struct sata_fis_h2d h2d __aligned(ARCH_DMA_MINALIGN);
-	struct sata_fis_h2d *cfis = &h2d;
+	ALLOC_CACHE_ALIGN_BUFFER(struct sata_fis_h2d, cfis, 1);
+
 	u8 port = probe_ent->hard_port_no;
 
 	memset(cfis, 0, sizeof(struct sata_fis_h2d));
@@ -692,8 +777,7 @@ static u32 dwc_ahsata_rw_cmd_ext(int dev, u32 start, lbaint_t blkcnt,
 {
 	struct ahci_probe_ent *probe_ent =
 		(struct ahci_probe_ent *)sata_dev_desc[dev].priv;
-	struct sata_fis_h2d h2d __aligned(ARCH_DMA_MINALIGN);
-	struct sata_fis_h2d *cfis = &h2d;
+	ALLOC_CACHE_ALIGN_BUFFER(struct sata_fis_h2d, cfis, 1);
 	u8 port = probe_ent->hard_port_no;
 	u64 block;
 
@@ -729,8 +813,7 @@ u32 dwc_ahsata_rw_ncq_cmd(int dev, u32 start, lbaint_t blkcnt,
 {
 	struct ahci_probe_ent *probe_ent =
 		(struct ahci_probe_ent *)sata_dev_desc[dev].priv;
-	struct sata_fis_h2d h2d __aligned(ARCH_DMA_MINALIGN);
-	struct sata_fis_h2d *cfis = &h2d;
+	ALLOC_CACHE_ALIGN_BUFFER(struct sata_fis_h2d, cfis, 1);
 	u8 port = probe_ent->hard_port_no;
 	u64 block;
 
@@ -771,8 +854,7 @@ void dwc_ahsata_flush_cache_ext(int dev)
 {
 	struct ahci_probe_ent *probe_ent =
 		(struct ahci_probe_ent *)sata_dev_desc[dev].priv;
-	struct sata_fis_h2d h2d __aligned(ARCH_DMA_MINALIGN);
-	struct sata_fis_h2d *cfis = &h2d;
+	ALLOC_CACHE_ALIGN_BUFFER(struct sata_fis_h2d, cfis, 1);
 	u8 port = probe_ent->hard_port_no;
 
 	memset(cfis, 0, sizeof(struct sata_fis_h2d));
@@ -939,6 +1021,8 @@ int scan_sata(int dev)
 		printf("id malloc failed\n\r");
 		return -1;
 	}
+
+    printf("SATA: scan: device %d, port %d, id %04x\n", dev, port, *id);
 
 	/* Identify device to get information */
 	dwc_ahsata_identify(dev, id);
