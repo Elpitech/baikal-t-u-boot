@@ -570,6 +570,83 @@ static __inline__ int test_bit(int nr, const volatile void *addr)
 	return ((1UL << (nr & 31)) & (((const unsigned int *) addr)[nr >> 5])) != 0;
 }
 
+/*
+ * Return the bit position (0..63) of the most significant 1 bit in a word
+ * Returns -1 if no 1 bit exists
+ */
+static inline unsigned long __fls(unsigned long word)
+{
+	int num;
+
+	if (BITS_PER_LONG == 32 && !__builtin_constant_p(word)) {
+		__asm__(
+		"	.set	push					\n"
+#ifdef MIPS_ISA_LEVEL
+		"	.set	"MIPS_ISA_LEVEL"			\n"
+#endif
+		"	clz	%0, %1					\n"
+		"	.set	pop					\n"
+		: "=r" (num)
+		: "r" (word));
+
+		return 31 - num;
+	}
+
+	if (BITS_PER_LONG == 64 && !__builtin_constant_p(word)) {
+		__asm__(
+		"	.set	push					\n"
+#ifdef MIPS_ISA_LEVEL
+		"	.set	"MIPS_ISA_LEVEL"			\n"
+#endif
+		"	dclz	%0, %1					\n"
+		"	.set	pop					\n"
+		: "=r" (num)
+		: "r" (word));
+
+		return 63 - num;
+	}
+
+	num = BITS_PER_LONG - 1;
+
+#if BITS_PER_LONG == 64
+	if (!(word & (~0ul << 32))) {
+		num -= 32;
+		word <<= 32;
+	}
+#endif
+	if (!(word & (~0ul << (BITS_PER_LONG-16)))) {
+		num -= 16;
+		word <<= 16;
+	}
+	if (!(word & (~0ul << (BITS_PER_LONG-8)))) {
+		num -= 8;
+		word <<= 8;
+	}
+	if (!(word & (~0ul << (BITS_PER_LONG-4)))) {
+		num -= 4;
+		word <<= 4;
+	}
+	if (!(word & (~0ul << (BITS_PER_LONG-2)))) {
+		num -= 2;
+		word <<= 2;
+	}
+	if (!(word & (~0ul << (BITS_PER_LONG-1))))
+		num -= 1;
+	return num;
+}
+
+/*
+ * __ffs - find first bit in word.
+ * @word: The word to search
+ *
+ * Returns 0..SZLONG-1
+ * Undefined if no bit exists, so code should check against 0 first.
+ */
+static inline unsigned long __ffs(unsigned long word)
+{
+	return __fls(word & -word);
+}
+
 #ifndef __MIPSEB__
 
 /* Little endian versions. */

@@ -88,6 +88,10 @@ int cpu_init_r(void)
     arch_cpu_init_wrmerge();
     /* Setup MAAR */
     arch_cpu_init_maar();
+#ifdef CONFIG_SYS_CPU_SCACHE
+    /* L2$ init */
+    mips_sc_init();
+#endif
     /* Return success */
     return 0;
 }
