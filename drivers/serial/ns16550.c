@@ -132,7 +132,8 @@ static void NS16550_setbrg(NS16550_t com_port, int baud_divisor)
 
 void NS16550_init(NS16550_t com_port, int baud_divisor)
 {
-#if (defined(CONFIG_SPL_BUILD) && defined(CONFIG_OMAP34XX))
+#if ((defined(CONFIG_SPL_BUILD) && defined(CONFIG_OMAP34XX)) || \
+    CONFIG_TARGET_BAIKAL_MIPS)
 	/*
 	 * On some OMAP3 devices when UART3 is configured for boot mode before
 	 * SPL starts only THRE bit is set. We have to empty the transmitter
