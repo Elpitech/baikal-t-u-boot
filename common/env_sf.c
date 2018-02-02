@@ -301,13 +301,14 @@ void env_relocate_spec(void)
 			free(buf);
 		return;
 	}
-
+	puts("Load SPI flash...");
 	ret = spi_flash_read(env_flash,
 		CONFIG_ENV_OFFSET, CONFIG_ENV_SIZE, buf);
 	if (ret) {
 		set_default_env("!spi_flash_read() failed");
 		goto out;
 	}
+	puts("done\n");
 
 	ret = env_import(buf, 1);
 	if (ret)
