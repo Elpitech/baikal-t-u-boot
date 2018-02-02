@@ -21,9 +21,9 @@
 #define TIMEOUT		5000UL
 #ifndef	CONFIG_NET_RETRY_COUNT
 /* # of timeouts before giving up */
-# define TIMEOUT_COUNT	10
+# define TIMEOUT_COUNT	20
 #else
-# define TIMEOUT_COUNT  (CONFIG_NET_RETRY_COUNT * 2)
+# define TIMEOUT_COUNT  (CONFIG_NET_RETRY_COUNT * 5)
 #endif
 /* Number of "loading" hashes per line (for checking the image size) */
 #define HASHES_PER_LINE	65
@@ -247,9 +247,9 @@ static void show_block_marker(void)
 	} else
 #endif
 	{
-		if (((TftpBlock - 1) % 10) == 0)
+		if (((TftpBlock - 1) % 100) == 0)
 			putc('#');
-		else if ((TftpBlock % (10 * HASHES_PER_LINE)) == 0)
+		else if ((TftpBlock % (100 * HASHES_PER_LINE)) == 0)
 			puts("\n\t ");
 	}
 }
