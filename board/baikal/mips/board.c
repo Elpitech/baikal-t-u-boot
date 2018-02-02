@@ -170,6 +170,40 @@ void spi_init(void)
 }
 #endif
 
+
+/* Initialization of network */
+int board_eth_init(bd_t *bis)
+{
+    int err = 0;
+
+#ifdef CONFIG_BAIKAL_BFK3
+#if defined(CONFIG_DESIGNWARE_ETH0_BASE)
+    designware_clear_phy_reset(CONFIG_DESIGNWARE_ETH0_BASE);
+#endif /* CONFIG_DESIGNWARE_ETH0_BASE */
+
+#if defined(CONFIG_DESIGNWARE_ETH1_BASE)
+    designware_clear_phy_reset(CONFIG_DESIGNWARE_ETH1_BASE);
+#endif /* CONFIG_DESIGNWARE_ETH0_BASE */
+#endif /* CONFIG_BAIKAL_BFK3 */
+
+#if defined(CONFIG_DESIGNWARE_ETH0_BASE)
+    if (designware_initialize(CONFIG_DESIGNWARE_ETH0_BASE,
+              PHY_INTERFACE_MODE_GMII) < 0)
+        err |= (1 << 0);
+#endif /* CONFIG_DESIGNWARE_ETH0_BASE */
+#if defined(CONFIG_DESIGNWARE_ETH1_BASE)
+    if (designware_initialize(CONFIG_DESIGNWARE_ETH1_BASE,
+              PHY_INTERFACE_MODE_GMII) < 0)
+        err |= (1 << 1);
+#endif /* CONFIG_DESIGNWARE_ETH1_BASE */
+#if defined(CONFIG_DESIGNWARE_ETH2_BASE)
+    if (designware_initialize(CONFIG_DESIGNWARE_ETH2_BASE,
+              PHY_INTERFACE_MODE_GMII) < 0)
+        err |= (1 << 1);
+#endif /* CONFIG_DESIGNWARE_ETH2_BASE */
+    return (! err);
+}
+
 #ifdef CONFIG_BAIKAL_FW
 extern void *__start_baikal_fw;
 #endif /* CONFIG_BAIKAL_FW */

@@ -1,6 +1,7 @@
 /*
- * (C) Copyright 2010
+ * (C) Copyright 2010-2015
  * Vipin Kumar, ST Micoelectronics, vipin.kumar@st.com.
+ * Alexey Malahov, Baikal Electronics, Alexey.Malahov@baikalelectronics.ru
  *
  * SPDX-License-Identifier:	GPL-2.0+
  */
@@ -32,6 +33,8 @@ struct eth_mac_regs {
 	u32 intmask;		/* 0x3c */
 	u32 macaddr0hi;		/* 0x40 */
 	u32 macaddr0lo;		/* 0x44 */
+	u8 reserved_2[152];
+	u32 gpio;		/* 0xE0 */
 };
 
 /* MAC configuration register definitions */
@@ -39,6 +42,7 @@ struct eth_mac_regs {
 #define MII_PORTSELECT		(1 << 15)
 #define FES_100			(1 << 14)
 #define DISABLERXOWN		(1 << 13)
+#define LOOPBACKMODE		(1 << 12)
 #define FULLDPLXMODE		(1 << 11)
 #define RXENABLE		(1 << 2)
 #define TXENABLE		(1 << 3)
@@ -57,6 +61,8 @@ struct eth_mac_regs {
 #define MIIREGSHIFT		(6)
 #define MII_REGMSK		(0x1F << 6)
 #define MII_ADDRMSK		(0x1F << 11)
+
+#define MAC_GPIO_GPO0		(1 << 8)
 
 
 struct eth_dma_regs {
@@ -89,6 +95,7 @@ struct eth_dma_regs {
 #define PRIORXTX_21		(1 << 14)
 #define PRIORXTX_11		(0 << 14)
 #define DMA_PBL			(CONFIG_DW_GMAC_DEFAULT_DMA_PBL<<8)
+#define ALTERDESC		(1 << 7)
 #define RXHIGHPRIO		(1 << 1)
 #define DMAMAC_SRST		(1 << 0)
 
@@ -110,7 +117,10 @@ struct dmamacdescr {
 	u32 dmamac_cntl;
 	void *dmamac_addr;
 	struct dmamacdescr *dmamac_next;
-} __aligned(ARCH_DMA_MINALIGN);
+#if defined(CONFIG_DW_ALTDESCRIPTOR)
+	u32 dummy[4];
+#endif
+} __attribute__((packed));
 
 /*
  * txrx_status definitions
@@ -141,7 +151,7 @@ struct dmamacdescr {
 /* rx status bits definitions */
 #define DESC_RXSTS_OWNBYDMA		(1 << 31)
 #define DESC_RXSTS_DAFILTERFAIL		(1 << 30)
-#define DESC_RXSTS_FRMLENMSK		(0x3FFF << 16)
+#define DESC_RXSTS_FRMLENMSK		(0x3FFF)
 #define DESC_RXSTS_FRMLENSHFT		(16)
 
 #define DESC_RXSTS_ERROR		(1 << 15)
@@ -214,9 +224,15 @@ struct dmamacdescr {
 
 #endif
 
+#ifdef CONFIG_TARGET_BAIKAL_MIPS
+#define MIPS_SYNC       asm volatile("sync");
+#else
+#define MIPS_SYNC
+#endif /* CONFIG_TARGTET_BAIKAL_MIPS */
+
 struct dw_eth_dev {
-	struct dmamacdescr tx_mac_descrtable[CONFIG_TX_DESCR_NUM];
-	struct dmamacdescr rx_mac_descrtable[CONFIG_RX_DESCR_NUM];
+	struct dmamacdescr tx_mac_descrtable[CONFIG_TX_DESCR_NUM] __aligned(ARCH_DMA_MINALIGN); 
+	struct dmamacdescr rx_mac_descrtable[CONFIG_RX_DESCR_NUM] __aligned(ARCH_DMA_MINALIGN);
 	char txbuffs[TX_TOTAL_BUFSIZE] __aligned(ARCH_DMA_MINALIGN);
 	char rxbuffs[RX_TOTAL_BUFSIZE] __aligned(ARCH_DMA_MINALIGN);
 
