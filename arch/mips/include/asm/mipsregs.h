@@ -57,6 +57,7 @@
 #define CP0_CAUSE $13
 #define CP0_EPC $14
 #define CP0_PRID $15
+#define CP0_EBASE $15
 #define CP0_CONFIG $16
 #define CP0_LLADDR $17
 #define CP0_WATCHLO $18
@@ -389,6 +390,8 @@
 #define  CAUSEF_IP7		(_ULCAST_(1)   << 15)
 #define  CAUSEB_IV		23
 #define  CAUSEF_IV		(_ULCAST_(1)   << 23)
+#define  CAUSEB_DC		27
+#define  CAUSEF_DC		(_ULCAST_(1)   << 27)
 #define  CAUSEB_CE		28
 #define  CAUSEF_CE		(_ULCAST_(3)   << 28)
 #define  CAUSEB_BD		31
@@ -484,6 +487,15 @@
 #define MIPS_CONF_AT		(_ULCAST_(3) << 13)
 #define MIPS_CONF_M		(_ULCAST_(1) << 31)
 
+/* Bits specific to the MIPS32r5.*/
+#define MIPS32R5_CONF_K23		(_ULCAST_(7) << 28)
+#define MIPS32R5_CONF_KU		(_ULCAST_(7) << 25)
+#define MIPS32R5_CONF_ISP		(_ULCAST_(1) << 24)
+#define MIPS32R5_CONF_DSP		(_ULCAST_(1) << 23)
+#define MIPS32R5_CONF_UDI		(_ULCAST_(1) << 22)
+#define MIPS32R5_CONF_SB		(_ULCAST_(1) << 21)
+#define MIPS32R5_CONF_MM		(_ULCAST_(1) << 18)
+
 /*
  * Bits in the MIPS32/64 PRA coprocessor 0 config registers 1 and above.
  */
@@ -530,6 +542,19 @@
 #define MIPS_CONF7_WII		(_ULCAST_(1) << 31)
 
 #define MIPS_CONF7_RPS		(_ULCAST_(1) << 2)
+
+/* MAAR bit definitions */
+#define MIPS_MAAR_ADDR		(((1 << 20) - 1) << 12)
+#define MIPS_MAAR_ADDR_SHIFT	12
+#define MIPS_MAAR_S		(_ULCAST_(1) << 1)
+#define MIPS_MAAR_V		(_ULCAST_(1) << 0)
+
+/*  EntryHI bit definition */
+#define MIPS_ENTRYHI_EHINV	(_ULCAST_(1) << 10)
+
+/* CMGCRBase bit definitions */
+#define MIPS_CMGCRB_BASE	11
+#define MIPS_CMGCRF_BASE	(~_ULCAST_((1 << MIPS_CMGCRB_BASE) - 1))
 
 /*
  * Bits in the MIPS32/64 coprocessor 1 (FPU) revision register.
@@ -827,6 +852,9 @@ do {									\
 
 #define read_c0_prid()		__read_32bit_c0_register($15, 0)
 
+#define read_c0_ebase()         __read_32bit_c0_register($15, 1)
+#define write_c0_ebase(val)     __write_32bit_c0_register($15, 1, val)
+
 #define read_c0_config()	__read_32bit_c0_register($16, 0)
 #define read_c0_config1()	__read_32bit_c0_register($16, 1)
 #define read_c0_config2()	__read_32bit_c0_register($16, 2)
@@ -843,6 +871,11 @@ do {									\
 #define write_c0_config5(val)	__write_32bit_c0_register($16, 5, val)
 #define write_c0_config6(val)	__write_32bit_c0_register($16, 6, val)
 #define write_c0_config7(val)	__write_32bit_c0_register($16, 7, val)
+
+#define read_c0_maar()		__read_ulong_c0_register($17, 1)
+#define write_c0_maar(val)	__write_ulong_c0_register($17, 1, val)
+#define read_c0_maari()		__read_32bit_c0_register($17, 2)
+#define write_c0_maari(val)	__write_32bit_c0_register($17, 2, val)
 
 /*
  * The WatchLo register.  There may be upto 8 of them.

@@ -17,6 +17,7 @@
 #include <asm/mipsregs.h>
 #include <asm/reg.h>
 #include <asm/system.h>
+#include <asm/prefetch.h>
 
 /*
  * Return current * instruction pointer ("program counter").

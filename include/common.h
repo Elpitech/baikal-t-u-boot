@@ -17,6 +17,7 @@ typedef volatile unsigned char	vu_char;
 
 #include <config.h>
 #include <asm-offsets.h>
+#include <asm/io.h>
 #include <linux/bitops.h>
 #include <linux/types.h>
 #include <linux/string.h>
@@ -1034,7 +1035,8 @@ static inline phys_addr_t map_to_sysmem(const void *ptr)
 	char __##name[ROUND(PAD_SIZE((size) * sizeof(type), pad), align)  \
 		      + (align - 1)];					\
 									\
-	type *name = (type *) ALIGN((uintptr_t)__##name, align)
+	type *name = (type *) ALIGN((uintptr_t)__##name, align); \
+	name = (void*)KSEG1ADDR(name);
 #define ALLOC_ALIGN_BUFFER(type, name, size, align)		\
 	ALLOC_ALIGN_BUFFER_PAD(type, name, size, align, 1)
 #define ALLOC_CACHE_ALIGN_BUFFER_PAD(type, name, size, pad)		\

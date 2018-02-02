@@ -117,7 +117,7 @@ static inline void set_io_port_base(unsigned long base)
  * Change virtual addresses to physical addresses and vv.
  * These are trivial on the 1:1 Linux/MIPS mapping
  */
-extern inline phys_addr_t virt_to_phys(volatile void * address)
+static inline phys_addr_t virt_to_phys(volatile void * address)
 {
 #ifndef CONFIG_64BIT
 	return CPHYSADDR(address);
@@ -126,7 +126,7 @@ extern inline phys_addr_t virt_to_phys(volatile void * address)
 #endif
 }
 
-extern inline void * phys_to_virt(unsigned long address)
+static inline void * phys_to_virt(unsigned long address)
 {
 #ifndef CONFIG_64BIT
 	return (void *)KSEG0ADDR(address);
@@ -138,7 +138,7 @@ extern inline void * phys_to_virt(unsigned long address)
 /*
  * IO bus memory addresses are also 1:1 with the physical address
  */
-extern inline unsigned long virt_to_bus(volatile void * address)
+static inline unsigned long virt_to_bus(volatile void * address)
 {
 #ifndef CONFIG_64BIT
 	return CPHYSADDR(address);
@@ -147,7 +147,7 @@ extern inline unsigned long virt_to_bus(volatile void * address)
 #endif
 }
 
-extern inline void * bus_to_virt(unsigned long address)
+static inline void * bus_to_virt(unsigned long address)
 {
 #ifndef CONFIG_64BIT
 	return (void *)KSEG0ADDR(address);
@@ -165,12 +165,12 @@ extern unsigned long isa_slot_offset;
 extern void * __ioremap(unsigned long offset, unsigned long size, unsigned long flags);
 
 #if 0
-extern inline void *ioremap(unsigned long offset, unsigned long size)
+static inline void *ioremap(unsigned long offset, unsigned long size)
 {
 	return __ioremap(offset, size, _CACHE_UNCACHED);
 }
 
-extern inline void *ioremap_nocache(unsigned long offset, unsigned long size)
+static inline void *ioremap_nocache(unsigned long offset, unsigned long size)
 {
 	return __ioremap(offset, size, _CACHE_UNCACHED);
 }
@@ -503,5 +503,23 @@ static inline void unmap_physmem(void *vaddr, unsigned long flags)
 {
 
 }
+
+#define out_arch(type, endian, a, v)__raw_write##type(cpu_to_##endian(v), a)
+#define in_arch(type, endian, a)endian##_to_cpu(__raw_read##type(a))
+
+#define out_le32(a, v)out_arch(l, le32, a, v)
+#define out_le16(a, v)out_arch(w, le16, a, v)
+
+#define in_le32(a)in_arch(l, le32, a)
+#define in_le16(a)in_arch(w, le16, a)
+
+#define out_be32(a, v)out_arch(l, be32, a, v)
+#define out_be16(a, v)out_arch(w, be16, a, v)
+
+#define in_be32(a)in_arch(l, be32, a)
+#define in_be16(a)in_arch(w, be16, a)
+
+#define out_8(a, v)__raw_writeb(v, a)
+#define in_8(a)__raw_readb(a)
 
 #endif /* _ASM_IO_H */
