@@ -50,6 +50,7 @@ __HAVE_ARCH_GENERIC_BOARD := y
 # to RAM. $28 is always used as gp.
 #
 PLATFORM_CPPFLAGS		+= -G 0 -mabicalls -fpic $(ENDIANNESS)
+PLATFORM_CPPFLAGS		+= -fno-store-merging
 ifndef CONFIG_USE_HARD_FLOAT
 PLATFORM_CPPFLAGS		+= -msoft-float
 else
