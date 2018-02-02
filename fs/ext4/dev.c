@@ -52,6 +52,7 @@ int ext4fs_devread(lbaint_t sector, int byte_offset, int byte_len, char *buf)
 	ALLOC_CACHE_ALIGN_BUFFER(char, sec_buf, (ext4fs_block_dev_desc ?
 						 ext4fs_block_dev_desc->blksz :
 						 0));
+	flush_cache(buf, byte_len);
 	if (ext4fs_block_dev_desc == NULL) {
 		printf("** Invalid Block Device Descriptor (NULL)\n");
 		return 0;
