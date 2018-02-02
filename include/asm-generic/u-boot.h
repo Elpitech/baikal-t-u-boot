@@ -128,6 +128,11 @@ typedef struct bd_info {
 		ulong size;
 	} bi_dram[CONFIG_NR_DRAM_BANKS];
 #endif /* CONFIG_NR_DRAM_BANKS */
+#ifdef CONFIG_TARGET_BAIKAL_MIPS
+	unsigned long	bi_revision;		/* board revision */
+	unsigned long	bi_serial_num;		/* board serial number */
+	void *		bi_nvram;		/* board nvram */
+#endif /* CONFIG_TARGET_BAIKAL_MIPS */
 } bd_t;
 
 #endif /* __ASSEMBLY__ */

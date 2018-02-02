@@ -19,6 +19,7 @@
 #include <malloc.h>
 #include <asm/arch/oem.h>
 #include <asm/arch/sata.h>
+#include <asm/arch/nvram.h>
 #include <asm/arch/clock.h>
 #include <asm/arch/clock_manager.h>
 #include <board.h>
@@ -73,9 +74,24 @@ int get_board_revision(void)
 	return board_rev;
 }
 
+/* Init board nvram */
+void board_nvram_init(void)
+{
+	/* Check NVRAM */
+	if (nvram_init())
+		return;
+	/* ARM generic boot options address is used as ptr to NVRAM data */
+	gd->bd->bi_nvram = malloc(nvram_get_size() * sizeof(uchar));
+	if (gd->bd->bi_nvram)
+		nvram_read_block(gd->bd->bi_nvram, nvram_get_size());
+}
+
 #ifdef CONFIG_BOARD_EARLY_INIT_R
 int board_early_init_r(void)
 {
+	/* init NVRAM */
+	board_nvram_init();
+
 #ifndef CONFIG_BAIKAL_BFK3
 	int updated = 0;
 

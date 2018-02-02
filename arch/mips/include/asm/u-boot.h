@@ -25,6 +25,7 @@
 typedef struct bd_info {
 	unsigned long	bi_arch_number;	/* unique id for this board */
 	unsigned long	bi_boot_params;	/* where this board expects params */
+	void *		bi_nvram;	/* board nvram */
 	unsigned long	bi_memstart;	/* start of DRAM memory */
 	phys_size_t	bi_memsize;	/* size	 of DRAM memory in bytes */
 	unsigned long	bi_flashstart;	/* start of FLASH memory */

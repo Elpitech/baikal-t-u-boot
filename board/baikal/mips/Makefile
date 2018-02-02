@@ -9,6 +9,7 @@
 obj-y = board.o
 obj-y += cpu.o
 obj-y += clock.o
+obj-y += nvram.o
 obj-y += lowlevel_init.o
 obj-y += spi.o
 obj-y += boot.o boot_misc.o ddr3_init.o pmu_misc.o ddr_spd.o
