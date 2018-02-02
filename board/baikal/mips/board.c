@@ -16,6 +16,7 @@
 #include <i2c.h>
 #include <netdev.h>
 #include <malloc.h>
+#include <asm/arch/oem.h>
 #include <asm/arch/sata.h>
 #include <asm/arch/clock.h>
 #include <asm/arch/clock_manager.h>
@@ -67,15 +68,35 @@ int board_early_init_r(void)
 {
     int updated = 0;
 
+#ifndef CONFIG_BAIKAL_BFK3
+    /* Get vendor data from EEPROM */
+    if (oem_get_vendor_data(&vdata) < 0) {
+        vdata.crc = 0;
+        vdata.type = 0xff;
+        vdata.revision = 0xff;
+        vdata.serial = 0x0;
+    }
+#else
     vdata.crc = 0;
     vdata.type = 0xff;
     vdata.revision = 0x31;
     vdata.serial = 0x0;
+#endif /* CONFIG_BAIKAL_BFK3 */
+
+    if (vdata.type == 0xff) {
+        vdata.type = oem_get_vendor_board(CONFIG_BAIKAL_NAME);
+        updated = 1;
+    }
 
     if (vdata.revision == 0xff) {
         vdata.revision = get_board_revision() & 0xff;
         updated = 1;
     }
+
+#ifndef CONFIG_BAIKAL_BFK3
+    if (updated)
+        oem_set_vendor_data(&vdata);
+#endif /* CONFIG_BAIKAL_BFK3 */
 
     printf("Rev:   %u.%u\n", (vdata.revision >> 4) & 0x0f, vdata.revision & 0x0f);
 
@@ -143,6 +164,8 @@ int board_late_init(void)
         brd_serial_id = simple_strtol(flash_chip_id + (BOOT_FLASH_ID_LEN - 6), NULL, 16);
     }
     calc_and_set_macaddr(brd_serial_id, getenv_ulong("cpu_rev", 10, 0));
+#else
+    oem_setall_macaddr();
 #endif /* CONFIG_BAIKAL_BFK3 */
 
     /* Set board serial number */
