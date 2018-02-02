@@ -11,8 +11,9 @@
 # Note: Toolchains with binutils prior to v2.16
 # are no longer supported by U-Boot MIPS tree!
 #
-PLATFORM_CPPFLAGS += -DCONFIG_MIPS32 -march=mips32r2
-PLATFORM_CPPFLAGS += -mabi=32 -DCONFIG_32BIT
+PLATFORM_CPPFLAGS += -DCONFIG_MIPS32 -march=mips32r5
+PLATFORM_CPPFLAGS += -mabi=32 -mfp64 -DCONFIG_32BIT
+
 ifdef CONFIG_SYS_BIG_ENDIAN
 PLATFORM_LDFLAGS  += -m elf32btsmip
 else
