@@ -231,6 +231,24 @@ NESTED(mips_cache_reset, 0, ra)
 	PTR_LA	v1, mips_init_dcache
 	jalr	v1
 
+	/* initialize L2 Tag registers */
+	mtc0		zero, CP0_TAGLO
+	mtc0		zero, CP0_TAGHI
+	mtc0		zero, CP0_TAGLO, 4
+	mtc0		zero, CP0_TAGHI, 4
+	ehb
+
+	/* load cache sizes */
+	li		a0, CONFIG_MIPS_L2_SIZE
+	li		a1, CONFIG_MIPS_L2_LINE_SIZE
+
+	/* clear all L2 tags */
+	PTR_LI		t0, INDEX_BASE
+	PTR_ADDU	t1, t0, a0
+4:	cache		INDEX_STORE_TAG_SD, 0(t0)
+	PTR_ADDU	t0, t0, a1
+	bne		t0, t1, 4b
+
 	jr	RA
 	END(mips_cache_reset)
 
