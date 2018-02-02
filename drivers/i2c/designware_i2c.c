@@ -11,12 +11,16 @@
 
 #ifdef CONFIG_I2C_MULTI_BUS
 static unsigned int bus_initialized[CONFIG_SYS_I2C_BUS_MAX];
-static unsigned int current_bus = 0;
+int i2c_get_bus_num(void);
 #endif
 
-static struct i2c_regs *i2c_regs_p =
-    (struct i2c_regs *)CONFIG_SYS_I2C_BASE;
+#if CONFIG_SYS_SPD_BUS_NUM == 1
+static struct i2c_regs *i2c_regs_p = (struct i2c_regs *)CONFIG_SYS_I2C_BASE1;
+#else
+static struct i2c_regs *i2c_regs_p = (struct i2c_regs *)CONFIG_SYS_I2C_BASE;
+#endif
 
+long baikal_pll_get(int id);
 /*
  * set_speed - Set the i2c speed mode (standard, high, fast)
  * @i2c_spd:	required i2c speed mode
@@ -28,37 +32,47 @@ static void set_speed(int i2c_spd)
 	unsigned int cntl;
 	unsigned int hcnt, lcnt;
 	unsigned int enbl;
-
+/* Set IC_CLK by ethernet_pll freq */
+	int eth_pll = 14;
+	long eth_pll_val = baikal_pll_get(eth_pll);
+	int ic_clk = eth_pll_val / 1000000 / 10;	/* Hz->MHz->MHz/10 */
+	/* Calculate and initialize IC_SDA_HOLD */
+	int t_ic_clk = (1000 / ic_clk); 	/* T of ic_clk in nS */
+	int ic_sda_hold = 640; 			/* SDA hold 640 nS check i2c bus spec */
+	cntl = ic_sda_hold / t_ic_clk;
+/* End */
 	/* to set speed cltr must be disabled */
 	enbl = readl(&i2c_regs_p->ic_enable);
 	enbl &= ~IC_ENABLE_0B;
 	writel(enbl, &i2c_regs_p->ic_enable);
+
+	writel(ic_sda_hold / t_ic_clk, &i2c_regs_p->reserved_1);	/* Write ic_sda_hold into register */
 
 	cntl = (readl(&i2c_regs_p->ic_con) & (~IC_CON_SPD_MSK));
 
 	switch (i2c_spd) {
 	case IC_SPEED_MODE_MAX:
 		cntl |= IC_CON_SPD_HS;
-		hcnt = (IC_CLK * MIN_HS_SCL_HIGHTIME) / NANO_TO_MICRO;
+		hcnt = (ic_clk * MIN_HS_SCL_HIGHTIME) / NANO_TO_MICRO;
 		writel(hcnt, &i2c_regs_p->ic_hs_scl_hcnt);
-		lcnt = (IC_CLK * MIN_HS_SCL_LOWTIME) / NANO_TO_MICRO;
+		lcnt = (ic_clk * MIN_HS_SCL_LOWTIME) / NANO_TO_MICRO;
 		writel(lcnt, &i2c_regs_p->ic_hs_scl_lcnt);
 		break;
 
 	case IC_SPEED_MODE_STANDARD:
 		cntl |= IC_CON_SPD_SS;
-		hcnt = (IC_CLK * MIN_SS_SCL_HIGHTIME) / NANO_TO_MICRO;
+		hcnt = (ic_clk * MIN_SS_SCL_HIGHTIME) / NANO_TO_MICRO;
 		writel(hcnt, &i2c_regs_p->ic_ss_scl_hcnt);
-		lcnt = (IC_CLK * MIN_SS_SCL_LOWTIME) / NANO_TO_MICRO;
+		lcnt = (ic_clk * MIN_SS_SCL_LOWTIME) / NANO_TO_MICRO;
 		writel(lcnt, &i2c_regs_p->ic_ss_scl_lcnt);
 		break;
 
 	case IC_SPEED_MODE_FAST:
 	default:
 		cntl |= IC_CON_SPD_FS;
-		hcnt = (IC_CLK * MIN_FS_SCL_HIGHTIME) / NANO_TO_MICRO;
+		hcnt = (ic_clk * MIN_FS_SCL_HIGHTIME) / NANO_TO_MICRO;
 		writel(hcnt, &i2c_regs_p->ic_fs_scl_hcnt);
-		lcnt = (IC_CLK * MIN_FS_SCL_LOWTIME) / NANO_TO_MICRO;
+		lcnt = (ic_clk * MIN_FS_SCL_LOWTIME) / NANO_TO_MICRO;
 		writel(lcnt, &i2c_regs_p->ic_fs_scl_lcnt);
 		break;
 	}
@@ -109,6 +123,28 @@ int i2c_get_bus_speed(void)
 	return 0;
 }
 
+void i2c_hw_init(int speed, int slaveadd)
+{
+        unsigned int enbl;
+
+        /* Disable i2c */
+        enbl = readl(&i2c_regs_p->ic_enable);
+        enbl &= ~IC_ENABLE_0B;
+        writel(enbl, &i2c_regs_p->ic_enable);
+
+        writel((IC_CON_SD | IC_CON_SPD_FS | IC_CON_MM), &i2c_regs_p->ic_con);
+        writel(IC_RX_TL, &i2c_regs_p->ic_rx_tl);
+        writel(IC_TX_TL, &i2c_regs_p->ic_tx_tl);
+        i2c_set_bus_speed(speed);
+        writel(IC_STOP_DET, &i2c_regs_p->ic_intr_mask);
+        writel(slaveadd, &i2c_regs_p->ic_sar);
+
+        /* Enable i2c */
+        enbl = readl(&i2c_regs_p->ic_enable);
+        enbl |= IC_ENABLE_0B;
+        writel(enbl, &i2c_regs_p->ic_enable);
+}
+
 /*
  * i2c_init - Init function
  * @speed:	required i2c speed
@@ -118,29 +154,13 @@ int i2c_get_bus_speed(void)
  */
 void i2c_init(int speed, int slaveadd)
 {
-	unsigned int enbl;
-
-	/* Disable i2c */
-	enbl = readl(&i2c_regs_p->ic_enable);
-	enbl &= ~IC_ENABLE_0B;
-	writel(enbl, &i2c_regs_p->ic_enable);
-
-	writel((IC_CON_SD | IC_CON_SPD_FS | IC_CON_MM), &i2c_regs_p->ic_con);
-	writel(IC_RX_TL, &i2c_regs_p->ic_rx_tl);
-	writel(IC_TX_TL, &i2c_regs_p->ic_tx_tl);
-	i2c_set_bus_speed(speed);
-	writel(IC_STOP_DET, &i2c_regs_p->ic_intr_mask);
-	writel(slaveadd, &i2c_regs_p->ic_sar);
-
-	/* Enable i2c */
-	enbl = readl(&i2c_regs_p->ic_enable);
-	enbl |= IC_ENABLE_0B;
-	writel(enbl, &i2c_regs_p->ic_enable);
+	i2c_hw_init(speed, slaveadd);
 
 #ifdef CONFIG_I2C_MULTI_BUS
-	bus_initialized[current_bus] = 1;
+	bus_initialized[i2c_get_bus_num()] = 1;
 #endif
 }
+
 
 /*
  * i2c_setaddress - Sets the target slave address
@@ -421,9 +441,7 @@ int i2c_set_bus_num(unsigned int bus)
 		return -1;
 	}
 
-	current_bus = bus;
-
-	if (!bus_initialized[current_bus])
+	if (!bus_initialized[bus])
 		i2c_init(CONFIG_SYS_I2C_SPEED, CONFIG_SYS_I2C_SLAVE);
 
 	return 0;
@@ -431,6 +449,48 @@ int i2c_set_bus_num(unsigned int bus)
 
 int i2c_get_bus_num(void)
 {
-	return current_bus;
+	switch ((unsigned int)i2c_regs_p) {
+	case CONFIG_SYS_I2C_BASE:
+		return 0;
+#ifdef CONFIG_SYS_I2C_BASE1
+	case CONFIG_SYS_I2C_BASE1:
+		return 1;
+#endif
+#ifdef CONFIG_SYS_I2C_BASE2
+	case CONFIG_SYS_I2C_BASE2:
+		return 2;
+#endif
+#ifdef CONFIG_SYS_I2C_BASE3
+	case CONFIG_SYS_I2C_BASE3:
+		return 3;
+#endif
+#ifdef CONFIG_SYS_I2C_BASE4
+	case CONFIG_SYS_I2C_BASE4:
+		return 4;
+#endif
+#ifdef CONFIG_SYS_I2C_BASE5
+	case CONFIG_SYS_I2C_BASE5:
+		return 5;
+#endif
+#ifdef CONFIG_SYS_I2C_BASE6
+	case CONFIG_SYS_I2C_BASE6:
+		return 6;
+#endif
+#ifdef CONFIG_SYS_I2C_BASE7
+	case CONFIG_SYS_I2C_BASE7:
+		return 7;
+#endif
+#ifdef CONFIG_SYS_I2C_BASE8
+	case CONFIG_SYS_I2C_BASE8:
+		return 8;
+#endif
+#ifdef CONFIG_SYS_I2C_BASE9
+	case CONFIG_SYS_I2C_BASE9:
+		return 9;
+#endif
+	default:
+		printf("Bad i2c bus regs ptr: %p\n", i2c_regs_p);
+		return -1;
+	}
 }
 #endif
