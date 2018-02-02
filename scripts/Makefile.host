@@ -128,8 +128,9 @@ $(host-cmulti): $(obj)/%: $(host-cobjs) $(host-cshlib) FORCE
 
 # Create .o file from a single .c file
 # host-cobjs -> .o
-quiet_cmd_host-cobjs	= HOSTCC  $@
-      cmd_host-cobjs	= $(HOSTCC) $(hostc_flags) -c -o $@ $<
+LIBSSL = -I libssl/include/ -I libssl/include/x86_64-linux-gnu/ 
+quiet_cmd_host-cobjs	= HOSTCC $(LIBSSL) $@
+      cmd_host-cobjs	= $(HOSTCC) $(LIBSSL) $(hostc_flags) -c -o $@ $<
 $(host-cobjs): $(obj)/%.o: $(src)/%.c FORCE
 	$(call if_changed_dep,host-cobjs)
 
