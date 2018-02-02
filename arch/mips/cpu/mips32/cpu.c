@@ -8,6 +8,7 @@
 #include <common.h>
 #include <command.h>
 #include <netdev.h>
+#include <asm/hazards.h>
 #include <asm/mipsregs.h>
 #include <asm/cacheops.h>
 #include <asm/reboot.h>
@@ -70,16 +71,23 @@ static inline unsigned long dcache_line_size(void)
 
 #endif /* !CONFIG_SYS_CACHELINE_SIZE */
 
+static inline unsigned long scache_line_size(void)
+{
+	return CONFIG_MIPS_L2_LINE_SIZE;
+}
+
 void flush_cache(ulong start_addr, ulong size)
 {
 	unsigned long ilsize = icache_line_size();
 	unsigned long dlsize = dcache_line_size();
+	unsigned long slsize = scache_line_size();
 	unsigned long addr, aend;
 
 	/* aend will be miscalculated when size is zero, so we return here */
 	if (size == 0)
 		return;
 
+	/* flush D-cache */
 	addr = start_addr & ~(dlsize - 1);
 	aend = (start_addr + size - 1) & ~(dlsize - 1);
 
@@ -92,30 +100,53 @@ void flush_cache(ulong start_addr, ulong size)
 				break;
 			addr += dlsize;
 		}
-		return;
+
+		asm volatile("sync");
+		instruction_hazard();
+
+	} else {
+
+		/* flush D-cache */
+		while (1) {
+			cache_op(HIT_WRITEBACK_INV_D, addr);
+			if (addr == aend)
+				break;
+			addr += dlsize;
+		}
+
+		asm volatile("sync");
+
+		/* flush I-cache */
+		addr = start_addr & ~(ilsize - 1);
+		aend = (start_addr + size - 1) & ~(ilsize - 1);
+		while (1) {
+			cache_op(HIT_INVALIDATE_I, addr);
+			if (addr == aend)
+				break;
+			addr += ilsize;
+		}
+
+		asm volatile("sync");
+		instruction_hazard();
 	}
 
-	/* flush D-cache */
+	/* flush L2 cache */
+	addr = start_addr & ~(slsize - 1);
+	aend = (start_addr + size - 1) & ~(slsize - 1);
 	while (1) {
-		cache_op(HIT_WRITEBACK_INV_D, addr);
+		cache_op(HIT_WRITEBACK_INV_SD, addr);
 		if (addr == aend)
 			break;
-		addr += dlsize;
+		addr += slsize;
 	}
 
-	/* flush I-cache */
-	addr = start_addr & ~(ilsize - 1);
-	aend = (start_addr + size - 1) & ~(ilsize - 1);
-	while (1) {
-		cache_op(HIT_INVALIDATE_I, addr);
-		if (addr == aend)
-			break;
-		addr += ilsize;
-	}
+	asm volatile("sync");
+
 }
 
 void flush_dcache_range(ulong start_addr, ulong stop)
 {
+	unsigned long slsize = scache_line_size();
 	unsigned long lsize = dcache_line_size();
 	unsigned long addr = start_addr & ~(lsize - 1);
 	unsigned long aend = (stop - 1) & ~(lsize - 1);
@@ -126,20 +157,49 @@ void flush_dcache_range(ulong start_addr, ulong stop)
 			break;
 		addr += lsize;
 	}
+
+	asm volatile("sync");
+
+	/* flush L2 cache */
+	addr = start_addr & ~(slsize - 1);
+	aend = (stop - 1) & ~(slsize - 1);
+	while (1) {
+		cache_op(HIT_WRITEBACK_INV_SD, addr);
+		if (addr == aend)
+			break;
+		addr += slsize;
+	}
+
+	asm volatile("sync");
 }
 
 void invalidate_dcache_range(ulong start_addr, ulong stop)
 {
+	unsigned long slsize = scache_line_size();
 	unsigned long lsize = dcache_line_size();
-	unsigned long addr = start_addr & ~(lsize - 1);
-	unsigned long aend = (stop - 1) & ~(lsize - 1);
+	unsigned long addr, aend;
 
+	addr = start_addr & ~(slsize - 1);
+	aend = (stop - 1) & ~(slsize - 1);
+	while (1) {
+		cache_op(HIT_INVALIDATE_SD, addr);
+		if (addr == aend)
+			break;
+		addr += slsize;
+	}
+
+	asm volatile("sync");
+
+	addr = start_addr & ~(lsize - 1);
+	aend = (stop - 1) & ~(lsize - 1);
 	while (1) {
 		cache_op(HIT_INVALIDATE_D, addr);
 		if (addr == aend)
 			break;
 		addr += lsize;
 	}
+
+	asm volatile("sync");
 }
 
 void write_one_tlb(int index, u32 pagemask, u32 hi, u32 low0, u32 low1)
