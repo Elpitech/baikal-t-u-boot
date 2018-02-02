@@ -20,6 +20,9 @@ SECTIONS
 	. = ALIGN(4);
 	.text : {
 		*(.text*)
+#if defined(BAIKAL_READ_SPD)
+		KEEP (*(.baikal_read_spd))
+#endif
 	}
 
 	. = ALIGN(4);
@@ -84,27 +87,49 @@ SECTIONS
 		*(.dynstr)
 	}
 
-	.dynamic : {
-		*(.dynamic)
-	}
-
 	.plt : {
 		*(.plt)
 	}
 
-	.interp : {
-		*(.interp)
-	}
-
-	.gnu : {
-		*(.gnu*)
+	.hash : {
+		*(.hash)
 	}
 
 	.MIPS.stubs : {
 		*(.MIPS.stubs)
 	}
 
-	.hash : {
-		*(.hash)
+#if defined(BAIKAL_FW_SECTION)
+	. = _start + CONFIG_BAIKAL_FW_OFF;
+	.baikal_fw : {
+		__start_baikal_fw = .;
+		KEEP (BAIKAL_FW_SECTION (.baikal_fw*))
 	}
+
+	. = _start + CONFIG_BAIKAL_SPD_OFF;
+	.baikal_spd : {
+#if defined(BAIKAL_READ_SPD)
+		LONG(ABSOLUTE(baikal_read_spd));
+#endif
+		__start_baikal_spd = .;
+		KEEP (BAIKAL_FW_SECTION (.baikal_spd*))
+	}
+#endif
+
+
+	/* ----------------- */
+	/* free_space: 0x300 */
+	/* ----------------- */
+	.gnu : {		/* 0x1e0 */
+		*(.gnu*)
+	}
+
+	.dynamic : {	/* 0xc0 */
+		*(.dynamic)
+	}
+
+	.interp : {
+		*(.interp)  /* 0x13 */
+	}
+
 }

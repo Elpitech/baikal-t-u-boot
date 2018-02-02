@@ -98,7 +98,11 @@ lowlevel_init:
 	addiu	sp, sp, -4
 	sw	ra, 4(sp)
 
+#ifdef CONFIG_BAIKAL_FW
+	la	t0, __start_baikal_fw
+#else
 	la	t0, __lowlevel_init_cp0
+#endif /* CONFIG_BAIKAL_FW */
 	jalr	t0
 	nop	/* Delay slot */
 

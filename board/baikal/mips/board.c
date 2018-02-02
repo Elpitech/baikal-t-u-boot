@@ -148,6 +148,111 @@ void spi_init(void)
 }
 #endif
 
+#ifdef CONFIG_BAIKAL_FW
+extern void *__start_baikal_fw;
+#endif /* CONFIG_BAIKAL_FW */
+
+#define DDR3_SPD_ADDRMAP0       11
+#define DDR3_SPD_SARSIZE1       21
+#define DDR3_SEG_SIZE		256
+
+#ifdef CONFIG_BAIKAL_SPD_ADDRESS
+void i2c_hw_init(int speed, int slaveaddr);
+
+int __attribute__((section (".baikal_read_spd"))) baikal_read_spd(uint32_t addr, int alen, uint8_t *buffer, int len)
+{
+	int ret;
+
+	/* Init I2C */
+	i2c_hw_init(CONFIG_SYS_I2C_SPEED, CONFIG_SYS_I2C_SLAVE);
+
+	/* Init timer */
+	(*(volatile unsigned long *)(CONFIG_SRAM_SPD_TIMESTAMP)) = 0;
+	write_c0_cause(0);
+
+	ret = i2c_read(CONFIG_BAIKAL_SPD_ADDRESS, addr, alen, buffer, len);
+	if (ret) {
+		*((int *)(CONFIG_SRAM_BASE + CONFIG_BAIKAL_FW_DDR_HNDL_OFF)) = 0x10;
+	}
+	return ret;
+}
+#endif
+
+/* Add this function for transmit high memory size to common/image.c */
+uint32_t get_ddr_highmem_size(void){
+
+#define MAX_HIGHMEM_SIZE 0xDFFFFFF0
+
+	uint32_t ddr_high_size;
+
+	int *s = (int *)(CONFIG_SRAM_BASE + 0x1000);
+
+	ddr_high_size = (s[DDR3_SPD_SARSIZE1] + 1)*DDR3_SEG_SIZE;
+	ddr_high_size = ddr_high_size * 1024 * 1024;
+
+	if (ddr_high_size > MAX_HIGHMEM_SIZE){         /* Value can't be more than 0xDFFFFFF0 */
+		ddr_high_size = MAX_HIGHMEM_SIZE;
+	}
+
+	return ddr_high_size;
+}
+
+phys_size_t initdram(int board_type)
+{
+#ifdef CONFIG_BAIKAL_FW
+	uint32_t ddr_high_size;
+
+	int *s = (int *)(CONFIG_SRAM_BASE + 0x1000);
+	int rank = 2;
+
+	if (s[DDR3_SPD_ADDRMAP0] == 0x1f) {
+		rank = 1;
+	}
+	ddr_high_size = get_ddr_highmem_size();
+	printf("Rank = %d highmem = %d MiB lowmem = ", rank, (ddr_high_size / 1024 / 1024)); /* B -> MB */
+#if 0
+	int i;
+	printf("DDRC/PUB reg base = 0x%x\n", s);
+	for (i = 0; i < 54; i++) {
+		printf("reg(%02d) = 0x%08x\n", i, s[i]);
+	}
+#endif
+
+    if (*((int *)(CONFIG_SRAM_BASE + CONFIG_BAIKAL_FW_DDR_HNDL_OFF)) != 0) {
+        printf("Baikal FW: DDR init failed v0=0x%x, v1=0x%x, step=0x%x\n",
+		*((int *)(CONFIG_SRAM_BASE + CONFIG_BAIKAL_FW_DDR_HNDL_OFF)),
+		*((int *)(CONFIG_SRAM_BASE + CONFIG_BAIKAL_FW_DDR_HNDL_OFF + 4)),
+		*((int *)(CONFIG_SRAM_BASE + CONFIG_BAIKAL_FW_DDR_HNDL_OFF + 8)));
+#ifndef CONFIG_BAIKAL_FW_CONTINUE_ON_DDR_FAIL
+        return 0;
+#endif /* CONFIG_BAIKAL_FW_CONTINUE_ON_DDR_FAIL */
+    }
+#endif /* CONFIG_BAIKAL_FW  */
+
+    return CONFIG_SYS_SDRAM_SIZE;
+}
+
+void board_add_ram_info(int use_default)
+{
+    bd_t *bd = gd->bd;
+
+    /* Lowlevel DDR init should be here */
+    bd->bi_boot_params = CONFIG_SYS_SDRAM_BASE + 100;
+    bd->bi_memstart = CONFIG_SYS_SDRAM_BASE;
+    bd->bi_memsize = get_ram_size((void *)CONFIG_SYS_SDRAM_BASE,
+                    CONFIG_SYS_SDRAM_SIZE);
+
+#ifdef CONFIG_SYS_SRAM_BASE
+    bd->bi_sramstart = CONFIG_SYS_SRAM_BASE;
+    bd->bi_sramsize = get_ram_size((void *)CONFIG_SYS_SRAM_BASE,
+                    CONFIG_SYS_SRAM_SIZE);
+#endif
+
+
+    bd->bi_flashstart = CONFIG_SYS_TEXT_BASE;
+    bd->bi_flashsize = KSEG1 - KSEG0 - CPHYSADDR(CONFIG_SYS_TEXT_BASE);
+    bd->bi_flashoffset = (CONFIG_SYS_MONITOR_BASE - CONFIG_SYS_TEXT_BASE);
+}
 
 /*
  * Show board name at startup
