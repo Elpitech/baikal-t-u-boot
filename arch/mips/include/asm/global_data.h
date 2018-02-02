@@ -20,6 +20,18 @@ struct arch_global_data {
 	unsigned long tbl;
 	unsigned long lastinc;
 #endif
+#ifdef CONFIG_TARGET_BAIKAL_MIPS
+	unsigned int cpu;
+	unsigned int num_cores;
+	unsigned long cpu_clk;	/* CPU bus clock */
+	unsigned long sata_clk;	/* SATA bus clock */
+	unsigned long eth_clk;	/* Base ETH bus clock */
+	unsigned long ddr_clk;	/* Base ETH bus clock */
+	unsigned long pci_clk;	/* Base ETH bus clock */
+	unsigned long axi_clk;	/* APB bus clock */
+	unsigned long apb_clk;	/* APB bus clock */
+	unsigned char *nvram;	/* NVRAM blob data */
+#endif
 };
 
 #include <asm-generic/global_data.h>
