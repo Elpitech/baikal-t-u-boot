@@ -107,7 +107,9 @@ reset:
 
 #ifndef CONFIG_SKIP_LOWLEVEL_INIT
 	/* CONFIG0 register */
-	li	t0, CONF_CM_UNCACHED
+	mfc0	t0, CP0_CONFIG
+	li	t1, CONF_CM_UNCACHED
+	ins	t0, t1, 0, 3
 	mtc0	t0, CP0_CONFIG
 #endif
 
