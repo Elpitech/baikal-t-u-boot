@@ -447,7 +447,11 @@ void menu_display_statusline(struct menu *m)
 	printf(ANSI_CURSOR_POSITION, 1, 1);
 	puts(ANSI_CLEAR_LINE);
 	printf(ANSI_CURSOR_POSITION, 2, 1);
+#ifdef CONFIG_MENU_HEADER
+	puts("  " CONFIG_MENU_HEADER);
+#else
 	puts("  *** U-Boot Boot Menu ***");
+#endif
 	puts(ANSI_CLEAR_LINE_TO_END);
 	printf(ANSI_CURSOR_POSITION, 3, 1);
 	puts(ANSI_CLEAR_LINE);
