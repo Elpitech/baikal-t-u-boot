@@ -79,7 +79,34 @@ void *kmem_cache_alloc(struct kmem_cache *obj, int flag);
 #define WARN_ON(x) if (x) {printf("WARNING in %s line %d\n" \
 				  , __FILE__, __LINE__); }
 
-#define PAGE_SIZE	4096
+/*
+ * PAGE_SHIFT determines the page size
+ */
+#ifdef CONFIG_PAGE_SIZE_4KB
+#define PAGE_SHIFT	12
+#define PAGE_SIZE	0x1000UL
+#define PAGE_MASK	0xFFFFFFFFFFFF0000
+#endif
+#ifdef CONFIG_PAGE_SIZE_8KB
+#define PAGE_SHIFT	13
+#define PAGE_SIZE	0x2000UL
+#define PAGE_MASK	0xFFFFFFFFFFFE000
+#endif
+#ifdef CONFIG_PAGE_SIZE_16KB
+#define PAGE_SHIFT	14
+#define PAGE_SIZE	0x4000UL
+#define PAGE_MASK	0xFFFFFFFFFFFFC000
+#endif
+#ifdef CONFIG_PAGE_SIZE_32KB
+#define PAGE_SHIFT	15
+#define PAGE_SIZE	0x8000UL
+#define PAGE_MASK	0xFFFFFFFFFFFF8000
+#endif
+#ifdef CONFIG_PAGE_SIZE_64KB
+#define PAGE_SHIFT	16
+#define PAGE_SIZE	0x10000UL
+#define PAGE_MASK	0xFFFFFFFFFFFF0000
+#endif
 
 /**
  * upper_32_bits - return MSB bits 32-63 of a number if little endian, or
