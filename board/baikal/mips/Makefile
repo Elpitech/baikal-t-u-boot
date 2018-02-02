@@ -9,6 +9,7 @@
 obj-y = board.o
 obj-y += cpu.o
 obj-y += clock.o
+obj-y += nvram.o
 obj-y += lowlevel_init.o
 obj-y += spi.o tools.o
 obj-$(CONFIG_BAIKAL_PLL) += clock_manager.o cmd_cpu.o
