@@ -50,7 +50,14 @@ __HAVE_ARCH_GENERIC_BOARD := y
 # to RAM. $28 is always used as gp.
 #
 PLATFORM_CPPFLAGS		+= -G 0 -mabicalls -fpic $(ENDIANNESS)
+ifndef CONFIG_USE_HARD_FLOAT
 PLATFORM_CPPFLAGS		+= -msoft-float
+else
+PLATFORM_CPPFLAGS		+= -mhard-float
+endif
+ifdef CONFIG_TUNE_P5600
+PLATFORM_CPPFLAGS		+= -mtune=p5600
+endif
 PLATFORM_LDFLAGS		+= -G 0 -static -n -nostdlib $(ENDIANNESS)
 PLATFORM_RELFLAGS		+= -ffunction-sections -fdata-sections
 LDFLAGS_FINAL			+= --gc-sections -pie
