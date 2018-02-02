@@ -3,6 +3,8 @@
  *
  * (C) Copyright 2000-2006
  * Wolfgang Denk, DENX Software Engineering, wd@denx.de.
+ * Editor: Georgy Vlasov <Georgy.Vlasov@baikalelectronics.ru>
+ * 	Add fdt editing after fdt DDR relocation
  *
  * SPDX-License-Identifier:	GPL-2.0+
  */
@@ -10,6 +12,7 @@
 #ifndef USE_HOSTCC
 #include <common.h>
 #include <watchdog.h>
+#include <board.h>
 
 #ifdef CONFIG_SHOW_BOOT_PROGRESS
 #include <status_led.h>
@@ -27,6 +30,7 @@
 
 #include <environment.h>
 #include <image.h>
+#include <linux/compat.h> /* For PAGE_SIZE */
 
 #if defined(CONFIG_FIT) || defined(CONFIG_OF_LIBFDT)
 #include <libfdt.h>
@@ -1069,7 +1073,7 @@ int boot_ramdisk_high(struct lmb *lmb, ulong rd_data, ulong rd_len,
 		 * turning the "load high" feature off. This is intentional.
 		 */
 		initrd_high = simple_strtoul(s, NULL, 16);
-		if (initrd_high == ~0)
+		if (initrd_high == 0)
 			initrd_copy_to_ram = 0;
 	} else {
 		/* not set, no restrictions to load high */
@@ -1092,12 +1096,13 @@ int boot_ramdisk_high(struct lmb *lmb, ulong rd_data, ulong rd_len,
 			*initrd_end = rd_data + rd_len;
 			lmb_reserve(lmb, rd_data, rd_len);
 		} else {
+			/* Initrd must be page aligned */
 			if (initrd_high)
 				*initrd_start = (ulong)lmb_alloc_base(lmb,
-						rd_len, 0x1000, initrd_high);
+						rd_len, PAGE_SIZE, initrd_high);
 			else
 				*initrd_start = (ulong)lmb_alloc(lmb, rd_len,
-								 0x1000);
+								 PAGE_SIZE);
 
 			if (*initrd_start == 0) {
 				puts("ramdisk - allocation error\n");
@@ -1221,6 +1226,18 @@ int image_setup_linux(bootm_headers_t *images)
 	ulong rd_len;
 	int ret;
 
+	/* Variables for dtc replacing */
+#define HIGH_MEM_BASEADDR 0x2000000000000000
+#define MAX_HIGHMEM_SIZE  0xC0000000
+#define LOWMEM_BASE_SIZE  0x0000000008000000
+	int *lenp;
+	uint32_t ddr_high_size;
+	uint64_t val;
+	int offset,prop_offset;
+	void *fdt_blob;
+	const char *path = "/memory";				/* Name of subnode in fdt  */
+	const char *prop_name = "reg";				/* Name of property in fdt */
+
 	if (IMAGE_ENABLE_OF_LIBFDT)
 		boot_fdt_add_mem_rsv_regions(lmb, *of_flat_tree);
 
@@ -1239,11 +1256,31 @@ int image_setup_linux(bootm_headers_t *images)
 		if (ret)
 			return ret;
 	}
-
 	if (IMAGE_ENABLE_OF_LIBFDT) {
 		ret = boot_relocate_fdt(lmb, of_flat_tree, &of_size);
 		if (ret)
 			return ret;
+
+		fdt_blob = *of_flat_tree; 			 /* Addr of dtb in ddr */
+		ddr_high_size = get_ddr_highmem_size(); 	 /* Call from board/baikal/mips/board.c */
+		val = HIGH_MEM_BASEADDR | (uint64_t) ddr_high_size;
+
+		if (fdt_check_header(fdt_blob) != 0) {
+			printf("It is not a fdt");
+			return 1;
+		}
+		/* Find offset of memory node and replace values */
+		offset = fdt_path_offset(fdt_blob,path);
+		prop_offset = fdt_first_property_offset(fdt_blob,offset);
+		prop_offset = fdt_next_property_offset(fdt_blob,prop_offset);
+		if (fdt_setprop_u64(fdt_blob,offset,prop_name,LOWMEM_BASE_SIZE) != 0){
+			printf("Fail at setting mem property");
+			return 1;
+		}
+		if (fdt_appendprop_u64(fdt_blob,offset,prop_name,val) != 0){
+			printf("Fail at append to mem property");
+			return 1;
+		}
 	}
 
 	if (IMAGE_ENABLE_OF_LIBFDT && of_size) {
