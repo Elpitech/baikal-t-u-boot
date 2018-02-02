@@ -15,6 +15,7 @@ obj-y += boot.o boot_misc.o ddr3_init.o pmu_misc.o ddr_spd.o
 
 obj-$(CONFIG_BAIKAL_PLL) += clock_manager.o cmd_cpu.o
 obj-$(CONFIG_CMD_SATA_PHY) += cmd_phy.o
+obj-$(CONFIG_CMD_EXIT) += cmd_exit.o
 #ifdef CONFIG_BAIKAL_LLENV
 obj-$(CONFIG_BAIKAL_LLENV) += llenv32.o
 KCFLAGS += -I$(KBUILD_SRC)/lib/baikal/llenv
