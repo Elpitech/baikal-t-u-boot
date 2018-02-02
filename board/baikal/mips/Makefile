@@ -9,3 +9,4 @@
 obj-y = board.o
 obj-y += cpu.o
 obj-y += lowlevel_init.o
+obj-y += ddr3_init.o ddr_spd.o

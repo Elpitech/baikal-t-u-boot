@@ -19,5 +19,8 @@ else
 PLATFORM_LDFLAGS  += -m elf32ltsmip
 endif
 
+
+
+
 CONFIG_STANDALONE_LOAD_ADDR ?= 0x80200000 \
 			       -T $(srctree)/examples/standalone/mips.lds

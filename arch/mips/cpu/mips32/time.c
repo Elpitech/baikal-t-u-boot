@@ -8,7 +8,11 @@
 #include <common.h>
 #include <asm/mipsregs.h>
 
+#ifdef CONFIG_SRAM_SPD_TIMESTAMP
+#define timestamp    (*(volatile unsigned long *)(CONFIG_SRAM_SPD_TIMESTAMP))
+#else
 static unsigned long timestamp;
+#endif /* CONFIG_SRAM_SPD_TIMER */
 
 /* how many counter cycles in a jiffy */
 #define CYCLES_PER_JIFFY	\
@@ -30,6 +34,9 @@ ulong get_timer(ulong base)
 {
 	unsigned int count;
 	unsigned int expirelo = read_c0_compare();
+
+	if (read_c0_cause() & CAUSEF_DC) 
+		return 0;
 
 	/* Check to see if we have missed any timestamps. */
 	count = read_c0_count();

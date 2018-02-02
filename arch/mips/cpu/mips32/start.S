@@ -124,24 +124,29 @@ reset:
 	/* Initialize any external memory */
 	la	t9, lowlevel_init
 	jalr	t9
-	 nop
+	nop
 
+#ifndef CONFIG_TARGET_BAIKAL_MIPS
 	/* Initialize caches... */
 	la	t9, mips_cache_reset
 	jalr	t9
-	 nop
+	nop
 
 	/* ... and enable them */
 	li	t0, CONFIG_SYS_MIPS_CACHE_MODE
 	mtc0	t0, CP0_CONFIG
 #endif
+#endif
 
+	/* baikal fw sets stack to the internal SRAM. */
+#ifndef CONFIG_TARGET_BAIKAL_MIPS
 	/* Set up temporary stack */
 	li	sp, CONFIG_SYS_SDRAM_BASE + CONFIG_SYS_INIT_SP_OFFSET
+#endif
 
 	la	t9, board_init_f
 	jr	t9
-	 nop
+	nop
 
 /*
  * void relocate_code (addr_sp, gd, addr_moni)

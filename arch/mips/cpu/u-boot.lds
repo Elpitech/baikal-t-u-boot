@@ -76,6 +76,10 @@ SECTIONS
 		*(.dynsym)
 	}
 
+	.rld_map : {
+		*(.rld_map)
+	}
+
 	.dynbss : {
 		*(.dynbss)
 	}
@@ -84,27 +88,28 @@ SECTIONS
 		*(.dynstr)
 	}
 
-	.dynamic : {
-		*(.dynamic)
-	}
-
 	.plt : {
 		*(.plt)
 	}
 
-	.interp : {
-		*(.interp)
-	}
-
-	.gnu : {
-		*(.gnu*)
+	.hash : {
+		*(.hash)
 	}
 
 	.MIPS.stubs : {
 		*(.MIPS.stubs)
 	}
 
-	.hash : {
-		*(.hash)
+	.gnu : {
+		*(.gnu*)
 	}
+
+	.dynamic : {
+		*(.dynamic)
+	}
+
+	.interp : {
+		*(.interp)
+	}
+
 }
