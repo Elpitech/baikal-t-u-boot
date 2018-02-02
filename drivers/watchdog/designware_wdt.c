@@ -22,7 +22,7 @@
  * Set the watchdog time interval.
  * Counter is 32 bit.
  */
-static int designware_wdt_settimeout(unsigned int timeout)
+int designware_wdt_settimeout(unsigned int timeout)
 {
 	signed int i;
 
@@ -37,14 +37,14 @@ static int designware_wdt_settimeout(unsigned int timeout)
 	return 0;
 }
 
-static void designware_wdt_enable(void)
+void designware_wdt_enable(void)
 {
 	writel(((DW_WDT_CR_RMOD_VAL << DW_WDT_CR_RMOD_OFFSET) |
 	      (0x1 << DW_WDT_CR_EN_OFFSET)),
 	      (CONFIG_DW_WDT_BASE + DW_WDT_CR));
 }
 
-static unsigned int designware_wdt_is_enabled(void)
+unsigned int designware_wdt_is_enabled(void)
 {
 	unsigned long val;
 	val = readl((CONFIG_DW_WDT_BASE + DW_WDT_CR));
