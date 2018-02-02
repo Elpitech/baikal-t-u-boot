@@ -10,6 +10,7 @@ obj-$(CONFIG_DM_GPIO)		+= gpio-uclass.o
 endif
 
 obj-$(CONFIG_AT91_GPIO)	+= at91_gpio.o
+obj-$(CONFIG_DW_GPIO)	+= dw_gpio.o
 obj-$(CONFIG_INTEL_ICH6_GPIO)	+= intel_ich6_gpio.o
 obj-$(CONFIG_KIRKWOOD_GPIO)	+= kw_gpio.o
 obj-$(CONFIG_KONA_GPIO)	+= kona_gpio.o
