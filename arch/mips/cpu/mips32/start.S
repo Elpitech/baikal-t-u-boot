@@ -11,6 +11,11 @@
 #include <asm/regdef.h>
 #include <asm/mipsregs.h>
 
+#ifdef CONFIG_BAIKAL_LLENV
+#define trap_irq32      llenv32_trap_irq
+#define trap_exc32      llenv32_trap_exc
+#endif
+
 #ifndef CONFIG_SYS_MIPS_CACHE_MODE
 #define CONFIG_SYS_MIPS_CACHE_MODE CONF_CM_CACHABLE_NONCOHERENT
 #endif
@@ -61,8 +66,14 @@ _start:
 
 	.org 0x200
 	/* TLB refill, 32 bit task */
+other_exc_base:
+#ifdef CONFIG_BAIKAL_LLENV
+        la      t0, trap_exc32
+        jr      t0 // Handle TLB Refill vector and StatusEXL = 0.
+#else
 1:	b	1b
-	 nop
+#endif
+        nop     // Delay slot.
 
 	.org 0x280
 	/* XTLB refill, 64 bit task */
@@ -71,18 +82,33 @@ _start:
 
 	.org 0x300
 	/* Cache error exception */
-1:	b	1b
-	 nop
+cache_error_exc_vector:
+        /* Just return. */
+        eret
 
 	.org 0x380
 	/* General exception */
+general_exc_vector:
+interrupt_vector_cause0:
+#ifdef CONFIG_BAIKAL_LLENV
+        la      t0, trap_exc32
+        jr      t0
+#else
 1:	b	1b
-	 nop
+#endif
+        nop     // Delay slot.
 
 	.org 0x400
 	/* Catch interrupt exceptions */
+pecial_interrupt_exc_vector:
+interrupt_vector_cause1:
+#ifdef CONFIG_BAIKAL_LLENV
+        la      t0, trap_irq32
+        jr      t0
+#else
 1:	b	1b
-	 nop
+#endif
+        nop     // Delay slot.
 
 	.org 0x480
 	/* EJTAG debug exception */
@@ -91,7 +117,6 @@ _start:
 
 	.align 4
 reset:
-
 	/* Clear watch registers */
 	mtc0	zero, CP0_WATCHLO
 	mtc0	zero, CP0_WATCHHI

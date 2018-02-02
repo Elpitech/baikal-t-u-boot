@@ -126,7 +126,11 @@ lowlevel_init:
 	addiu	sp, sp, -4
 	sw	ra, 4(sp)
 
+#ifdef CONFIG_TARGET_BAIKAL_MIPS
+	la t0, __start_baikal_fw
+#else
 	la t0, __lowlevel_init_cp0
+#endif /* CONFIG_TARGET_BAIKAL_MIPS */
 
 
 	jalr	t0
