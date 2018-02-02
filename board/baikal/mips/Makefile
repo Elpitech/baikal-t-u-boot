@@ -12,6 +12,7 @@ obj-y += clock.o
 obj-y += lowlevel_init.o
 obj-y += spi.o tools.o
 obj-$(CONFIG_BAIKAL_PLL) += clock_manager.o cmd_cpu.o
+obj-$(CONFIG_CMD_SATA_PHY) += cmd_phy.o
 #ifdef CONFIG_BAIKAL_LLENV
 obj-$(CONFIG_BAIKAL_LLENV) += llenv32.o
 KCFLAGS += -I$(KBUILD_SRC)/lib/baikal/llenv
