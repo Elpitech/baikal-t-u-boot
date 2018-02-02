@@ -339,6 +339,24 @@ static int setup_ram_buf(void)
 }
 #endif
 
+#ifdef CONFIG_MIPS
+int find_fdt(void)
+{
+#ifdef CONFIG_OF_EMBED
+    /* Get a pointer to the FDT */
+    gd->fdt_blob = __dtb_dt_begin;
+#elif defined CONFIG_OF_SEPARATE
+    /* FDT is at end of image */
+    gd->fdt_blob = (ulong *)&_end;
+#endif
+    /* Allow the early environment to override the fdt address */
+    gd->fdt_blob = (void *)getenv_ulong("fdtcontroladdr", 16,
+                        (uintptr_t)gd->fdt_blob);
+
+    return 0;
+}
+#endif
+
 static int setup_fdt(void)
 {
 #ifdef CONFIG_OF_CONTROL
@@ -817,6 +835,9 @@ static init_fnc_t init_sequence_f[] = {
 #endif
 	setup_mon_len,
 	setup_fdt,
+#ifdef CONFIG_MIPS
+    find_fdt,
+#endif
 	trace_early_init,
 #if defined(CONFIG_MPC85xx) || defined(CONFIG_MPC86xx)
 	/* TODO: can this go into arch_cpu_init()? */

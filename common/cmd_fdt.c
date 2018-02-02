@@ -16,6 +16,7 @@
 #include <libfdt.h>
 #include <fdt_support.h>
 #include <asm/io.h>
+#include <image.h>
 
 #define MAX_LEVEL	32		/* how deeply nested we will go */
 #define SCRATCHPAD	1024		/* bytes of scratchpad memory */
