@@ -313,7 +313,12 @@ int spi_flash_cmd_write_ops(struct spi_flash *flash, u32 offset,
 			return ret;
 #endif
 		byte_addr = offset % page_size;
+#ifdef CONFIG_DW_SPI
+		chunk_len = min3(len - actual, page_size - byte_addr,
+					CONFIG_SPI_FIFO_SIZE - SPI_FLASH_CMD_LEN);
+#else
 		chunk_len = min(len - actual, page_size - byte_addr);
+#endif /* CONFIG_DW_SPI */
 
 		if (flash->spi->max_write_size)
 			chunk_len = min(chunk_len, flash->spi->max_write_size);
@@ -407,6 +412,10 @@ int spi_flash_cmd_read_ops(struct spi_flash *flash, u32 offset,
 			read_len = len;
 		else
 			read_len = remain_len;
+
+#ifdef CONFIG_DW_SPI
+		read_len = min(read_len, (CONFIG_SPI_FIFO_SIZE - cmdsz));
+#endif /* CONFIG_DW_SPI */
 
 		spi_flash_addr(read_addr, cmd);
 
