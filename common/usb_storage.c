@@ -35,6 +35,7 @@
 #include <command.h>
 #include <asm/byteorder.h>
 #include <asm/processor.h>
+#include <asm/io.h>
 
 #include <part.h>
 #include <usb.h>
@@ -1046,7 +1047,7 @@ unsigned long usb_stor_read(int device, lbaint_t blknr,
 	struct usb_device *dev;
 	struct us_data *ss;
 	int retry, i;
-	ccb *srb = &usb_ccb;
+	ccb *srb = (ccb *)KSEG1ADDR(&usb_ccb);
 
 	if (blkcnt == 0)
 		return 0;
@@ -1119,7 +1120,7 @@ unsigned long usb_stor_write(int device, lbaint_t blknr,
 	struct usb_device *dev;
 	struct us_data *ss;
 	int retry, i;
-	ccb *srb = &usb_ccb;
+	ccb *srb = (ccb *)KSEG1ADDR(&usb_ccb);
 
 	if (blkcnt == 0)
 		return 0;
@@ -1336,7 +1337,7 @@ int usb_stor_get_info(struct usb_device *dev, struct us_data *ss,
 	ALLOC_CACHE_ALIGN_BUFFER(unsigned long, cap, 2);
 	ALLOC_CACHE_ALIGN_BUFFER(unsigned char, usb_stor_buf, 36);
 	unsigned long *capacity, *blksz;
-	ccb *pccb = &usb_ccb;
+	ccb *pccb = (ccb *)KSEG1ADDR(&usb_ccb);
 
 	pccb->pdata = usb_stor_buf;
 
@@ -1413,4 +1414,10 @@ int usb_stor_get_info(struct usb_device *dev, struct us_data *ss,
 
 	debug("partype: %d\n", dev_desc->part_type);
 	return 1;
+}
+
+void usb_storage_stop(void)
+{
+	/* Don't allow fatls on stopped usb */
+	usb_max_devs = 0;
 }

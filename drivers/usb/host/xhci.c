@@ -108,7 +108,8 @@ static struct descriptor {
 	},
 };
 
-static struct xhci_ctrl xhcic[CONFIG_USB_MAX_CONTROLLER_COUNT];
+static struct xhci_ctrl __xhcic[CONFIG_USB_MAX_CONTROLLER_COUNT];
+static struct xhci_ctrl  *xhcic;
 
 /**
  * Waits for as per specified amount of time
@@ -944,6 +945,12 @@ int usb_lowlevel_init(int index, enum usb_init_type init, void **controller)
 	struct xhci_hccr *hccr;
 	struct xhci_hcor *hcor;
 	struct xhci_ctrl *ctrl;
+
+	val = sizeof(struct xhci_ctrl) * CONFIG_USB_MAX_CONTROLLER_COUNT;
+	xhci_inval_cache((uint32_t)__xhcic, val);
+
+	xhcic = (struct xhci_ctrl *)KSEG1ADDR(__xhcic);
+	memset(xhcic, 0, sizeof(*xhcic) * CONFIG_USB_MAX_CONTROLLER_COUNT);
 
 	if (xhci_hcd_init(index, &hccr, (struct xhci_hcor **)&hcor) != 0)
 		return -ENODEV;

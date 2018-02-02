@@ -561,6 +561,9 @@ int xhci_bulk_tx(struct usb_device *udev, unsigned long pipe,
 	struct xhci_ep_ctx *ep_ctx;
 	struct xhci_ring *ring;		/* EP transfer ring */
 	union xhci_trb *event;
+	void *sbuf = buffer;
+
+	buffer = (void *)KSEG1ADDR(buffer);
 
 	int running_total, trb_buff_len;
 	unsigned int total_packet_count;
@@ -723,6 +726,7 @@ int xhci_bulk_tx(struct usb_device *udev, unsigned long pipe,
 	record_transfer_result(udev, event, length);
 	xhci_acknowledge_event(ctrl);
 	xhci_inval_cache((uint32_t)buffer, length);
+	xhci_inval_cache((uint32_t)sbuf, length);
 
 	return (udev->status != USB_ST_NOT_PROC) ? 0 : -1;
 }

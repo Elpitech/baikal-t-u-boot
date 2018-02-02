@@ -482,6 +482,9 @@ static int do_usb(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	if (strncmp(argv[1], "stop", 4) == 0) {
 		if (argc != 2)
 			console_assign(stdin, "serial");
+#ifdef CONFIG_USB_STORAGE
+		usb_storage_stop();
+#endif
 		if (do_usb_stop_keyboard(0) != 0)
 			return 1;
 		printf("stopping USB..\n");

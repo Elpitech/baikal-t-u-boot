@@ -203,6 +203,7 @@ int board_usb_cleanup(int index, enum usb_init_type init);
 block_dev_desc_t *usb_stor_get_dev(int index);
 int usb_stor_scan(int mode);
 int usb_stor_info(void);
+void usb_storage_stop(void);
 
 #endif
 

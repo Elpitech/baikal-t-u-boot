@@ -42,7 +42,8 @@
 
 #define USB_BUFSIZ	512
 
-static struct usb_device usb_dev[USB_MAX_DEVICE];
+static struct usb_device __usb_dev[USB_MAX_DEVICE];
+static struct usb_device *usb_dev;
 static int dev_index;
 static int asynch_allowed;
 
@@ -67,6 +68,7 @@ int usb_init(void)
 	usb_hub_reset();
 
 	/* first make all devices unknown */
+	usb_dev = (struct usb_device *)KSEG1ADDR(__usb_dev);
 	for (i = 0; i < USB_MAX_DEVICE; i++) {
 		memset(&usb_dev[i], 0, sizeof(struct usb_device));
 		usb_dev[i].devnum = -1;
@@ -1017,6 +1019,9 @@ int usb_new_device(struct usb_device *dev)
 	mdelay(10);	/* Let the SET_ADDRESS settle */
 
 	tmp = sizeof(dev->descriptor);
+
+	invalidate_dcache_range((ulong)tmpbuf & ~(CONFIG_SYS_CACHELINE_SIZE - 1),
+		ALIGN((ulong)tmpbuf + USB_BUFSIZ, CONFIG_SYS_CACHELINE_SIZE));
 
 	err = usb_get_descriptor(dev, USB_DT_DEVICE, 0,
 				 tmpbuf, sizeof(dev->descriptor));
