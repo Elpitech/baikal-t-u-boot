@@ -123,6 +123,28 @@ int board_late_init(void)
 {
     char buf[32];
 
+    /* Set mac addresses */
+#ifdef CONFIG_BAIKAL_BFK3
+    /* Set mac addresses based on CPU serial and rev */
+    char flash_chip_id[BOOT_FLASH_ID_LEN * 2 + 1];
+    flash_chip_id[BOOT_FLASH_ID_LEN * 2] = '\0';
+    unsigned long brd_serial_id = 0;
+    uint8_t data[BOOT_FLASH_ID_LEN];
+    int err = llenv32_spi_bootid(data, sizeof(data));
+    if (err) {
+        printf("Error: Failed to read boot flash ID (%d)\n", err);
+        brd_serial_id = getenv_ulong("cpu_serial", 10, 0);
+    } else {
+        for (int i = 0; i < BOOT_FLASH_ID_LEN; i++)
+            sprintf(flash_chip_id + i * 2, "%02x", data[i]);
+
+        printf("RomID: %s\n", flash_chip_id);
+        /* Last 6 bytes of SPI boot flash chip ID */
+        brd_serial_id = simple_strtol(flash_chip_id + (BOOT_FLASH_ID_LEN - 6), NULL, 16);
+    }
+    calc_and_set_macaddr(brd_serial_id, getenv_ulong("cpu_rev", 10, 0));
+#endif /* CONFIG_BAIKAL_BFK3 */
+
     /* Set board serial number */
     snprintf(buf, 20, "%llu", vdata.serial);
     setenv("board_serial", buf);
@@ -266,6 +288,137 @@ int checkboard(void)
 #endif
 	return 0;
 }
+
+#if defined(CONFIG_LLENV32_SAVEENV)
+int saveenv(void)
+{
+	llenv32_boot_ctrl(1);
+	mdelay(100);
+
+	int port = 0, line = 0;
+	int ret = 0;
+
+	void *cfg;
+	env_t *env;
+
+	/* spi config */
+	cfg = llenv32_spi_store_cfg(port);
+	if (!cfg) {
+		ret = -1;
+		return ret;
+	}
+	llenv32_spi_init(port);
+
+	/* prepare */
+	env = malloc(SPI_SECTOR_SIZE);
+	if (!env) {
+		ret = -2;
+		goto _exit;
+	}
+
+	/* erase */
+	if (llenv32_spi_erase(port, line, CONFIG_ENV_OFFSET)) {
+		ret = -3;
+		goto _exit;
+	}
+
+	/* export */
+	if (env_export(env)) {
+		ret = -4;
+		goto _exit;
+	}
+
+	/* write */
+	if (llenv32_spi_write_sector(port, line, CONFIG_ENV_OFFSET, env)) {
+		ret = -5;
+		goto _exit;
+	}
+
+_exit:
+	if (llenv32_spi_restore_cfg (port, cfg)) {
+		ret = -8;
+	}
+
+	if (env) {
+		free(env);
+	}
+
+	llenv32_boot_ctrl(0);
+
+	return ret;
+}
+
+#elif defined(CONFIG_BOOT_BASE)
+
+#define BE_BC_CSR		0x00
+#define BE_BC_MAR		0x04
+#define BE_BC_DRID		0x08
+#define BE_BC_VID		0x0C
+#define BC_CSR_SPI_RDA	(1 << 8)
+#define BC_CSR_BMODE	((1 << 0) | (1 <<1))
+
+#if 0
+static struct spi_flash *env_flash;
+int saveenv(void)
+{
+	int ret = 1;
+	unsigned int reg;	
+	env_t env_new;
+
+	/* Switch to SPI mode */
+	reg = readl(CONFIG_BOOT_BASE + BE_BC_CSR);
+	writel(reg | BC_CSR_SPI_RDA, CONFIG_BOOT_BASE + BE_BC_CSR);
+	wmb();
+
+	/* Probe flash if needed */
+	if (!env_flash) {
+		env_flash = spi_flash_probe(CONFIG_ENV_SPI_BUS,
+			CONFIG_ENV_SPI_CS,
+			CONFIG_ENV_SPI_MAX_HZ, CONFIG_ENV_SPI_MODE);
+		if (!env_flash) {
+			puts("Boot flash probe failed!\n");
+			return 1;
+		}
+	}
+
+	/* Get enviroment */
+	ret = env_export(&env_new);
+	if (ret)
+		goto __done;
+
+	/* Erase enviroment region */
+	printf("spi_flash_erase: ofs=%x  size=%x\n", CONFIG_ENV_OFFSET, CONFIG_ENV_SIZE);
+	puts("Erasing SPI flash...");
+	ret = spi_flash_erase(env_flash, CONFIG_ENV_OFFSET, CONFIG_ENV_SIZE);
+	if (ret)
+		goto __done;
+	puts("done\n");
+
+	/* Write enviroment region */
+	printf("spi_flash_write: ofs=%x  size=%x\n", CONFIG_ENV_OFFSET, CONFIG_ENV_SIZE);
+	puts("Writing to SPI flash...");
+        ret = spi_flash_write(env_flash, CONFIG_ENV_OFFSET, CONFIG_ENV_SIZE, &env_new);
+	if (ret)
+		goto __done;
+	puts("done\n");
+
+__done:
+	/* Switch to transparent mode */
+	writel(reg, CONFIG_BOOT_BASE + BE_BC_CSR);
+	wmb();
+	sync();
+	/* Return result */
+	return ret;
+}
+#endif /*#if 0*/
+
+#else
+int saveenv(void)
+{
+	puts("Flash is in read-only mode. Enviroment save is disabled.\n");
+	return 1;
+}
+#endif
 
 #ifdef CONFIG_CMD_EEPROM
 int eeprom_write_enable (unsigned dev_addr, int state)

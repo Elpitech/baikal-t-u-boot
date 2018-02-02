@@ -370,7 +370,7 @@ export MODVERDIR := $(if $(KBUILD_EXTMOD),$(firstword $(KBUILD_EXTMOD))/).tmp_ve
 # Files to ignore in find ... statements
 
 export RCS_FIND_IGNORE := \( -name SCCS -o -name BitKeeper -o -name .svn -o    \
-			  -name CVS -o -name .pc -o -name .hg -o -name .git \) \
+			  -name CVS -o -name .pc -o -name .hg -o -name .git -o -name llenv \) \
 			  -prune -o
 export RCS_TAR_IGNORE := --exclude SCCS --exclude BitKeeper --exclude .svn \
 			 --exclude CVS --exclude .pc --exclude .hg --exclude .git
@@ -584,6 +584,10 @@ UBOOTINCLUDE    := \
 		-I$(srctree)/arch/$(ARCH)/include \
 		-include $(srctree)/include/linux/kconfig.h
 
+ifneq ($(CONFIG_BAIKAL_LLENV),)
+UBOOTINCLUDE += -I$(srctree)/include/llenv
+endif
+
 NOSTDINC_FLAGS += -nostdinc -isystem $(shell $(CC) -print-file-name=include)
 CHECKFLAGS     += $(NOSTDINC_FLAGS)
 
@@ -668,6 +672,9 @@ libs-y		:= $(patsubst %/, %/built-in.o, $(libs-y))
 u-boot-init := $(head-y)
 u-boot-main := $(libs-y)
 
+ifeq ($(CONFIG_BAIKAL_LLENV), y)
+LLENV_LIBS = -v -L $(srctree)/board/baikal/mips/llenv  -lllenv --gc-sections
+endif
 
 # Add GCC lib
 ifdef CONFIG_USE_PRIVATE_LIBGCC
@@ -679,7 +686,7 @@ endif
 else
 PLATFORM_LIBGCC := -L $(shell dirname `$(CC) $(c_flags) -print-libgcc-file-name`) -lgcc
 endif
-PLATFORM_LIBS += $(PLATFORM_LIBGCC)
+PLATFORM_LIBS += $(PLATFORM_LIBGCC) $(LLENV_LIBS)
 export PLATFORM_LIBS
 export PLATFORM_LIBGCC
 
@@ -720,6 +727,9 @@ DO_STATIC_RELA = \
 else
 DO_STATIC_RELA =
 endif
+
+# License gzip blob
+ALL-$(CONFIG_CMD_LICENSE) += include/license.h
 
 # Always append ALL so that arch config.mk's can add custom ones
 ALL-y += u-boot.srec u-boot.bin System.map binary_size_check
@@ -1102,6 +1112,7 @@ prepare: prepare0
 define filechk_version.h
 	(echo \#define PLAIN_VERSION \"$(UBOOTRELEASE)\"; \
 	echo \#define U_BOOT_VERSION \"U-Boot \" PLAIN_VERSION; \
+	echo \#define U_BOOT_VERSION_SDK \"$(shell cat VERSION)\"; \
 	echo \#define CC_VERSION_STRING \"$$($(CC) --version | head -n 1)\"; \
 	echo \#define LD_VERSION_STRING \"$$($(LD) --version | head -n 1)\"; )
 endef
@@ -1202,7 +1213,7 @@ CHANGELOG:
 	git log --no-merges U-Boot-1_1_5.. | \
 	unexpand -a | sed -e 's/\s\s*$$//' > $@
 
-include/license.h: tools/bin2header COPYING
+include/license.h: tools COPYING
 	cat COPYING | gzip -9 -c | ./tools/bin2header license_gzip > include/license.h
 #########################################################################
 
