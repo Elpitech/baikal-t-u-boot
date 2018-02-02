@@ -88,6 +88,38 @@ lowlevel_init:
 	sync
 
 	.set mips0
+#ifdef CONFIG_BAIKAL_PLL
+	/* Base PMU address */
+	lui t0, (CONFIG_BAIKAL_PLL_BASE >> 16)
+	ori t0, t0, (CONFIG_BAIKAL_PLL_BASE & 0xFFFF)
+#ifndef CONFIG_BAIKAL_T1
+	/* Set L2$ DATASTALL 2 cycle access, 1 stall for engineering Baikal-T CPU.*/
+	lw t1, 0x28(t0)
+	and t1, t1, 0xFFFFFFC0
+	or t1, t1, 0x00002001
+	sw t1, 0x28(t0)
+	sync
+#endif /* CONFIG_BAIKAL_T1 */
+#ifdef BE_CORE_PLL
+	/* Core PLL control value */
+	lui t1, (BE_CORE_PLL >> 16)
+	ori t1, t1, (BE_CORE_PLL & 0xFFFF)
+	/* Timeout */
+	li t2, 0x1000
+	/* Store new value for Core PLL */
+	sw t1, 0x00(t0)
+	sync
+	/* Wait for PLL LOCK bit */
+1:	lw   t1, 0x00(t0)
+	ext  t1, t1, BE_CLK_LOCK_BIT, 1
+	bnel t1, zero, 2f
+	addi t2, t2, -1
+	bne  t2, zero, 1b
+	nop
+	wait
+2:
+#endif /* BE_CORE_PLL */
+#endif /* CONFIG_BAIKAL_PLL */
 	/*
 	 * Set the stack pointer to SRAM.
 	 */
