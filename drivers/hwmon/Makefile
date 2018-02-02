@@ -10,6 +10,7 @@
 
 #ccflags-y += -DDEBUG
 
+obj-$(CONFIG_DTT_ABEOZ9S3) += abeoz9s3.o
 obj-$(CONFIG_DTT_ADM1021) += adm1021.o
 obj-$(CONFIG_DTT_ADT7460) += adt7460.o
 obj-$(CONFIG_DTT_DS1621) += ds1621.o

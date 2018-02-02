@@ -11,7 +11,8 @@
 #ifndef _DTT_H_
 #define _DTT_H_
 
-#if defined(CONFIG_DTT_ADM1021)	|| \
+#if defined(CONFIG_DTT_ABEOZ9S3)|| \
+    defined(CONFIG_DTT_ADM1021)	|| \
     defined(CONFIG_DTT_ADT7460)	|| \
     defined(CONFIG_DTT_DS1621)	|| \
     defined(CONFIG_DTT_DS1775)	|| \
