@@ -265,6 +265,7 @@ static int initr_malloc(void)
 #endif
 	/* The malloc area is immediately below the monitor copy in DRAM */
 	malloc_start = gd->relocaddr - TOTAL_MALLOC_LEN;
+	malloc_start = KSEG1ADDR(malloc_start);
 	mem_malloc_init((ulong)map_sysmem(malloc_start, TOTAL_MALLOC_LEN),
 			TOTAL_MALLOC_LEN);
 	return 0;
@@ -700,6 +701,23 @@ static int run_main_loop(void)
 	return 0;
 }
 
+
+int llenv32_spi_bootid (uint8_t *data, uint32_t size);
+
+static int init_bootid(void)
+{
+	uint8_t data[20];
+	int err = llenv32_spi_bootid(data, sizeof(data));
+	if(err)
+		return err;
+
+	char buf[100];
+	for (int i = 0; i < sizeof(data); i++)
+		sprintf(&buf[i*2], "%02x", data[i]);
+	setenv("bootspiid", buf);
+	return 0;
+}
+
 /*
  * Over time we hope to remove these functions with code fragments and
  * stub funtcions, and instead call the relevant function directly.
@@ -780,7 +798,7 @@ init_fnc_t init_sequence_r[] = {
 	initr_flash,
 #endif
 	INIT_FUNC_WATCHDOG_RESET
-#if defined(CONFIG_PPC) || defined(CONFIG_X86)
+#if defined(CONFIG_PPC) || defined(CONFIG_X86) || defined(CONFIG_ARCH_CPU_INIT_R)
 	/* initialize higher level parts of CPU like time base and timers */
 	cpu_init_r,
 #endif
@@ -906,6 +924,7 @@ init_fnc_t init_sequence_r[] = {
 #ifdef CONFIG_PS2KBD
 	initr_kbd,
 #endif
+	init_bootid,
 	run_main_loop,
 };
 
