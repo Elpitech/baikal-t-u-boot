@@ -8,3 +8,4 @@
 extra-y	= start.o
 obj-y	= cache.o
 obj-y	+= cpu.o interrupts.o time.o
+obj-$(CONFIG_SYS_CPU_SCACHE) += sc-mips.o
