@@ -464,7 +464,7 @@ static int ahci_exec_ata_cmd(struct ahci_probe_ent *probe_ent,
 				(int)(pp->cmd_slot)+AHCI_PORT_PRIV_DMA_SZ);
 	debug("ahci_exec_ata_cmd: %d byte transferred.\n",
 	      pp->cmd_slot->status);
-	if (!is_write)
+	if (!is_write && buf && buf_len)
 		invalidate_dcache_range((ulong)buf, (ulong)buf+buf_len);
 
 	return buf_len;
