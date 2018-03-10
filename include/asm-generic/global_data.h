@@ -21,6 +21,7 @@
  */
 
 #ifndef __ASSEMBLY__
+#include <linux/list.h>
 
 typedef struct global_data {
 	bd_t *bd;
