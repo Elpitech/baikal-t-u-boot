@@ -8,11 +8,15 @@
  * SPDX-License-Identifier:	GPL-2.0+
  */
 
+/* FIXME: Do not include this */
+#include <linux/kconfig.h>
+
 #include <errno.h>
 #include <env_flags.h>
 #include <fcntl.h>
 #include <linux/stringify.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <stddef.h>
 #include <string.h>
