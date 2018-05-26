@@ -242,9 +242,6 @@ int oem_get_vendor_board(char *name)
 	if (strcmp(CONFIG_BAIKAL_NAME, "BFK") == 0)
 		return OEM_VENDOR_BT_BFK;
 
-	if (strcmp(CONFIG_BAIKAL_NAME, "MODULE") == 0)
-		return OEM_VENDOR_BT_MODULE;
-
 	return OEM_VENDOR_BT_UNKNOWN;
 }
 

@@ -14,7 +14,6 @@
 struct vendor_data {
 	u32 crc; /* Reserved for CRC */
 #define OEM_VENDOR_BT_BFK 		0x00
-#define OEM_VENDOR_BT_MODULE 	0x01
 #define OEM_VENDOR_BT_UNKNOWN 	0xff
 	u8 type;		/* Board ID */
 	u8 revision;	/* Board revision in BCD format */

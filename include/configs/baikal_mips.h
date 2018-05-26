@@ -119,19 +119,6 @@
 #define CONFIG_BAIKAL_NAME			"BFK3"
 #endif /* CONFIG_BAIKAL_BFK3 */
 
-
-/* Configuration for the MODULE board */
-#ifdef CONFIG_BAIKAL_MODULE
-/* Clocks */
-#define CONFIG_SYS_CPU_CLOCK_MHZ	850
-#define CONFIG_SYS_CPU_CLOCK_RATE	(CONFIG_SYS_CPU_CLOCK_MHZ * 1000000)
-#define CONFIG_SYS_CPU_CLOCK_SET
-/* Set CPU freq */
-
-/* Configuration name */
-#define CONFIG_BAIKAL_NAME			"MODULE"
-#endif /* CONFIG_BAIKAL_MODULE */
-
 /*
  *-----------------------------------------------
  * Include low-level tests
@@ -218,7 +205,7 @@
  * U-Boot startup menu
  *-----------------------------------------------
  */
-#if defined(CONFIG_BAIKAL_BFK) || defined(CONFIG_BAIKAL_MODULE) || defined(CONFIG_BAIKAL_BFK3) || defined(CONFIG_BAIKAL_BFKX)
+#if defined(CONFIG_BAIKAL_BFK) || defined(CONFIG_BAIKAL_BFK3) || defined(CONFIG_BAIKAL_BFKX)
 #define CONFIG_CMD_BOOTMENU
 #define CONFIG_MENU
 #define CONFIG_MENU_SHOW

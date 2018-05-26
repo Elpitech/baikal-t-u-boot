@@ -30,9 +30,6 @@ static int do_service_board(int argc, char * const argv[])
 		case OEM_VENDOR_BT_BFK:
 			puts("BFK");
 			break;
-		case OEM_VENDOR_BT_MODULE:
-			puts("MODULE");
-			break;
 		default:
 			puts("UNKNOWN");
 			break;
@@ -148,7 +145,7 @@ U_BOOT_CMD(
     "serial         "
     "- get / set board serial number\n"
     "service board <type>   "
-    "- get / set board type (0=BFK, 1=MODULE)\n"
+    "- get / set board type (0=BFK)\n"
     "service rev <revision> "
     "- get / set board revision (decimal, 18 digits max)\n"
     "service cpu <SoC serial number> "

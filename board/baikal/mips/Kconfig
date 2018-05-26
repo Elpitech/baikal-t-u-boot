@@ -39,11 +39,6 @@ config BAIKAL_BFKX
 	help
 	  Select this option for Baikal-T1 for BFK board
 
-config BAIKAL_MODULE
-	bool "Baikal-T for 'Module' Board"
-	help
-	  Select this option for Baikal-T for 'Module' board
-
 endchoice # Board type
 
 if TARGET_BAIKAL_MIPS
