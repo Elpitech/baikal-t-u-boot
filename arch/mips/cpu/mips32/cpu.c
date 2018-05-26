@@ -100,12 +100,7 @@ void flush_cache(ulong start_addr, ulong size)
 				break;
 			addr += dlsize;
 		}
-
-		asm volatile("sync");
-		instruction_hazard();
-
 	} else {
-
 		/* flush D-cache */
 		while (1) {
 			cache_op(HIT_WRITEBACK_INV_D, addr);
@@ -125,10 +120,10 @@ void flush_cache(ulong start_addr, ulong size)
 				break;
 			addr += ilsize;
 		}
-
-		asm volatile("sync");
-		instruction_hazard();
 	}
+
+	asm volatile("sync");
+	instruction_hazard();
 
 	/* flush L2 cache */
 	addr = start_addr & ~(slsize - 1);
@@ -141,7 +136,6 @@ void flush_cache(ulong start_addr, ulong size)
 	}
 
 	asm volatile("sync");
-
 }
 
 void flush_dcache_range(ulong start_addr, ulong stop)
@@ -150,6 +144,10 @@ void flush_dcache_range(ulong start_addr, ulong stop)
 	unsigned long lsize = dcache_line_size();
 	unsigned long addr = start_addr & ~(lsize - 1);
 	unsigned long aend = (stop - 1) & ~(lsize - 1);
+
+	/* aend will be miscalculated when size is zero, so we return here */
+	if (start_addr == stop)
+		return;
 
 	while (1) {
 		cache_op(HIT_WRITEBACK_INV_D, addr);
@@ -178,6 +176,10 @@ void invalidate_dcache_range(ulong start_addr, ulong stop)
 	unsigned long slsize = scache_line_size();
 	unsigned long lsize = dcache_line_size();
 	unsigned long addr, aend;
+
+	/* aend will be miscalculated when size is zero, so we return here */
+	if (start_addr == stop)
+		return;
 
 	addr = start_addr & ~(slsize - 1);
 	aend = (stop - 1) & ~(slsize - 1);
