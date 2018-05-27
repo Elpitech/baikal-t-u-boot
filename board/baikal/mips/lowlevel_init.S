@@ -230,12 +230,7 @@ secondary_cpu:
 /* --------------------- */
 /*   version             */
 /* --------------------- */
-#ifdef U_BOOT_VERSION_SDK
 	.long 0x27051956	/* U-Boot Magic Number */
 	.globl version_string
 version_string:
-	.ascii U_BOOT_VERSION
-	.ascii " / SDK ", U_BOOT_VERSION_SDK
-	.ascii " (", __DATE__, " - ", __TIME__, ")"
-	.ascii " ", CONFIG_IDENT_STRING, "\0"
-#endif
+	.ascii U_BOOT_VERSION_STRING, "\0"
