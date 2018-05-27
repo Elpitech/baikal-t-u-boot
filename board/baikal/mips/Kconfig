@@ -49,15 +49,15 @@ config BAIKAL_T1
 	  Select this option to use Baikal-T1 CPU.
 
 config SYS_CPU
-	string
+	string "Define this to compile arch/<arch>/cpu/<cpu>/<soc>"
 	default "mips32"
 
 config SYS_BOARD
-	string
+	string "Define this to compile board/<vendor>/<board>/*"
 	default "mips"
 
 config SYS_VENDOR
-	string
+	string "Define this to compile board/<vendor>/{common,<board>}/*"
 	default "baikal"
 
 #config SYS_SOC
@@ -65,7 +65,7 @@ config SYS_VENDOR
 #	default "baikal"
 
 config SYS_CONFIG_NAME
-	string
+	string "Define this to include include/configs/<config_name>.h"
 	default "baikal_mips"
 
 endif # TARGET_BAIKAL_MIPS
