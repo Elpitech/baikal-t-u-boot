@@ -26,3 +26,4 @@ obj-$(CONFIG_BAIKAL_BFKX) += bfk/
 obj-$(CONFIG_BAIKAL_BFK3) += bfk/
 obj-$(CONFIG_BAIKAL_QEMU) += bfk/
 obj-$(CONFIG_BAIKAL_FPGA) += bfk/
+obj-$(CONFIG_TPLATFORMS_SFBT1) += sfbt1/

@@ -39,6 +39,11 @@ config BAIKAL_BFKX
 	help
 	  Select this option for Baikal-T1 for BFK board
 
+config TPLATFORMS_SFBT1
+	bool "Baikal-T for T-platforms SFBT1 Board"
+	help
+	  Select this option for T-platforms Baikal-T based SFBT1 board
+
 endchoice # Board type
 
 if TARGET_BAIKAL_MIPS
