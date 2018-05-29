@@ -7,6 +7,8 @@
 #ifndef __SANDBOX_ASM_IO_H
 #define __SANDBOX_ASM_IO_H
 
+#include <asm/types.h>
+
 /*
  * Given a physical address and a length, return a virtual address
  * that can be used to access the memory range with the caching
