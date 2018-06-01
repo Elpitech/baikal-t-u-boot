@@ -38,6 +38,7 @@ obj-$(CONFIG_VIDEO_OMAP3) += omap3_dss.o
 obj-$(CONFIG_VIDEO_SANDBOX_SDL) += sandbox_sdl.o
 obj-$(CONFIG_VIDEO_SED13806) += sed13806.o
 obj-$(CONFIG_VIDEO_SM501) += sm501.o
+obj-$(CONFIG_VIDEO_SM750) += sm750/
 obj-$(CONFIG_VIDEO_SMI_LYNXEM) += smiLynxEM.o videomodes.o
 obj-$(CONFIG_VIDEO_TEGRA) += tegra.o
 obj-$(CONFIG_VIDEO_VCXK) += bus_vcxk.o
