@@ -1,3 +1,4 @@
+#include <linux/compiler.h>
 #include "ddk750_sii164.h"
 #include "ddk750_hwi2c.h"
 
@@ -338,7 +339,7 @@ void sii164EnableHotPlugDetection(
 	unsigned char enableHotPlug
 )
 {
-	unsigned char detectReg;
+	unsigned char detectReg __maybe_unused;
 
 	detectReg = i2cReadReg(SII164_I2C_ADDRESS, SII164_DETECT);
 

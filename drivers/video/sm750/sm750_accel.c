@@ -136,7 +136,7 @@ int hw_copyarea(
   unsigned int rop2)   /* ROP value */
 {
 	unsigned int nDirection, de_ctrl;
-	int opSign;
+	int opSign __maybe_unused;
 
 	nDirection = LEFT_TO_RIGHT;
 	/* Direction of ROP2 operation: 1 = Left to Right, (-1) = Right to Left */

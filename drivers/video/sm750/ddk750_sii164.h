@@ -1,7 +1,9 @@
 #ifndef DDK750_SII164_H__
 #define DDK750_SII164_H__
 
+#ifndef USE_DVICHIP
 #define USE_DVICHIP
+#endif
 
 /* Hot Plug detection mode structure */
 typedef enum _sii164_hot_plug_mode_t {

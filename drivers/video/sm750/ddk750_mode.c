@@ -183,7 +183,7 @@ static int programModeRegisters(mode_parameter_t *pModeParam, pll_value_t *pll)
 int ddk750_setModeTiming(mode_parameter_t *parm, clock_type_t clock)
 {
 	pll_value_t pll;
-	unsigned int uiActualPixelClk;
+	unsigned int uiActualPixelClk __maybe_unused;
 
 	pll.inputFreq = DEFAULT_INPUT_CLOCK;
 	pll.clockType = clock;
