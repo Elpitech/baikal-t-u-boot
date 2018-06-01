@@ -503,7 +503,7 @@ static int reserve_trace(void)
 
 #if defined(CONFIG_VIDEO) && (!defined(CONFIG_PPC) || defined(CONFIG_8xx)) && \
 		!defined(CONFIG_ARM) && !defined(CONFIG_X86) && \
-		!defined(CONFIG_BLACKFIN)
+		!defined(CONFIG_BLACKFIN) && !defined(CONFIG_MIPS)
 static int reserve_video(void)
 {
 	/* reserve memory for video display (always full pages) */
@@ -990,7 +990,7 @@ static init_fnc_t init_sequence_f[] = {
 	/* TODO: Why the dependency on CONFIG_8xx? */
 #if defined(CONFIG_VIDEO) && (!defined(CONFIG_PPC) || defined(CONFIG_8xx)) && \
 		!defined(CONFIG_ARM) && !defined(CONFIG_X86) && \
-		!defined(CONFIG_BLACKFIN)
+		!defined(CONFIG_BLACKFIN) && !defined(CONFIG_MIPS)
 	reserve_video,
 #endif
 #if !defined(CONFIG_BLACKFIN) && !defined(CONFIG_NIOS2)

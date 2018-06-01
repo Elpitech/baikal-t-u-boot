@@ -432,6 +432,13 @@ void putc(const char c)
 		return;
 #endif
 
+#ifdef CONFIG_SM750_CONSOLE
+	extern int vputc(char ch);
+	if (gd->flags & GD_FLG_SM750_READY) {
+		vputc(c);
+	}
+#endif
+
 	if (!gd->have_console)
 		return pre_console_putc(c);
 
@@ -461,6 +468,13 @@ void puts(const char *s)
 #ifdef CONFIG_DISABLE_CONSOLE
 	if (gd->flags & GD_FLG_DISABLE_CONSOLE)
 		return;
+#endif
+
+#ifdef CONFIG_SM750_CONSOLE
+	extern int vput_string(const char *str);
+	if (gd->flags & GD_FLG_SM750_READY) {
+		vput_string(s);
+	}
 #endif
 
 	if (!gd->have_console)
