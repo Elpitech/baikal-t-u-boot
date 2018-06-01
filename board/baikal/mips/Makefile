@@ -21,6 +21,7 @@ obj-$(CONFIG_OF_LIBFDT) += fdt.o
 obj-$(CONFIG_BAIKAL_LLENV) += llenv32.o
 KCFLAGS += -I$(KBUILD_SRC)/lib/baikal/llenv
 #endif
+obj-$(CONFIG_PCIE_DW) += pcie_dw.o
 obj-$(CONFIG_BAIKAL_BFK) += bfk/
 obj-$(CONFIG_BAIKAL_BFKX) += bfk/
 obj-$(CONFIG_BAIKAL_BFK3) += bfk/
