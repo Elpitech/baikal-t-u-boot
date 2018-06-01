@@ -52,3 +52,4 @@ obj-$(CONFIG_RTC_RX8025) += rx8025.o
 obj-$(CONFIG_RTC_S3C24X0) += s3c24x0_rtc.o
 obj-$(CONFIG_RTC_X1205) += x1205.o
 obj-$(CONFIG_RTC_ABEOZ9) += ab-eoz9-s3.o
+obj-$(CONFIG_RTC_PCF2127) += pcf2127.o
