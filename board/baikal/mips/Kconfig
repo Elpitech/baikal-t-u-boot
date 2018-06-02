@@ -44,7 +44,32 @@ config TPLATFORMS_SFBT1
 	help
 	  Select this option for T-platforms Baikal-T based SFBT1 board
 
+config TPLATFORMS_MITX
+	bool "Baikal-T1 for T-platforms MITX Board"
+	help
+	  Select this option for T-platforms Baikal-T1 based MITX board
+
 endchoice # Board type
+
+if TPLATFORMS_MITX
+
+choice
+        prompt "Choose the way to enter recovery"
+        default LONGPRESS
+
+config LONGPRESS
+	bool "Enter recovery by longpressing power button"
+	help
+	  Select this option if you are sane
+
+config JUMPER
+	bool "Enter recovery by jumper connecting rx to tx"
+	help
+	  Select this option well...  in other case"
+
+endchoice # the way to enter recovery
+
+endif # TPLATFORMS_MITX
 
 if TARGET_BAIKAL_MIPS
 

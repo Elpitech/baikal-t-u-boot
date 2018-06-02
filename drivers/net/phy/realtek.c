@@ -25,10 +25,11 @@
 /* RealTek RTL8211x */
 static int rtl8211x_config(struct phy_device *phydev)
 {
+#if 0
 	phy_write(phydev, MDIO_DEVAD_NONE, MII_BMCR, BMCR_RESET);
 
 	genphy_config_aneg(phydev);
-
+#endif
 	return 0;
 }
 
@@ -36,6 +37,8 @@ static int rtl8211x_parse_status(struct phy_device *phydev)
 {
 	unsigned int speed;
 	unsigned int mii_reg;
+
+	udelay(500000);	/* another 500 ms (results in faster booting) */
 
 	mii_reg = phy_read(phydev, MDIO_DEVAD_NONE, MIIM_RTL8211x_PHY_STATUS);
 

@@ -220,13 +220,20 @@ static inline void console_doenv(int file, struct stdio_dev *dev)
 	iomux_doenv(file, dev->name);
 }
 #else
+bool disable_console_getc=false;
 static inline int console_getc(int file)
 {
+	if (disable_console_getc) {
+		return 0;
+	}
 	return stdio_devices[file]->getc(stdio_devices[file]);
 }
 
 static inline int console_tstc(int file)
 {
+	if (disable_console_getc) {
+		return 0;
+	}
 	return stdio_devices[file]->tstc(stdio_devices[file]);
 }
 
