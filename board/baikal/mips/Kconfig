@@ -49,6 +49,11 @@ config TPLATFORMS_MITX
 	help
 	  Select this option for T-platforms Baikal-T1 based MITX board
 
+config TPLATFORMS_MSBT2
+	bool "Baikal-T1 for T-platforms MSBT2 Board"
+	help
+	  Select this option for T-platforms Baikal-T1 based MSBT2 board
+
 endchoice # Board type
 
 if TPLATFORMS_MITX
