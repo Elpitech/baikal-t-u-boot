@@ -30,6 +30,10 @@
 #define CONFIG_SYS_I2C_PCA953X_ADDR	(~0)
 #endif
 
+#ifndef CONFIG_SYS_I2C_PCA953X_BUS_NUM
+#define CONFIG_SYS_I2C_PCA953X_BUS_NUM	0
+#endif
+
 enum {
 	PCA953X_CMD_INFO,
 	PCA953X_CMD_DEVICE,
@@ -42,6 +46,7 @@ enum {
 struct pca953x_chip_ngpio {
 	uint8_t chip;
 	uint8_t ngpio;
+	uint8_t bus;
 };
 
 static struct pca953x_chip_ngpio pca953x_chip_ngpios[] =
@@ -61,10 +66,30 @@ static int pca953x_ngpio(uint8_t chip)
 
 	return 8;
 }
+
+/*
+ * Determine the bus number of the GPIO-expander. If we don't know we assume
+ * bus 0.
+ */
+static int pca953x_bus(uint8_t chip)
+{
+	int i;
+
+	for (i = 0; i < ARRAY_SIZE(pca953x_chip_ngpios); i++)
+		if (pca953x_chip_ngpios[i].chip == chip)
+			return pca953x_chip_ngpios[i].bus;
+
+	return 0;
+}
 #else
-static int pca953x_ngpio(uint8_t chip)
+static inline int pca953x_ngpio(uint8_t chip)
 {
 	return 8;
+}
+
+static inline int pca953x_bus(uint8_t chip)
+{
+	return CONFIG_SYS_I2C_PCA953X_BUS_NUM;
 }
 #endif
 
@@ -73,43 +98,71 @@ static int pca953x_ngpio(uint8_t chip)
  */
 static int pca953x_reg_write(uint8_t chip, uint addr, uint mask, uint data)
 {
+	int nr_gpio, old_bus, rc = -1;
 	uint8_t valb;
 	uint16_t valw;
 
-	if (pca953x_ngpio(chip) <= 8) {
-		if (i2c_read(chip, addr, 1, &valb, 1))
-			return -1;
+	old_bus = i2c_get_bus_num();
+	i2c_set_bus_num(pca953x_bus(chip));
+
+	nr_gpio = pca953x_ngpio(chip);
+	if (nr_gpio == 4 || nr_gpio == 8) {
+		rc = i2c_read(chip, addr, 1, &valb, 1);
+		if (rc) {
+			rc = -1;
+			goto err_ret;
+		}
 
 		valb &= ~mask;
 		valb |= data;
 
-		return i2c_write(chip, addr, 1, &valb, 1);
-	} else {
-		if (i2c_read(chip, addr << 1, 1, (u8*)&valw, 2))
-			return -1;
+		rc = i2c_write(chip, addr, 1, &valb, 1);
+	} else if (nr_gpio == 16) {
+		rc = i2c_read(chip, addr << 1, 1, (u8*)&valw, 2);
+		if (rc) {
+			rc = -1;
+			goto err_ret;
+		}
 
 		valw &= ~mask;
 		valw |= data;
 
-		return i2c_write(chip, addr << 1, 1, (u8*)&valw, 2);
+		rc = i2c_write(chip, addr << 1, 1, (u8*)&valw, 2);
 	}
+
+err_ret:
+	i2c_set_bus_num(old_bus);
+
+	return rc;
 }
 
 static int pca953x_reg_read(uint8_t chip, uint addr, uint *data)
 {
+	int nr_gpio, old_bus, rc = -1;
 	uint8_t valb;
 	uint16_t valw;
 
-	if (pca953x_ngpio(chip) <= 8) {
-		if (i2c_read(chip, addr, 1, &valb, 1))
-			return -1;
-		*data = (int)valb;
-	} else {
-		if (i2c_read(chip, addr << 1, 1, (u8*)&valw, 2))
-			return -1;
-		*data = (int)valw;
+	old_bus = i2c_get_bus_num();
+	i2c_set_bus_num(pca953x_bus(chip));
+
+	nr_gpio = pca953x_ngpio(chip);
+	if (nr_gpio == 4 || nr_gpio == 8) {
+		rc = i2c_read(chip, addr, 1, &valb, 1);
+		if (!rc)
+			*data = (int)valb;
+		else
+			rc = -1;
+	} else if (nr_gpio == 16) {
+		rc = i2c_read(chip, addr << 1, 1, (u8*)&valw, 2);
+		if (!rc)
+			*data = (int)valw;
+		else
+			rc = -1;
 	}
-	return 0;
+
+	i2c_set_bus_num(old_bus);
+
+	return rc;
 }
 
 /*
@@ -162,12 +215,13 @@ static int pca953x_info(uint8_t chip)
 	int i;
 	uint data;
 	int nr_gpio = pca953x_ngpio(chip);
+	int bus_num = pca953x_bus(chip);
 	int msb = nr_gpio - 1;
 
-	printf("pca953x@ 0x%x (%d pins):\n\n", chip, nr_gpio);
+	printf("pca953x@ %d-0x%x (%d pins):\n\n", bus_num, chip, nr_gpio);
 	printf("gpio pins: ");
 	for (i = msb; i >= 0; i--)
-		printf("%x", i);
+		printf("%X", i);
 	printf("\n");
 	for (i = 11 + nr_gpio; i > 0; i--)
 		printf("-");
@@ -252,7 +306,7 @@ int do_pca953x(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	case PCA953X_CMD_DEVICE:
 		if (argc == 3)
 			chip = (uint8_t)ul_arg2;
-		printf("Current device address: 0x%x\n", chip);
+		printf("Current device bus-address: %d-0x%x\n", pca953x_bus(chip), chip);
 		ret = CMD_RET_SUCCESS;
 		break;
 
