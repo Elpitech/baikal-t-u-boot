@@ -40,7 +40,7 @@ struct i2c_regs {
 	u32 ic_status;
 	u32 ic_txflr;
 	u32 ix_rxflr;
-	u32 reserved_1;
+	u32 ic_sda_hold;
 	u32 ic_tx_abrt_source;
 };
 

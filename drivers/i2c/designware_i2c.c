@@ -46,7 +46,7 @@ static void set_speed(int i2c_spd)
 	enbl &= ~IC_ENABLE_0B;
 	writel(enbl, &i2c_regs_p->ic_enable);
 
-	writel(ic_sda_hold / t_ic_clk, &i2c_regs_p->reserved_1);	/* Write ic_sda_hold into register */
+	writel(ic_sda_hold / t_ic_clk, &i2c_regs_p->ic_sda_hold);	/* Write ic_sda_hold into register */
 
 	cntl = (readl(&i2c_regs_p->ic_con) & (~IC_CON_SPD_MSK));
 
@@ -77,6 +77,9 @@ static void set_speed(int i2c_spd)
 		break;
 	}
 
+#ifdef IC_SDA_HOLD
+	writel(IC_SDA_HOLD, &i2c_regs_p->ic_sda_hold);
+#endif
 	writel(cntl, &i2c_regs_p->ic_con);
 
 	/* Enable back i2c now speed set */
