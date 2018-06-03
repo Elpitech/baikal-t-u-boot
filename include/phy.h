@@ -233,6 +233,7 @@ int phy_realtek_init(void);
 int phy_smsc_init(void);
 int phy_teranetics_init(void);
 int phy_vitesse_init(void);
+int phy_mscc_init(void);
 
 int board_phy_config(struct phy_device *phydev);
 
