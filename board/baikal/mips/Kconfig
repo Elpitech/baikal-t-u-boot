@@ -69,6 +69,16 @@ config TPLATFORMS_AXT1_MSBT2
 	help
 	  Select this option for T-platforms Axitech v1 board with MSBT2 installed
 
+config TPLATFORMS_TC_SFBT1
+	bool "SFBT1 for T-platforms T-client Board"
+	help
+	  Select this option for T-platforms T-client board with SFBT1 installed
+
+config TPLATFORMS_TC_MSBT2
+	bool "MSBT2 for T-platforms T-client Board"
+	help
+	  Select this option for T-platforms T-client board with MSBT2 installed
+
 endchoice # Board type
 
 if TPLATFORMS_MITX
