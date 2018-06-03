@@ -59,6 +59,16 @@ config TPLATFORMS_MRBT1
 	help
 	  Select this option for T-platforms Baikal-T1 based MRBT1 board
 
+config TPLATFORMS_AXT1_SFBT1
+	bool "SFBT1 for T-platforms Axitech v1 Board"
+	help
+	  Select this option for T-platforms Axitech v1 board with SFBT1 installed
+
+config TPLATFORMS_AXT1_MSBT2
+	bool "MSBT2 for T-platforms Axitech v1 Board"
+	help
+	  Select this option for T-platforms Axitech v1 board with MSBT2 installed
+
 endchoice # Board type
 
 if TPLATFORMS_MITX
