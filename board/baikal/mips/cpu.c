@@ -13,6 +13,7 @@
 #include <asm/r4kcache.h>
 #include <asm/arch/clock.h>
 #include <asm/arch/clock_manager.h>
+#include "pvt.h"
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -89,6 +90,10 @@ int cpu_init_r(void)
 #ifdef CONFIG_SYS_CPU_SCACHE
     /* L2$ init */
     mips_sc_init();
+#endif
+#ifdef CONFIG_BAIKAL_CPU_WARMUP
+    /* Warm CPU up */
+    pvt_cpu_warmup();
 #endif
     /* Return success */
     return 0;

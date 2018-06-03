@@ -1,5 +1,6 @@
 #include <common.h>
 #include <asm/io.h>
+#include "pvt.h"
 
 #define HWMON_BASE 0xBF200000
 
@@ -136,6 +137,35 @@ static int data2temp(int data)
   return temp;
 }
 
+/* CPU warmup routine */
+void pvt_cpu_warmup()
+{
+  int i = 0;
+  int ctr33 = 0;
+  int temp = 0;
+  int t_achieved = 0;
+
+  temp = pvt_get_temp();
+  printf("Warmup: temp %iC, ", temp);
+  for (;i<30; i++) {
+    if (temp>-33000) {
+      ctr33++;
+      if (ctr33>3) {
+        printf("finished\n");
+        t_achieved = 1;
+        break;
+      }
+    } else {
+      ctr33 = 0;
+    }
+    mdelay(1000);
+    temp = pvt_get_temp();
+  }
+  if (!t_achieved) {
+    printf("timed out\n");
+  }
+}
+
 int pvt_get_temp(void) {
   int data, temp;
 
@@ -169,6 +199,5 @@ int pvt_get_temp(void) {
     printf("PVT WARNING Lo Voltage \n");
   val = readl( HWMON_BASE + BK_PVT_CLR_INTR);
     
-  printf("T: %d\n", temp);
   return temp;
 }

@@ -14,7 +14,7 @@
 #include <asm/io.h>
 
 #include "fru.h"
-#include "pvt.h"
+#include "../pvt.h"
 #include "../video.h"
 #include "bootconf.h"
 

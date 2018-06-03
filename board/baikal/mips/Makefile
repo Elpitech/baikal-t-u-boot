@@ -12,7 +12,7 @@ obj-y += lowlevel_init.o
 obj-y += spi.o
 obj-y += mem.o
 obj-y += boot.o boot_misc.o ddr3_init.o pmu_misc.o ddr_spd.o
-
+obj-y += pvt.o
 obj-$(CONFIG_BAIKAL_PLL) += clock_manager.o cmd_cpu.o
 obj-$(CONFIG_CMD_SATA_PHY) += cmd_phy.o
 obj-$(CONFIG_CMD_EXIT) += cmd_exit.o
@@ -31,3 +31,4 @@ obj-$(CONFIG_BAIKAL_FPGA) += bfk/
 obj-$(CONFIG_TPLATFORMS_SFBT1) += sfbt1/
 obj-$(CONFIG_TPLATFORMS_MITX) += mitx/
 obj-$(CONFIG_TPLATFORMS_MSBT2) += msbt2/
+obj-$(CONFIG_TPLATFORMS_MRBT1) += mrbt1/
