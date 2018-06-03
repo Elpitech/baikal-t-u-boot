@@ -79,6 +79,16 @@ config TPLATFORMS_TC_MSBT2
 	help
 	  Select this option for T-platforms T-client board with MSBT2 installed
 
+config TPLATFORMS_CNC_SFBT1
+	bool "SFBT1 for T-platforms CNC Boards"
+	help
+	  Select this option for T-platforms CNC boards with SFBT1 installed
+
+config TPLATFORMS_CNC_MSBT2
+	bool "MSBT2 for T-platforms CNC Boards"
+	help
+	  Select this option for T-platforms CNC boards with MSBT2 installed
+
 endchoice # Board type
 
 if TPLATFORMS_MITX
