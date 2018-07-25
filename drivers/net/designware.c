@@ -292,10 +292,10 @@ static int dw_eth_init(struct eth_device *dev, bd_t *bis)
 
 	writel(readl(&dma_p->busmode) | DMAMAC_SRST, &dma_p->busmode);
 
-#ifdef CONFIG_BAIKAL_BFK3
+#ifdef CONFIG_TARGET_BAIKAL_MIPS
 	/* Clear PHY reset. */
 	designware_clear_phy_reset((ulong)mac_p);
-#endif /* CONFIG_BAIKAL_BFK3 */
+#endif /* CONFIG_TARGET_BAIKAL_MIPS */
 
 	start = get_timer(0);
 	while (readl(&dma_p->busmode) & DMAMAC_SRST) {
