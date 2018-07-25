@@ -219,11 +219,11 @@ static void dw_adjust_link(struct eth_mac_regs *mac_p,
 	if (phydev->speed != 1000)
 		conf |= MII_PORTSELECT;
 
-#ifdef CONFIG_BAIKAL_BFK
+#if defined(CONFIG_TARGET_BAIKAL_MIPS) && !defined(CONFIG_BAIKAL_T1)
 	if (phydev->speed != 100) {
 #else
 	if (phydev->speed != 10) {
-#endif /* CONFIG_BAIKAL_BFK */
+#endif
 		conf |= FES_100;	/* Set 100Mb */
 	} else {
 		conf &= ~FES_100;	/* Set 10Mb */
