@@ -483,6 +483,10 @@ tp_bmc_set_bootreason(uint8_t reason, uint8_t arg) {
     i2c_reg_write(CONFIG_SYS_BMC_I2C_ADDR, R_BOOTREASON, reason);
     udelay(100000);
     i2c_reg_write(CONFIG_SYS_BMC_I2C_ADDR, R_BOOTREASON_ARG, arg);
+    /* Read the value back so to workaround a bug in BMC i2c-slave interface,
+     * which causes the overwritten value returned on the next read operation.
+     */
+    (void)i2c_reg_read(CONFIG_SYS_BMC_I2C_ADDR, R_BOOTREASON_ARG);
   } else {
     printf("BMC:   Bootreason setting is not supported\n");
   }
