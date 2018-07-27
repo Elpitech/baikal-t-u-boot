@@ -30,6 +30,10 @@ static int stored_bootdelay;
  * Watch for 'delay' seconds for autoboot stop or autoboot delay string.
  * returns: 0 -  no key string, allow autoboot 1 - got key string, abort
  */
+#ifdef CONFIG_MENUKEY
+static int menukey;
+#endif
+
 # if defined(CONFIG_AUTOBOOT_KEYED)
 static int abortboot_keyed(int bootdelay)
 {
@@ -121,6 +125,10 @@ static int abortboot_keyed(int bootdelay)
 				if (!delaykey[i].retry)
 					bootretry_dont_retry();
 				abort = 1;
+
+#ifdef CONFIG_MENUKEY
+				menukey = presskey[presskey_len - delaykey[i].len];
+#endif
 			}
 		}
 	} while (!abort && get_ticks() <= etime);
@@ -137,10 +145,6 @@ static int abortboot_keyed(int bootdelay)
 }
 
 # else	/* !defined(CONFIG_AUTOBOOT_KEYED) */
-
-#ifdef CONFIG_MENUKEY
-static int menukey;
-#endif
 
 static int abortboot_normal(int bootdelay)
 {
