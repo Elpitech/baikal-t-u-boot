@@ -313,7 +313,7 @@ void
 tp_check_boot(void) {
   char *bootnormal __maybe_unused;
   char *bootrecovery __maybe_unused;
-  printf("PWRBTN: Check boot ... ");
+  printf("PWRBTN: ");
 
   if (getenv_yesno("bootnormal") == -1) {
     printf("bootnormal is missing in ENV, fall back to defaults\n");
@@ -336,9 +336,8 @@ tp_check_boot(void) {
     printf("boot recovery\n");
     setenv("bootcmd", bootrecovery);
   } else {
-    printf("Reading R_PWRBTN_STATE\n");
+    printf("R_PWRBTN_STATE - ");
     err = i2c_reg_read(CONFIG_SYS_BMC_I2C_ADDR, R_PWRBTN_STATE);
-    printf("ret: %i\n", err);
     if (err < 0) {
       printf("Failed to read register 0x%02x from 0x%02x: %i\n", R_PWRBTN_STATE, CONFIG_SYS_BMC_I2C_ADDR, err);
       return;
@@ -353,7 +352,6 @@ tp_check_boot(void) {
     tp_bmc_set_bootreason(NORMAL, 0);
   }
 #elif defined(CONFIG_JUMPER)
-  printf("Checking jumper.\n");
   char tst_arr[TST_ARR_SZ] = "glhvwo";
   int i = 0;
   bool normal = true;
@@ -375,7 +373,7 @@ tp_check_boot(void) {
       if (c==tst_arr[i]) {
         continue;
       } else {
-        printf("[%i]c not equal t \"%02x\" not equal \"%02x\"\n", i, c, tst_arr[i]);
+        printf("[%i] character \"%02x\" not equal \"%02x\"\n", i, c, tst_arr[i]);
         if (tstc() != 0) {
           c = getc();
           printf("Next: %02x\n", c);
@@ -384,18 +382,16 @@ tp_check_boot(void) {
     } else {
       printf("[%i]t returned 0\n", i);
     }
-    printf("boot recovery\n");
+    printf("MODE:  boot recovery\n");
     setenv("bootcmd", bootrecovery);
     normal = false;
     break;
   }
   if (normal) {
-    printf("boot normal\n");
+    printf("MODE:  boot normal\n");
     setenv("bootcmd", bootnormal);
     extern bool disable_console_getc;
     disable_console_getc = true;
-    printf("Disable console\n");
-    printf("Read whatever is in UART again\n");
     mdelay(100);
     while (1) {
       if(tstc() != 0) {
@@ -483,12 +479,12 @@ tp_get_mem_size(void) {
 void
 tp_bmc_set_bootreason(uint8_t reason, uint8_t arg) {
   if (bmc_version[0]>=2) {
-    printf("Setting bootreason: %i\n", reason);
+    printf("BMC:   Setting bootreason: %i\n", reason);
     i2c_reg_write(CONFIG_SYS_BMC_I2C_ADDR, R_BOOTREASON, reason);
     udelay(100000);
     i2c_reg_write(CONFIG_SYS_BMC_I2C_ADDR, R_BOOTREASON_ARG, arg);
   } else {
-    printf("Bootreason setting is not supported\n");
+    printf("BMC:   Bootreason setting is not supported\n");
   }
 }
 
@@ -500,6 +496,7 @@ tp_bmc_get_version(void) {
   bmc_version[0] = 0;
   bmc_version[1] = 0;
   bmc_version[2] = 0;
+  printf("BMC:   ");
   for (i=R_ID1;i<=R_ID3;i++) {
     debug("Reading %i\n", i);
     err = i2c_reg_read(CONFIG_SYS_BMC_I2C_ADDR, i);
@@ -522,7 +519,7 @@ tp_bmc_get_version(void) {
   }
   if (err == BMC_ID4_VAL0) {
     bmc_version[0] = 0;
-    printf("BMC version 0.0.0\n");
+    printf("v0.0.0\n");
   } else if (err == BMC_ID4_VAL1) {
     bmc_version[0] = 2;
     debug("Reading %i\n", R_VERSION1);
@@ -541,10 +538,9 @@ tp_bmc_get_version(void) {
       return;
     }
     bmc_version[2] = err;
-    printf("BMC version %i.%i.%i\n", bmc_version[0], bmc_version[1], bmc_version[2]);
+    printf("v%i.%i.%i\n", bmc_version[0], bmc_version[1], bmc_version[2]);
   } else {
-    printf("Bad value [0x%02x] in register 0x%02x\n", err, R_ID4);
-    printf("BMC version unknown\n");
+    printf("Unknown version [0x%02x] in register 0x%02x\n", err, R_ID4);
   }
 }
 
@@ -554,6 +550,7 @@ tp_reset_peripherals(void) {
   int err;
   uint8_t tmp[17];
   int start = 0;
+  printf("Reset: ");
   tp_gpio_set(1, 1, 1);
   udelay(1000);
   def_val[0] = 0x24;
@@ -582,7 +579,7 @@ tp_reset_peripherals(void) {
     debug("i2c_write[%i] 0x2c returned %i\n", start, err);
   }
   mdelay(3);
-  printf("Board peripherals reset DONE\n");
+  printf("Done\n");
   return CMD_RET_SUCCESS;
 }
 

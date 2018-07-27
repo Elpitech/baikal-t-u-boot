@@ -555,7 +555,7 @@ static void sm750fb_setup(struct sm750_dev *sm750_dev, char *src)
   sm750_dev->initParm.resetMemory = 1;
 
   if (!src || !*src) {
-    pr_warn("no specific g_option.\n");
+    pr_warn("sm750: no specific g_option.\n");
     goto NO_PARAM;
   }
 
@@ -692,7 +692,7 @@ static int lynxfb_setup(char *options)
   char *opt, *tmp;
 
   if (!options || !*options) {
-    pr_warn("no options.\n");
+    pr_warn("sm750: no options.\n");
     return 0;
   }
 

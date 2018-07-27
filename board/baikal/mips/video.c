@@ -129,7 +129,7 @@ int drv_video_init(void)
     
     gd->flags |= GD_FLG_SM750_READY;
     sm750_put_gray_bitmap(img_data, sm750_get_xres()-img_width(), 0, img_width(), img_height());
-    printf("Video mode: %ix%i\n", sm750_get_xres(), sm750_get_yres());
+    printf("Video: %ix%i\n", sm750_get_xres(), sm750_get_yres());
 
     if (sm750_enable_output()) {
         printf("Failed to enable video output.\n");

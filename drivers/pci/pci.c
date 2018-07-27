@@ -656,7 +656,7 @@ int pci_hose_scan_bus(struct pci_controller *hose, int bus)
 		indent++;
 
 		/* Print leading space, including bus indentation */
-		printf("%*c", indent + 1, ' ');
+		printf("PCIe:  %*c", indent + 1, ' ');
 
 		if (pci_print_dev(hose, dev)) {
 			printf("%02x:%02x.%-*x - %04x:%04x - %s\n",
