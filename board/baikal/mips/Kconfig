@@ -69,6 +69,11 @@ config TPLATFORMS_AXT1_MSBT2
 	help
 	  Select this option for T-platforms Axitech v1 board with MSBT2 installed
 
+config TPLATFORMS_BC3BT1_MRBT1
+	bool "MRBT1 for T-platforms Axitech BC3BT1 Board"
+	help
+	  Select this option for T-platforms Axitech BC3BT1 board with MRBT1 installed
+
 config TPLATFORMS_TC_SFBT1
 	bool "SFBT1 for T-platforms T-client Board"
 	help
