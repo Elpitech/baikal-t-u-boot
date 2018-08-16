@@ -271,6 +271,8 @@ static int mscc_startup(struct phy_device *phydev)
 {
 	int retval;
 
+	mscc_vsc8531_vsc8541_init_scripts(phydev);
+
   debug("MSCC phy startup\n");
 	retval = genphy_update_link(phydev);
 
