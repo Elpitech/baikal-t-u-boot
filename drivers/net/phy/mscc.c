@@ -52,6 +52,7 @@
 
 // Extended Page 2 Register 17E2
 #define MSCC_PHY_EEE_CNTL_REG		17
+#define MSCC_PHY_LEDS_ACT_HIGH_POL	(0x0C00)
 
 /* Extended Page 2 Register 20E2 */
 #define MSCC_PHY_RGMII_CNTL_REG		20
@@ -111,6 +112,10 @@
 #define MSCC_PHY_TR_VGAGAIN10_L_VAL	(0x0001)
 #define MSCC_PHY_TR_VGAGAIN10_ADDR	(0x0F92)
 
+/* GPIO page */
+#define MSCC_PHY_GPIO_CTRL_2		14
+#define LEDS_TRISTATE_EN		(0x0200)
+
 /* General Timeout Values */
 #define MSCC_PHY_RESET_TIMEOUT		(500)
 #define MSCC_PHY_MICRO_TIMEOUT		(500)
@@ -142,9 +147,9 @@ vsc_phy_clk_slew {
 
 static int mscc_vsc8531_vsc8541_init_scripts(struct phy_device *phydev)
 {
-#ifdef MSCC_TOKEN_RING
-	u16	reg_val;
+	u16	reg_val __maybe_unused;
 
+#ifdef MSCC_TOKEN_RING
 	/* Set to Access Token Ring Registers */
 	phy_write(phydev, MDIO_DEVAD_NONE,
 		  MSCC_EXT_PAGE_ACCESS, MSCC_PHY_PAGE_TR);
@@ -195,7 +200,29 @@ static int mscc_vsc8531_vsc8541_init_scripts(struct phy_device *phydev)
 	phy_write(phydev, MDIO_DEVAD_NONE, MSCC_PHY_REG_TR_DATA_17, reg_val);
 	phy_write(phydev, MDIO_DEVAD_NONE, MSCC_PHY_REG_TR_ADDR_16,
 		  (MSCC_PHY_TR_VGAGAIN10_ADDR | MSCC_PHY_TR_16_WRITE));
+#endif
 
+#ifdef CONFIG_MSCC_LEDS_ACTIVE_HIGH
+	/* Set to access Extended 2 page registers */
+	phy_write(phydev, MDIO_DEVAD_NONE,
+		  MSCC_EXT_PAGE_ACCESS, MSCC_PHY_PAGE_EXT2);
+
+	reg_val = phy_read(phydev, MDIO_DEVAD_NONE, MSCC_PHY_EEE_CNTL_REG);
+	reg_val |= MSCC_PHY_LEDS_ACT_HIGH_POL;
+	phy_write(phydev, MDIO_DEVAD_NONE, MSCC_PHY_EEE_CNTL_REG, reg_val);
+#endif
+
+#ifdef CONFIG_MSCC_LEDS_DRIVE_LOW_HIGH
+	/* Set to access GPIO page registers */
+	phy_write(phydev, MDIO_DEVAD_NONE,
+		  MSCC_EXT_PAGE_ACCESS, MSCC_PHY_PAGE_GPIO);
+
+	reg_val = phy_read(phydev, MDIO_DEVAD_NONE, MSCC_PHY_GPIO_CTRL_2);
+	reg_val &= ~LEDS_TRISTATE_EN;
+	phy_write(phydev, MDIO_DEVAD_NONE, MSCC_PHY_GPIO_CTRL_2, reg_val);
+#endif
+
+#if defined(MSCC_TOKEN_RING) || defined(CONFIG_MSCC_LEDS_ACTIVE_HIGH) || defined(CONFIG_MSCC_LEDS_DRIVE_LOW_HIGH)
 	/* Set back to Access Standard Page Registers */
 	phy_write(phydev, MDIO_DEVAD_NONE, MSCC_EXT_PAGE_ACCESS,
 		  MSCC_PHY_PAGE_STD);
