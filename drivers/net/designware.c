@@ -77,6 +77,22 @@ static int dw_mdio_write(struct mii_dev *bus, int addr, int devad, int reg,
 	return ret;
 }
 
+#ifdef CONFIG_TARGET_BAIKAL_MIPS
+static int dw_mdio_reset(struct mii_dev *bus)
+{
+	struct eth_mac_regs *mac_p = bus->priv;
+	u32 val;
+
+	val = readl(&mac_p->gpio);
+	writel(val & ~MAC_GPIO_GPO0, &mac_p->gpio);
+	udelay(10);
+	writel(val | MAC_GPIO_GPO0, &mac_p->gpio);
+	udelay(15000);
+
+	return 0;
+}
+#endif
+
 static int dw_mdio_init(char *name, struct eth_mac_regs *mac_regs_p)
 {
 	struct mii_dev *bus = mdio_alloc();
@@ -88,6 +104,9 @@ static int dw_mdio_init(char *name, struct eth_mac_regs *mac_regs_p)
 
 	bus->read = dw_mdio_read;
 	bus->write = dw_mdio_write;
+#ifdef CONFIG_TARGET_BAIKAL_MIPS
+	bus->reset = dw_mdio_reset;
+#endif
 	sprintf(bus->name, name);
 
 	bus->priv = (void *)mac_regs_p;
@@ -280,6 +299,9 @@ void designware_clear_phy_reset(ulong base)
 {
 	struct eth_mac_regs *mac_p = (struct eth_mac_regs *)base;
 
+	/* Make sure device has had enough time being under reset then clear
+	 * the pin state */
+	udelay(10);
 	writel(readl(&mac_p->gpio) | MAC_GPIO_GPO0, &mac_p->gpio);
 }
 
@@ -322,7 +344,6 @@ static int dw_eth_init(struct eth_device *dev, bd_t *bis)
 	/* Enable transmition and recive operations in the opmode register. */
 	writel(readl(&dma_p->opmode) | RXSTART | TXSTART, &dma_p->opmode);
 
-
 	/* Configure data/clock skew for Micrel RGMII. */
 #if (defined(CONFIG_PHY_MICREL) && defined(CONFIG_TARGET_BAIKAL_PHY_ERRATA))
 	micrel_set_skew(priv->phydev);
@@ -349,6 +370,8 @@ static int dw_eth_init(struct eth_device *dev, bd_t *bis)
 #ifdef DEBUG
 	printf("mac conf =0x%x\n", readl(&mac_p->conf));
 #endif /* DEBUG */
+
+	phy_config(priv->phydev);
 
 	return 0;
 }
