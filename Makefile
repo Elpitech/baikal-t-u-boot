@@ -732,7 +732,7 @@ endif
 ALL-$(CONFIG_CMD_LICENSE) += include/license.h
 
 # Always append ALL so that arch config.mk's can add custom ones
-ALL-y += u-boot.srec u-boot.bin System.map binary_size_check
+ALL-y += u-boot.srec u-boot.bin System.map binary_size_check  u-boot.dump
 
 ALL-$(CONFIG_ONENAND_U_BOOT) += u-boot-onenand.bin
 ifeq ($(CONFIG_SPL_FSL_PBL),y)
@@ -834,6 +834,9 @@ u-boot.ldr:	u-boot
 		$(CREATE_LDR_ENV)
 		$(LDR) -T $(CONFIG_BFIN_CPU) -c $@ $< $(LDR_FLAGS)
 		$(BOARD_SIZE_CHECK)
+
+u-boot.dump: u-boot
+	$(OBJDUMP) -D $< > $@;
 
 OBJCOPYFLAGS_u-boot.ldr.hex := -I binary -O ihex
 
