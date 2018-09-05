@@ -22,6 +22,8 @@
  */
 #define MAX_ENV_SIZE	(9 + 2 + 1)
 
+static int menu_default_entry = 0;
+
 struct bootmenu_entry {
 	unsigned short int num;		/* unique number 0 .. MAX_COUNT */
 	char key[3];			/* key identifier of number */
@@ -44,6 +46,19 @@ enum bootmenu_key {
 	KEY_DOWN,
 	KEY_SELECT,
 };
+
+static void get_menu_default_entry(void)
+{
+	char *m_dfl_str = NULL;
+
+	m_dfl_str = getenv("bootmenu_default");
+	if (m_dfl_str) {
+		menu_default_entry = (int)simple_strtol(m_dfl_str, NULL, 10);
+		menu_default_entry -= 1;
+		if (menu_default_entry < 0 || menu_default_entry >= (MAX_COUNT - 1))
+			menu_default_entry = 0;
+	}
+}
 
 static char *bootmenu_getoption(unsigned short int n)
 {
@@ -85,7 +100,7 @@ static void bootmenu_autoboot_loop(struct bootmenu_data *menu,
 
 	if (menu->delay > 0) {
 		printf(ANSI_CURSOR_POSITION, menu->count + 5, 1);
-		printf("  Hit any key to stop autoboot: %2d ", menu->delay);
+		printf("  Hit any key to stop autoboot menu entry %2d: %2d", menu->active + 1, menu->delay);
 	}
 
 	while (menu->delay > 0) {
@@ -347,6 +362,9 @@ static struct bootmenu_data *bootmenu_create(int delay)
 	}
 
 	menu->count = i;
+	if (menu_default_entry < menu->count)
+		menu->active = menu_default_entry;
+
 	return menu;
 
 cleanup:
@@ -364,17 +382,22 @@ static void bootmenu_show(int delay)
 	struct bootmenu_data *bootmenu;
 	struct bootmenu_entry *iter;
 	char *option, *sep;
+	char menu_default_str[10] = "0";
+
+	sprintf(menu_default_str, "%d", menu_default_entry);
 
 	/* If delay is 0 do not create menu, just run first entry */
 	if (delay == 0) {
-		option = bootmenu_getoption(0);
+		option = bootmenu_getoption(menu_default_entry);
 		if (!option) {
-			puts("bootmenu option 0 was not found\n");
+			puts("failed to find bootmenu option \n");
+			puts(menu_default_str);
 			return;
 		}
 		sep = strchr(option, '=');
 		if (!sep) {
-			puts("bootmenu option 0 is invalid\n");
+			puts("invalid bootmenu option \n");
+			puts(menu_default_str);
 			return;
 		}
 		run_command(sep+1, 0);
@@ -397,8 +420,8 @@ static void bootmenu_show(int delay)
 			goto cleanup;
 	}
 
-	/* Default menu entry is always first */
-	menu_default_set(menu, "0");
+	/* Default menu entry --------------- */
+	menu_default_set(menu, menu_default_str);
 
 	puts(ANSI_CURSOR_HIDE);
 	puts(ANSI_CLEAR_CONSOLE);
@@ -438,11 +461,13 @@ void menu_display_statusline(struct menu *m)
 {
 	struct bootmenu_entry *entry;
 	struct bootmenu_data *menu;
+	char menu_default_str[10] = "0";
 
 	if (menu_default_choice(m, (void *)&entry) < 0)
 		return;
 
 	menu = entry->menu;
+	sprintf(menu_default_str, "%d", menu->active + 1);
 
 	printf(ANSI_CURSOR_POSITION, 1, 1);
 	puts(ANSI_CLEAR_LINE);
@@ -460,7 +485,8 @@ void menu_display_statusline(struct menu *m)
 	printf(ANSI_CURSOR_POSITION, menu->count + 5, 1);
 	puts(ANSI_CLEAR_LINE);
 	printf(ANSI_CURSOR_POSITION, menu->count + 6, 1);
-	puts("  Press UP/DOWN to move, ENTER to select");
+	puts("  Press UP/DOWN to move, ENTER to select menu entry ");
+	puts(menu_default_str);
 	puts(ANSI_CLEAR_LINE_TO_END);
 	printf(ANSI_CURSOR_POSITION, menu->count + 7, 1);
 	puts(ANSI_CLEAR_LINE);
@@ -469,6 +495,8 @@ void menu_display_statusline(struct menu *m)
 #ifdef CONFIG_MENU_SHOW
 int menu_show(int bootdelay)
 {
+	get_menu_default_entry();
+
 	bootmenu_show(bootdelay);
 	return -1; /* -1 - abort boot and run monitor code */
 }
@@ -491,6 +519,8 @@ int do_bootmenu(cmd_tbl_t *cmdtp, int flag, int argc, char *const argv[])
 
 	if (delay_str)
 		delay = (int)simple_strtol(delay_str, NULL, 10);
+
+	get_menu_default_entry();
 
 	bootmenu_show(delay);
 	return 0;
