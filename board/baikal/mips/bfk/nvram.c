@@ -15,7 +15,7 @@
 #include <asm/errno.h>
 #include <asm/io.h>
 #include <i2c.h>
-#include <asm/arch/nvram.h>
+#include "nvram.h"
 
 /* Control 4 register */
 #define CHIP_REG_CTRL          0x03    /* Control 4 register */

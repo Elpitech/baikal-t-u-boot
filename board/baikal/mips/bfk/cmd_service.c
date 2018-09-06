@@ -11,8 +11,8 @@
 #include <bcd.h>
 #include <net.h>
 #include <asm/io.h>
-#include <asm/arch/oem.h>
-#include <asm/arch/nvram.h>
+#include "oem.h"
+#include "nvram.h"
 
 /* Board type get / set routine */
 static int do_service_board(int argc, char * const argv[])

@@ -12,7 +12,7 @@
 #include <command.h>
 #include <i2c.h>
 #include <net.h>
-#include <asm/arch/oem.h>
+#include "oem.h"
 
 /*
  * EEPROM structure
