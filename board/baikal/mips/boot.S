@@ -40,7 +40,7 @@ __start_baikal_fw:
 
 	CALL	(llenv_init_tlb)
 	CALL	(llenv_init_caches)
-#if defined(CONFIG_BAIKAL_BFK) || defined(CONFIG_BAIKAL_BFKX)
+#if !defined(CONFIG_BAIKAL_T1)
 	CALL	(llenv_uboot_pmu)
 #endif
 	CALL	(llenv_uboot_ddr)

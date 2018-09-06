@@ -173,7 +173,7 @@ static unsigned time2memc(unsigned t, int up)
 #define DDR3_MR1_AL_0	0
 #define DDR3_MR1_AL_CL1	1
 #define DDR3_MR1_AL_CL2	2
-#if defined(CONFIG_BAIKAL_BFK)
+#if !defined(CONFIG_BAIKAL_T1)
 #define DDR3_MR1_AL	DDR3_MR1_AL_CL1
 #else
 #define DDR3_MR1_AL	DDR3_MR1_AL_0
@@ -291,7 +291,7 @@ int llenv_prepare_buffer1 (void)
     if (crc != ((read_spd(127) << 8) | read_spd(126)))
 	   return -1;
 
-#if defined(CONFIG_BAIKAL_BFK)
+#if !defined(CONFIG_BAIKAL_T1)
     unsigned bus_width = 8 << (read_spd(8) & 7);
 #else
     unsigned bus_width = 32; // bus width is always 32
@@ -353,7 +353,7 @@ int llenv_prepare_buffer1 (void)
 
 
     mr2 = (CWL - 5) << DDR3_MR2_CWL_S;
-#if defined(CONFIG_BAIKAL_BFK)
+#if !defined(CONFIG_BAIKAL_T1)
     // ...
 #else
     mr2 |= 1 << DDR3_MR2_RTT_S; // 60 Ohm
@@ -361,7 +361,7 @@ int llenv_prepare_buffer1 (void)
     reg = mr2 << 16;
     LLENV_SET_SPD_REG(DDR3_SPD_INIT4, reg);
 
-#if defined(CONFIG_BAIKAL_BFK)
+#if !defined(CONFIG_BAIKAL_T1)
     reg = 0x02918210;
 #else
     reg = 0x02808200 | /* rddata_en */ ((spd_t.CL + AL - 4) << 16) | /* wrlat */  (CWL + AL - 2);
@@ -383,7 +383,7 @@ int llenv_prepare_buffer1 (void)
     reg |= t1 << 16;
     // t_ras_max = tRASmax/1024 = (tREFI * 9)/1024
     t1 = time2memc(((tREFI * 9) / spd_t.tCK - 1) / 1024, false);
-#if defined(CONFIG_BAIKAL_BFK)
+#if !defined(CONFIG_BAIKAL_T1)
     // ...
 #else
     if (MEMC_FREQ_RATIO == 2) {
@@ -393,7 +393,7 @@ int llenv_prepare_buffer1 (void)
     reg |= t1 << 8;
     // t_ras_min
     t1 = time2memc(spd_t.tRASmin / spd_t.tCK, false);
-#if defined(CONFIG_BAIKAL_BFK)
+#if !defined(CONFIG_BAIKAL_T1)
     // ...
 #else
     if (MEMC_FREQ_RATIO == 2) {
@@ -458,7 +458,7 @@ int llenv_prepare_buffer1 (void)
     t1 = time2memc(tRRD/spd_t.tCK, true);
     reg |= t1 << 8;
     // t_rp
-#if defined(CONFIG_BAIKAL_BFK)
+#if !defined(CONFIG_BAIKAL_T1)
     t1 = time2memc(spd_t.tRP/spd_t.tCK, true) + MEMC_FREQ_RATIO - 1;
 #else
     t1 = time2memc(spd_t.tRP/spd_t.tCK, true);
@@ -491,7 +491,7 @@ int llenv_prepare_buffer1 (void)
     reg |= (t1 & 0x7f) << 8;
     // t_xs_x32 = tXSmin
     t1 = max(5 * spd_t.tCK, xtRFC + 10000);
-#if defined(CONFIG_BAIKAL_BFK)
+#if !defined(CONFIG_BAIKAL_T1)
     t1 = time2memc(t1 / 32 / spd_t.tCK, true);
 #else
     t1 = time2memc(t1 / 32 / spd_t.tCK, true) + 1;
@@ -501,7 +501,7 @@ int llenv_prepare_buffer1 (void)
 
 
     // t_rfc_nom_x32 = tREFI
-#if defined(CONFIG_BAIKAL_BFK)
+#if !defined(CONFIG_BAIKAL_T1)
     t1 = time2memc((tREFI-xtRFC)/spd_t.tCK/32, false);
 #else
     t1 = time2memc((tREFI/*-xtRFC*/)/spd_t.tCK/32, false);
@@ -520,7 +520,7 @@ int llenv_prepare_buffer1 (void)
 
 
     reg = 0x00000f0fU;
-#if defined(CONFIG_BAIKAL_BFK)
+#if !defined(CONFIG_BAIKAL_T1)
     if (cols == 12) {
         reg &= ~0xfU;
     }
@@ -532,7 +532,7 @@ int llenv_prepare_buffer1 (void)
 #endif
     LLENV_SET_SPD_REG(DDR3_SPD_ADDRMAP4, reg);
 
-#if defined(CONFIG_BAIKAL_BFK)
+#if !defined(CONFIG_BAIKAL_T1)
     unsigned row_offset = cols - 7;
 #else
 #define ROW_INTERNAL_BASE	6
@@ -544,7 +544,7 @@ int llenv_prepare_buffer1 (void)
     LLENV_SET_SPD_REG(DDR3_SPD_ADDRMAP5, reg);
     LLENV_SET_SPD_REG(DDR3_SPD_ADDRMAP6, reg);
 
-#if defined(CONFIG_BAIKAL_BFK)
+#if !defined(CONFIG_BAIKAL_T1)
     unsigned bank_offset = row_offset + rows + 6 - 2;
 #else
 #define BANK_INTERNAL_BASE	2
@@ -556,7 +556,7 @@ int llenv_prepare_buffer1 (void)
 	    reg |= bank_offset << (i * 8);
     LLENV_SET_SPD_REG(DDR3_SPD_ADDRMAP1, reg);
 
-#if defined(CONFIG_BAIKAL_BFK)
+#if !defined(CONFIG_BAIKAL_T1)
     unsigned rank_offset = bank_offset - 3 + 2;
     reg = 0;
     for (i = 0; i < ranks; ++i)
@@ -682,14 +682,14 @@ int llenv_prepare_buffer1 (void)
     reg |= (0xff & t1) << 16;
     LLENV_SET_SPD_REG(DDR_PUB_SPD_DTPR5, reg);
 
-#if defined(CONFIG_BAIKAL_BFK)
+#if !defined(CONFIG_BAIKAL_T1)
     LLENV_SET_SPD_REG(DDR3_SPD_ODTCFG, 0x0600060C);
 #else
     reg = (0x06000600 | ((spd_t.CL - CWL) << 2));
     LLENV_SET_SPD_REG(DDR3_SPD_ODTCFG, reg);
 #endif
 
-#if defined(CONFIG_BAIKAL_BFK)
+#if !defined(CONFIG_BAIKAL_T1)
     LLENV_SET_SPD_REG(DDR3_SPD_ODTMAP, 0x00000201);
 #else
     if (ranks == 1)   reg = 0x00000001;
@@ -706,13 +706,13 @@ int llenv_prepare_buffer1 (void)
     LLENV_SET_SPD_REG(DDR3_SPD_ECCCFG0, reg);
     LLENV_SET_SPD_REG(DDR3_SPD_INIT0, 0x40020001);
     LLENV_SET_SPD_REG(DDR3_SPD_DFIUPD0, 0x80400003);
-#if defined(CONFIG_BAIKAL_BFK)
+#if !defined(CONFIG_BAIKAL_T1)
     // ...
 #else
     LLENV_SET_SPD_REG(DDR3_SPD_INIT1, 0x00010000);
 #endif
 
-#if defined(CONFIG_BAIKAL_BFK)
+#if !defined(CONFIG_BAIKAL_T1)
     LLENV_SET_SPD_REG(DDR3_SPD_MSTR, 0x01040001);  //0x03040001 - if not single rank
 #else
     if (ranks == 1)  rank_offset = 0x1;
@@ -720,7 +720,7 @@ int llenv_prepare_buffer1 (void)
     LLENV_SET_SPD_REG(DDR3_SPD_MSTR,    (0x40001 | (rank_offset << 24)));
     LLENV_SET_SPD_REG(DDR3_SPD_MRCTRL0, (rank_offset << 4));
 #endif
-#if defined(CONFIG_BAIKAL_BFK)
+#if !defined(CONFIG_BAIKAL_T1)
     LLENV_SET_SPD_REG(DDR_PUB_SPD_DTCR1, 0x00010237);
 #else
     LLENV_SET_SPD_REG(DDR_PUB_SPD_DTCR1, (0x237 | (rank_offset << 16)));

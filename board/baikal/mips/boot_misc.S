@@ -100,7 +100,7 @@ llenv_init_regs:
 	mtc0	k0, MIPS_CP0_CONFIG0
 
 
-#if defined(CONFIG_BAIKAL_BFK)
+#if !defined(CONFIG_BAIKAL_T1)
 	/* Errata E#26. Disable load/store bonding. */
 	mfc0    t0, MIPS_CP0_CONFIG6
 	lui t1, (CP0_CONFIG6_DLSB >> 16)
@@ -114,7 +114,7 @@ llenv_init_regs:
 	mfc0    t0, MIPS_CP0_CONFIG7
 	ori t0, t0, CP0_CONFIG7_RPS
 	mtc0    t0, MIPS_CP0_CONFIG7
-#endif /* CONFIG_BAIKAL_BFK */
+#endif /* CONFIG_BAIKAL_T1 */
 
 	jr	ra
 	nop	/* Delay slot */

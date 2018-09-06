@@ -73,7 +73,7 @@ _ddr_spd_corepll_lock_wait:
 	/* 2. Read value of BK_PMU_AXI_DDR_CTL, set EN bit. */
 	li	t0, BK_PMU_AXI_DDR_CTL
 	lw	t1, 0(t0)
-#if !defined(CONFIG_BAIKAL_BFK)
+#if defined(CONFIG_BAIKAL_T1)
 	ori	t1, t1, PMU_AXI_DDR_CTL_EN
 	sw	t1, 0(t0)
 	sync
@@ -183,12 +183,12 @@ _ddr_spd_ddrpll_lock_wait:
 	sw	t2, DDRC_ECCPOISONADDR1(k0)
 #endif /* ECC_DBG_CORR_ERR || ECC_DBG_UNCORR_ERR */
 	ddrc_set_reg	DDRC_INIT0, DDR3_SPD_INIT0
-#if !defined(CONFIG_BAIKAL_BFK)
+#if defined(CONFIG_BAIKAL_T1)
 	ddrc_set_reg	DDRC_INIT1, DDR3_SPD_INIT1
 #endif
 	ddrc_set_reg	DDRC_DFIUPD0, DDR3_SPD_DFIUPD0
 	ddrc_set_reg	DDRC_MSTR, DDR3_SPD_MSTR
-#if !defined(CONFIG_BAIKAL_BFK)
+#if defined(CONFIG_BAIKAL_T1)
 	ddrc_set_reg	DDRC_MRCTRL0, DDR3_SPD_MRCTRL0
 #endif
 	sync
@@ -264,7 +264,7 @@ _ddr_spd_data_train_wait:
 
 	BROM_DDR_DEBUG_STEP 5
 
-#if defined(CONFIG_BAIKAL_BFK) || defined(CONFIG_BAIKAL_BFKX)
+#if !defined(CONFIG_BAIKAL_T1)
 	/* ignore training algorithms errors */
 #else
 	/* Check errors of training algorithms. */
