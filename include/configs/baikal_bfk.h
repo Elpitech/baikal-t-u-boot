@@ -32,6 +32,7 @@
  */
 #if defined(CONFIG_BAIKAL_BFK)		/* BFK board */
 # define DDR_USER_SPD
+# define DDR_USER_SPD_MT41K2G4
 # define DDR_SPEED_BIN_SPD
 
 # undef DDR_USER_REGS
@@ -40,6 +41,7 @@
 # undef DDR_SPEED_BIN_1600
 #elif defined(CONFIG_BAIKAL_BFKX)	/* BFKX board (BFK1.6+Baikal-T1) */
 # define DDR_USER_SPD
+# define DDR_USER_SPD_MT41K2G4
 # define DDR_SPEED_BIN_1600
 
 # undef DDR_USER_REGS
