@@ -233,16 +233,6 @@ int board_eth_init(bd_t *bis)
 {
 	int err = 0;
 
-#ifdef CONFIG_BAIKAL_BFK3
-#if defined(CONFIG_DESIGNWARE_ETH0_BASE)
-	designware_clear_phy_reset(CONFIG_DESIGNWARE_ETH0_BASE);
-#endif /* CONFIG_DESIGNWARE_ETH0_BASE */
-
-#if defined(CONFIG_DESIGNWARE_ETH1_BASE)
-	designware_clear_phy_reset(CONFIG_DESIGNWARE_ETH1_BASE);
-#endif /* CONFIG_DESIGNWARE_ETH0_BASE */
-#endif /* CONFIG_BAIKAL_BFK3 */
-
 #if defined(CONFIG_DESIGNWARE_ETH0_BASE)
 	if (designware_initialize(CONFIG_DESIGNWARE_ETH0_BASE,
 			  PHY_INTERFACE_MODE_GMII) < 0)
