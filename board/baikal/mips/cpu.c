@@ -79,6 +79,20 @@ static int arch_cpu_init_maar(void)
     return 0;
 }
 
+int arch_cpufreq_setup(void)
+{
+    unsigned int freq = getenv_ulong("cpufreq", 10, 0);
+
+    /* Set freq */
+    if ((freq > 99) && (freq < 1200)) {
+        baikal_clock_core_mhz(freq);
+        printf("ARCH:  CPU core freq is set to %uMHz\n", freq);
+        gd->arch.cpu_clk  = MHZ_TO_HZ(freq);
+    }
+    /* Return success */
+    return 0;
+}
+
 int cpu_init_r(void)
 {
     /* Enable SIMD */
@@ -95,6 +109,8 @@ int cpu_init_r(void)
     /* Warm CPU up */
     pvt_cpu_warmup();
 #endif
+    /* CPU frequency */
+    arch_cpufreq_setup();
     /* Return success */
     return 0;
 }
