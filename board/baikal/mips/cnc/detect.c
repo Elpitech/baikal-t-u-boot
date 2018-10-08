@@ -85,13 +85,13 @@ int cnc_detect_board(void)
 	config = cnc_get_fit_config(did, rev);
 	if (!config) {
 		printf("CNC:   Can't find config for CNC %s v%hu.%hu\n",
-			cnc_dev_name(did), did, rev);
+			cnc_dev_name(did), did, (u16)rev);
 		return -1;
 	}
 
 	snprintf(buf, 64, "#conf@%s", config);
 	setenv("multi_conf", buf);
-	printf("CNC:   %s v%hu.%hhu detected\n", cnc_dev_name(did), did, rev);
+	printf("CNC:   %s v%hu.%hu detected\n", cnc_dev_name(did), did, (u16)rev);
 
 	return 0;
 }
