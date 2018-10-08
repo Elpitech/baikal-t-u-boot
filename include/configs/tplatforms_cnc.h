@@ -48,7 +48,18 @@
 	{{CONFIG_SYS_I2C_PCF857X_ADDR, 8, CONFIG_SYS_I2C_PCF857X_BUS_NUM}}
 
 /* NOTE Some CNC boards also got EEPROM on bus 1 with address 0x51/0x57, which
- * we don't really use at the moment, since they are DNP on the new boards.
+ * we don't really use at the moment, since they are DNP on new boards.
  */
+
+/*
+ *-----------------------------------------------
+ * U-Boot startup menu
+ *-----------------------------------------------
+ */
+#undef CONFIG_MENU_SHOW
+#define CONFIG_MENUKEY			'm'
+#define CONFIG_AUTOBOOT_KEYED
+#define CONFIG_AUTOBOOT_DELAY_STR	"m"
+#define CONFIG_AUTOBOOT_PROMPT 		"autoboot in %d seconds (press %c to show menu)\n",bootdelay,CONFIG_MENUKEY
 
 #endif /* __CONFIG_TPLATFORMS_CNC_H */
