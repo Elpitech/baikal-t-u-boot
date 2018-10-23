@@ -74,7 +74,7 @@ void print_ddr_regs (void)
 	int i;
 	uint32_t *p = ddr_buffer1;
 	printf("DDRC/PUB reg base = 0x%x\n", (uint32_t)p);
-	for (i = 0; i < 64; i++) {
+	for (i = 0; i < DDR_SPD_LAST; i++) {
 		printf("reg(%02d) = 0x%08x\n", i, p[i]);
 	}
 }
@@ -96,13 +96,18 @@ phys_size_t initdram(int board_type)
 {
 	uint32_t rank = get_ddr_rank();
 	uint32_t ddr_high_size = get_ddr_highmem_size();
+	uint32_t mem = (ddr_buffer1[DDR3_SPD_SARSIZE1] + 1)*DDR3_SEG_SIZE;
+	uint32_t ecc = ddr_buffer1[DDR3_SPD_ECCCFG0];
 
 #ifdef CONFIG_BAIKAL_PRINT_DDR
 	print_ddr_regs();
+#endif /* CONFIG_BAIKAL_PRINT_DDR*/
+#ifdef CONFIG_BAIKAL_PRINT_SPD
 	print_ddr_spd();
-#endif /* CONFIG_BAIKAL_PRINT_DDR_REGS */
+#endif /* CONFIG_BAIKAL_PRINT_SPD */
 
-	printf("Rank = %d highmem = %d MiB lowmem = ", rank, (ddr_high_size / 1024 / 1024)); /* B -> MB */
+	printf("Ranks = %d, %shighmem = %d MiB (%d MiB below 4G), lowmem = ",
+		rank, ecc ? "ECC, " : "", mem, (ddr_high_size / 1024 / 1024));
 	if (*((int *)(CONFIG_DDR_INIT_RESULT_v0)))
 	{
 		printf( /*lowmem*/ "...\n");
