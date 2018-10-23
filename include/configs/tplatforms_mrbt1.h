@@ -32,13 +32,8 @@
  * Init caches, tlb, DDR, cp0, PMU
  *-----------------------------------------------
  */
-#define DDR_USER_SPD
-#define DDR_USER_SPD_MT41K1G8
-#define DDR_SPEED_BIN_1066
-#undef DDR_USER_REGS
-#undef DDR_SPEED_BIN_1333
-#undef DDR_SPEED_BIN_1600
-#undef DDR_SPEED_BIN_SPD
+#define CONFIG_BAIKAL_SPD_ADDRESS       0x50
+#define CONFIG_SYS_SPD_BUS_NUM          1
 
 /*
  *-----------------------------------------------

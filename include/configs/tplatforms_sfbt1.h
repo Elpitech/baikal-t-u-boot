@@ -32,13 +32,6 @@
  * Init caches, tlb, DDR, cp0, PMU
  *-----------------------------------------------
  */
-#define DDR_USER_SPD
-#define DDR_USER_SPD_MT41K512M16
-#define DDR_SPEED_BIN_SPD
-#undef DDR_USER_REGS
-#undef DDR_SPEED_BIN_1066
-#undef DDR_SPEED_BIN_1333
-#undef DDR_SPEED_BIN_1600
 
 /*
  *-----------------------------------------------
