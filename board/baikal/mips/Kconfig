@@ -331,6 +331,30 @@ endif # CMD_NET
 endmenu # Command Line Options
 
 
+config BAIKAL_ECC
+	bool "ECC enable mode"
+	default n
+
+config DDR_FREQ_TWEAK
+	int "Adjust DDR3 frequency"
+	range -2 2
+	default "0"
+	help
+	  This allows to increase or decrease DDR3 frequency in 3% steps
+
+config CUSTOM_SPD
+	bool "Use user supplied SPD data"
+	default n
+
+if CUSTOM_SPD
+
+config CUSTOM_SPD_FILE
+	string "User defined SPD file"
+	help
+	  Read DDR3 SPD data from SPD_<name>.c file
+
+endif # CUSTOM_SPD
+
 # -----------------------------------------------
 # Device drivers
 # -----------------------------------------------
@@ -339,10 +363,6 @@ menu "Device drivers"
 #
 # Driver: Serial console
 #
-
-config BAIKAL_ECC
-	bool "ECC enable mode"
-	default n
 
 menuconfig SERIAL
 	bool "Enable serial console"

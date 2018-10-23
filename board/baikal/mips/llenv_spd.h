@@ -66,6 +66,8 @@
 #define DDR_PUB_SPD_DTCR1	51
 #define DDR3_SPD_MRCTRL0	52
 #define DDR3_SPD_INIT1		53
-#define DDR_SPD_LAST		54
+#define DDR_PLL_CTL		54
+#define DDR_BYTE_WIDTH		55
+#define DDR_SPD_LAST		56
 
 #endif /* __LLENV_SPD_H__ */

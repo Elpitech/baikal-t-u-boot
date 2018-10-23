@@ -17,6 +17,14 @@
 
 #define DDR_WAIT_RETRIES 0xff00
 
+/* distance between PUB_DXn registers groups */
+#define PUB_DXn_STEP	(DDR_PUB_DX1GCR0-DDR_PUB_DX0GCR0)
+/* log2 of the above */
+#define PUB_DXn_SLOG	8
+/* sanity check */
+#if (1 << PUB_DXn_SLOG) != PUB_DXn_STEP
+#error "PUB_DXn_SLOG is incorrect."
+#endif
 
 .macro BROM_DDR_DEBUG_STEP	step
 	li	t7, \step
@@ -83,25 +91,24 @@ _ddr_spd_corepll_lock_wait:
 	ori	t1, t1, PMU_AXI_DDR_CTL_INIT
 	sw	t1, 0(t0)
 
+	/* set v1 to the start of registers array */
+	la	t0, ddr_buffer1
+	ins	t0, zero, 29, 3 /* Clear bits [31:29] */
+	lui	t1, 0xa000 /* Set uncached unmapped segment KSEG1. */
+	or	t0, t0, t1
+	lw	v1, 0(t0)
+
+	/* get required DDR_PLL_CTL */
+	lw	t1, (DDR_PLL_CTL*4)(v1)
+
 	/* 4. Read value of BK_PMU_DDRPLL_CTL, set EN bit, write RST bit and CLKOD. */
 	li	t0, BK_PMU_DDRPLL_CTL
-	lw	t1, 0(t0)
+
 	ori	t1, t1, (PMU_DDRPLL_CTL_EN | PMU_DDRPLL_CTL_RST)
-
-#ifdef DDR_SPEED_BIN_1066
-	li	t2, PMU_DDRPLL_1066_OD_NF_NR
-	ins	t1, t2, PMU_DDRPLL_OD_NF_NR_POS, PMU_DDRPLL_OD_NF_NR_BITS
-#endif /* DDR_SPEED_BIN_1066 */
-
-#ifdef DDR_SPEED_BIN_1333
-	li	t2, PMU_DDRPLL_1333_OD_NF_NR
-	ins	t1, t2, PMU_DDRPLL_OD_NF_NR_POS, PMU_DDRPLL_OD_NF_NR_BITS
-#endif /* DDR_SPEED_BIN_1333 */
 	sw	t1, 0(t0)
 
 
 	/* 5. Wait for BK_PMU_DDRPLL_CTL LOCK bit */
-	li	t0, BK_PMU_DDRPLL_CTL
 	li	t1, DDR_WAIT_RETRIES
 	BROM_DDR_DEBUG_STEP 2
 
@@ -122,12 +129,6 @@ _ddr_spd_ddrpll_lock_wait:
 	/* 7. Configure DDR memory controller. */
 	li	k0, CONFIG_DDR_CTRL_BASE
 	li	k1, CONFIG_DDR_PHY_BASE
-	la	t0, ddr_buffer1
-
-	ins	t0, zero, 29, 3 /* Clear bits [31:29] */
-	lui	t1, 0xa000 /* Set uncached unmapped segment KSEG1. */
-	or	t0, t0, t1
-	lw	v1, 0(t0)
 
 
 	ddrc_set_reg	DDRC_INIT3, DDR3_SPD_INIT3
@@ -207,12 +208,23 @@ _ddr_spd_ddrpll_lock_wait:
 
 	/* 10. DDR PUB initialization. */
 
-#ifndef ECC_DDR_ENABLE
-	pub_get_reg	t0, DDR_PUB_DX4GCR0
-	ins	t0, zero, 0, 1
-	sw	t0, DDR_PUB_DX4GCR0(k1)
-	nop	/* Small delay */
-#endif /* ECC_DDR_ENABLE */
+	/* Disable unused bytes */
+	la	t0, DDR_PUB_DX0GCR0(k1)
+	lw	t2, (DDR_BYTE_WIDTH*4)(v1)
+	la	t1, DDR_PUB_DX4GCR0(k1)
+	sll	t2, t2, PUB_DXn_SLOG
+	add	t0, t0, t2
+	/* t0 - first DXn to disable, t1 - last */
+__ddr_dis_next:
+	sub	t2, t0, t1
+	bgtz	t2, 1f
+	nop
+	lw	t2, 0(t0)
+	ins	t2, zero, 0, 1
+	sw	t2, 0(t0)
+	b	__ddr_dis_next
+	addi	t0, t0, PUB_DXn_STEP
+1:
 
 	pub_set_reg	DDR_PUB_PGCR1, DDR_PUB_SPD_PGCR1
 	pub_set_reg	DDR_PUB_PGCR2, DDR_PUB_SPD_PGCR2
@@ -230,6 +242,15 @@ _ddr_spd_ddrpll_lock_wait:
 	pub_set_reg	DDR_PUB_MR2, DDR_PUB_SPD_MR2
 	pub_set_reg	DDR_PUB_DTCR0, DDR_PUB_SPD_DTCR0
 	pub_set_reg	DDR_PUB_DTCR1, DDR_PUB_SPD_DTCR1
+
+#if 1 /* Not sure that it helps but let it be */
+	pub_get_reg t0, DDR_PUB_PLLCR
+	lui	t1, 0x8
+	or	t0, t0, t1	/* set FRQSEL to 225-490MHz */
+	sw	t0, DDR_PUB_PLLCR(k1)
+	nop
+#endif
+
 	pub_set_reg	DDR_PUB_PIR, DDR_PUB_SPD_PIR_VAL1
 
 	/* Wait till PGSR0[IDONE] is equal to 1. */
@@ -274,7 +295,10 @@ _ddr_spd_data_train_wait:
 	nop	/* Delay slot. */
 #endif
 
-#ifdef ECC_DDR_ENABLE
+	/* Check if ECC is enabled */
+	lw	t0, (DDR3_SPD_ECCCFG0*4)(v1)
+	beqz	t0, _ddr_scrubber_skip
+	nop
 	/*
 	 * Perform initialization memory with pattern using SCRUBBER.
 	 */
@@ -325,8 +349,8 @@ _ddr_spd_scrubber_wait:
 	ori	t2, t2, SCRUB_EN
 	sw	t2, DDRC_SBRCTL(k0)
 	sync
-#endif /* ECC_DDR_ENABLE */
 
+_ddr_scrubber_skip:
 	/* Enable AXI Port */
 	ddrc_set_reg	DDRC_PCTRL(0), DDR3_SPD_PCTRL_0
 
