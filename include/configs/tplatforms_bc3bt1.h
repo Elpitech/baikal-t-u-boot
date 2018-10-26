@@ -59,4 +59,15 @@
 #define CONFIG_SYS_RTC_BUS_NUM  0x01
 #define CONFIG_SYS_I2C_RTC_ADDR 0x51
 
+/*
+ *-----------------------------------------------
+ * U-Boot startup menu
+ *-----------------------------------------------
+ */
+#undef CONFIG_MENU_SHOW
+#define CONFIG_MENUKEY			'm'
+#define CONFIG_AUTOBOOT_KEYED
+#define CONFIG_AUTOBOOT_DELAY_STR	"m"
+#define CONFIG_AUTOBOOT_PROMPT 		"autoboot in %d seconds (press %c to show menu)\n",bootdelay,CONFIG_MENUKEY
+
 #endif /* __CONFIG_TPLATFORMS_BC3BT1_H */
