@@ -154,7 +154,7 @@ static unsigned time2memc(unsigned t, int up)
 #define DDR3_MR2_RTT_S  9
 
 #if defined(CONFIG_CUSTOM_SPD)
-extern const uint8_t *ddr_user_spd;
+extern const uint8_t ddr_user_spd[];
 #endif
 
 #ifdef DDR_USER_REGS
