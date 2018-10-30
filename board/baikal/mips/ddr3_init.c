@@ -181,15 +181,34 @@ static uint16_t crc16 (int count)
 
 int llenv_prepare_buffer0 (void)
 {
-    memset(ddr_buffer0, 0, 256);
+    int rc = -1;
+    unsigned cov, crc;
+
     memset(ddr_buffer1, 0, 256);
 
+#if defined(CONFIG_BAIKAL_SPD_ADDRESS)
+    memset(ddr_buffer0, 0, 256);
+    rc = baikal_read_spd(0, 1, ddr_buffer0, 256);
+    if (rc == 0) {
+        cov = (read_spd(0) & (1U << 7)) ? 116 : 125;
+        crc = crc16(cov + 1);
+        if (crc != ((read_spd(127) << 8) | read_spd(126)))
+            rc = -1;
+        else
+            return 0;
+    }
+#endif
 #if defined(CONFIG_CUSTOM_SPD)
     memcpy(ddr_buffer0, ddr_user_spd, 256);
-    return 0;
-#else /* CONFIG_CUSTOM_SPD */
-    return baikal_read_spd(0, 1, ddr_buffer0, 256);
+    cov = (read_spd(0) & (1U << 7)) ? 116 : 125;
+    crc = crc16(cov + 1);
+    if (crc != ((read_spd(127) << 8) | read_spd(126)))
+        rc = -1;
+    else
+        rc = 0;
 #endif /* CONFIG_CUSTOM_SPD */
+
+    return rc;
 }
 
 int llenv_prepare_buffer1 (void)
@@ -207,11 +226,6 @@ int llenv_prepare_buffer1 (void)
     int i;
   {
     /* SPD parsing part. TODO: move to a separate function. */
-    unsigned cov = (read_spd(0) & (1U << 7)) ? 116 : 125;
-
-    unsigned crc = crc16(cov + 1);
-    if (crc != ((read_spd(127) << 8) | read_spd(126)))
-	   return -1;
 
     spd_g.bus_width = (8 << (read_spd(8) & 7)) +
                       8 * ((read_spd(8) >> 3) & 7); /* this includes ECC bits and extra unused bits */
