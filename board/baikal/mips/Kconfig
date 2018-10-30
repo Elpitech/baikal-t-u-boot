@@ -195,6 +195,12 @@ config DISPLAY_BOARDINFO
 	help
 	  Select this option to display boardinfo on startup
 
+config BAIKAL_PRINT_DDR
+	bool "Print DDR controller regs"
+	default n
+	help
+	  Select this option to see DDR controller initialization regs
+
 endmenu # Common Options
 
 # -----------------------------------------------
