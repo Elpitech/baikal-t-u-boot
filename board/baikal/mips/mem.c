@@ -106,9 +106,8 @@ phys_size_t initdram(int board_type)
 	print_ddr_spd();
 #endif /* CONFIG_BAIKAL_PRINT_SPD */
 
-	printf("SPD source: %s\n", ddr_buffer0 + 128);
-	printf("Ranks = %d, %shighmem = %d MiB (%d MiB below 4G), lowmem = ",
-		rank, ecc ? "ECC, " : "", mem, (ddr_high_size / 1024 / 1024));
+	printf("%s SPD, Ranks = %d, %shighmem = %d MiB (%d MiB below 4G), lowmem = ",
+		ddr_buffer0 + 128, rank, ecc ? "ECC, " : "", mem, (ddr_high_size / 1024 / 1024));
 	if (*((int *)(CONFIG_DDR_INIT_RESULT_v0)))
 	{
 		printf( /*lowmem*/ "...\n");

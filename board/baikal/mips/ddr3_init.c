@@ -3,6 +3,7 @@
 #include <config.h>
 #include "llenv_spd.h"
 #include <linux/string.h>
+#include <linux/compiler.h>
 
 //#define TEST_MODE to build standalone program to test regs calculation
 
@@ -178,8 +179,8 @@ static uint16_t crc16 (int count)
     return crc;
 }
 
-static const char static_spd[8] = "Static\0";
-static const char eeprom_spd[12] = "I2C EEPROM\0";
+static const __maybe_unused char static_spd[8] = "Static\0";
+static const __maybe_unused char eeprom_spd[12] = "I2C EEPROM\0";
 
 int llenv_prepare_buffer0 (void)
 {
@@ -264,7 +265,7 @@ int llenv_prepare_buffer1 (void)
   }
 
     unsigned CL = roundup(spd_t.tAA, spd_t.tCK);
-    unsigned half_width = 0, rank_mask;
+    __maybe_unused unsigned half_width = 0, rank_mask;
     uint32_t t1, reg;
     uint32_t mr0, mr1, mr2;
 
