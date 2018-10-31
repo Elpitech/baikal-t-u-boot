@@ -178,6 +178,8 @@ static uint16_t crc16 (int count)
     return crc;
 }
 
+static const char static_spd[8] = "Static\0";
+static const char eeprom_spd[12] = "I2C EEPROM\0";
 
 int llenv_prepare_buffer0 (void)
 {
@@ -190,6 +192,7 @@ int llenv_prepare_buffer0 (void)
     memset(ddr_buffer0, 0, 256);
     rc = baikal_read_spd(0, 1, ddr_buffer0, 256);
     if (rc == 0) {
+	memcpy(ddr_buffer0 + 128, eeprom_spd, 12);
         cov = (read_spd(0) & (1U << 7)) ? 116 : 125;
         crc = crc16(cov + 1);
         if (crc != ((read_spd(127) << 8) | read_spd(126)))
@@ -200,6 +203,7 @@ int llenv_prepare_buffer0 (void)
 #endif
 #if defined(CONFIG_CUSTOM_SPD)
     memcpy(ddr_buffer0, ddr_user_spd, 256);
+    memcpy(ddr_buffer0 + 128, static_spd, 8);
     cov = (read_spd(0) & (1U << 7)) ? 116 : 125;
     crc = crc16(cov + 1);
     if (crc != ((read_spd(127) << 8) | read_spd(126)))
