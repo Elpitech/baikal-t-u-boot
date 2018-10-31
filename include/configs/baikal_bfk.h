@@ -31,38 +31,15 @@
  *-----------------------------------------------
  */
 #if defined(CONFIG_BAIKAL_BFK)		/* BFK board */
-# define DDR_USER_SPD
-# define DDR_USER_SPD_MT41K2G4
-# define DDR_SPEED_BIN_SPD
-
-# undef DDR_USER_REGS
-# undef DDR_SPEED_BIN_1066
-# undef DDR_SPEED_BIN_1333
-# undef DDR_SPEED_BIN_1600
+# define CONFIG_CUSTOM_SPD
+# define CONFIG_CUSTOM_SPD_FILE		"MT41K1G8"
 #elif defined(CONFIG_BAIKAL_BFKX)	/* BFKX board (BFK1.6+Baikal-T1) */
-# define DDR_USER_SPD
-# define DDR_USER_SPD_MT41K2G4
-# define DDR_SPEED_BIN_1600
-
-# undef DDR_USER_REGS
-# undef DDR_SPEED_BIN_1066
-# undef DDR_SPEED_BIN_1333
-# undef DDR_SPEED_BIN_SPD
-#elif defined(CONFIG_BAIKAL_BFK3)	/* BFK3 board */
-# define DDR_SPEED_BIN_1600
-
-# undef DDR_USER_SPD
-# undef DDR_USER_REGS
-# undef DDR_SPEED_BIN_SPD
-# undef DDR_SPEED_BIN_1066
-# undef DDR_SPEED_BIN_1333
-#endif
-
-#if defined(CONFIG_BAIKAL_BFK3)		/* BFK3 board */
+# define CONFIG_CUSTOM_SPD
+# define CONFIG_CUSTOM_SPD_FILE		"MT41K1G8"
+#elif defined(CONFIG_BAIKAL_BFK3)		/* BFK3 board */
 # define CONFIG_SYS_SPD_BUS_NUM		1
 # define CONFIG_BAIKAL_SPD_ADDRESS	0x50
 #endif
-
 
 /*
  *-----------------------------------------------

@@ -126,14 +126,6 @@
 #define CONFIG_DDR_SCHED_INIT		0x00001001
 #define CONFIG_DDR_SCHED_MSK		0xFFFFFFFB
 // #define CONFIG_BAIKAL_PRINT_DDR
-/* user data */
-// #define DDR_USER_SPD
-// #define DDR_USER_REGS
-/* ddr pll */
-// #define DDR_SPEED_BIN_SPD
-// #define DDR_SPEED_BIN_1066
-// #define DDR_SPEED_BIN_1333
-// #define DDR_SPEED_BIN_1600
 /* Offset of the DDR init handler. */
 #define CONFIG_DDR_INIT_RESULT_OFF_v0	0x0
 #define CONFIG_DDR_INIT_RESULT_OFF_v1	0x4
