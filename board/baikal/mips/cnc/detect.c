@@ -23,29 +23,29 @@ struct cnc_dev_config {
 
 static struct cnc_dev_config cnc_cfgs[] = {
 #if defined(CONFIG_TPLATFORMS_CNC_SFBT1)
-	{CNC_DID_CUDEV, CNC_REV_ANY, "baikal_tplatforms_cnccu-sfbt1.dtb"},
-	{CNC_DID_CU, 2, "baikal_tplatforms_cnccu-sfbt1.dtb"},
-	{CNC_DID_CU, 3, "baikal_tplatforms_cnccu3-sfbt1.dtb"},
-	{CNC_DID_CU, CNC_REV_ANY, "baikal_tplatforms_cnccu3-sfbt1.dtb"},
-	{CNC_DID_OUT, CNC_REV_ANY, "baikal_tplatforms_cncio-sfbt1.dtb"},
-	{CNC_DID_IN, CNC_REV_ANY, "baikal_tplatforms_cncio-sfbt1.dtb"},
-	{CNC_DID_PROBE, CNC_REV_ANY, "baikal_tplatforms_cncio-sfbt1.dtb"},
-	{CNC_DID_DAC, CNC_REV_ANY, "baikal_tplatforms_cncdac-sfbt1.dtb"},
-	{CNC_DID_TTL, CNC_REV_ANY, "baikal_tplatforms_cncttl-sfbt1.dtb"},
-	{CNC_DID_ENDAT22, CNC_REV_ANY, "baikal_tplatforms_cncendat22-sfbt1.dtb"},
-	{CNC_DID_E1VPP, CNC_REV_ANY, "baikal_tplatforms_cnce1vpp-sfbt1.dtb"}
+	{CNC_DID_CUDEV, CNC_REV_ANY, "tplatforms_cnccu-sfbt1.dtb"},
+	{CNC_DID_CU, 2, "tplatforms_cnccu-sfbt1.dtb"},
+	{CNC_DID_CU, 3, "tplatforms_cnccu3-sfbt1.dtb"},
+	{CNC_DID_CU, CNC_REV_ANY, "tplatforms_cnccu3-sfbt1.dtb"},
+	{CNC_DID_OUT, CNC_REV_ANY, "tplatforms_cncio-sfbt1.dtb"},
+	{CNC_DID_IN, CNC_REV_ANY, "tplatforms_cncio-sfbt1.dtb"},
+	{CNC_DID_PROBE, CNC_REV_ANY, "tplatforms_cncio-sfbt1.dtb"},
+	{CNC_DID_DAC, CNC_REV_ANY, "tplatforms_cncdac-sfbt1.dtb"},
+	{CNC_DID_TTL, CNC_REV_ANY, "tplatforms_cncttl-sfbt1.dtb"},
+	{CNC_DID_ENDAT22, CNC_REV_ANY, "tplatforms_cncendat22-sfbt1.dtb"},
+	{CNC_DID_E1VPP, CNC_REV_ANY, "tplatforms_cnce1vpp-sfbt1.dtb"}
 #elif defined(CONFIG_TPLATFORMS_CNC_MSBT2)
-	{CNC_DID_CUDEV, CNC_REV_ANY, "baikal_tplatforms_cnccu-msbt2.dtb"},
-	{CNC_DID_CU, 2, "baikal_tplatforms_cnccu-msbt2.dtb"},
-	{CNC_DID_CU, 3, "baikal_tplatforms_cnccu3-msbt2.dtb"},
-	{CNC_DID_CU, CNC_REV_ANY, "baikal_tplatforms_cnccu3-msbt2.dtb"},
-	{CNC_DID_OUT, CNC_REV_ANY, "baikal_tplatforms_cncio-msbt2.dtb"},
-	{CNC_DID_IN, CNC_REV_ANY, "baikal_tplatforms_cncio-msbt2.dtb"},
-	{CNC_DID_PROBE, CNC_REV_ANY, "baikal_tplatforms_cncio-msbt2.dtb"},
-	{CNC_DID_DAC, CNC_REV_ANY, "baikal_tplatforms_cncdac-msbt2.dtb"},
-	{CNC_DID_TTL, CNC_REV_ANY, "baikal_tplatforms_cncttl-msbt2.dtb"},
-	{CNC_DID_ENDAT22, CNC_REV_ANY, "baikal_tplatforms_cncendat22-msbt2.dtb"},
-	{CNC_DID_E1VPP, CNC_REV_ANY, "baikal_tplatforms_cnce1vpp-msbt2.dtb"}
+	{CNC_DID_CUDEV, CNC_REV_ANY, "tplatforms_cnccu-msbt2.dtb"},
+	{CNC_DID_CU, 2, "tplatforms_cnccu-msbt2.dtb"},
+	{CNC_DID_CU, 3, "tplatforms_cnccu3-msbt2.dtb"},
+	{CNC_DID_CU, CNC_REV_ANY, "tplatforms_cnccu3-msbt2.dtb"},
+	{CNC_DID_OUT, CNC_REV_ANY, "tplatforms_cncio-msbt2.dtb"},
+	{CNC_DID_IN, CNC_REV_ANY, "tplatforms_cncio-msbt2.dtb"},
+	{CNC_DID_PROBE, CNC_REV_ANY, "tplatforms_cncio-msbt2.dtb"},
+	{CNC_DID_DAC, CNC_REV_ANY, "tplatforms_cncdac-msbt2.dtb"},
+	{CNC_DID_TTL, CNC_REV_ANY, "tplatforms_cncttl-msbt2.dtb"},
+	{CNC_DID_ENDAT22, CNC_REV_ANY, "tplatforms_cncendat22-msbt2.dtb"},
+	{CNC_DID_E1VPP, CNC_REV_ANY, "tplatforms_cnce1vpp-msbt2.dtb"}
 #endif
 };
 
@@ -89,8 +89,9 @@ int cnc_detect_board(void)
 		return -1;
 	}
 
-	snprintf(buf, 64, "#conf@%s", config);
+	snprintf(buf, 64, "#conf@baikal_%s", config);
 	setenv("multi_conf", buf);
+	setenv("fdt_file_name", config);
 	printf("CNC:   %s v%hu.%hu detected\n", cnc_dev_name(did), did, (u16)rev);
 
 	return 0;
