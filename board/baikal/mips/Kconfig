@@ -342,11 +342,18 @@ config BAIKAL_ECC
 	default n
 
 config DDR_FREQ_TWEAK
-	int "Adjust DDR3 frequency"
+	int "Adjust DDR3 PLL frequency"
 	range -2 2
 	default "0"
 	help
-	  This allows to increase or decrease DDR3 frequency in 3% steps
+	  This allows to increase or decrease DDR3 PLL frequency in 3% steps
+
+config DDR_CUSTOM_CLK
+	int "Set custom DDR3 bus clocks frequency"
+	range 1066 1600
+	default "0"
+	help
+	  This allows to set custom DDR3 clocks frequency (MT/s)
 
 config CUSTOM_SPD
 	bool "Use user supplied SPD data"
