@@ -248,8 +248,13 @@ int llenv_prepare_buffer1 (void)
     spd_g.cols = 9 + (read_spd(5) & 7);
     spd_g.rows = 12 + (read_spd(5) >> 3);
 
-    unsigned dv = 1000 * read_spd(10) / read_spd(11);
+    unsigned dv = 1000 * read_spd(10) / read_spd(11); // [ps]
+#if CONFIG_DDR_CUSTOM_CLK >= 1066 && CONFIG_DDR_CUSTOM_CLK <= 1600
+    /* Tck[ps] = 1000 * tck * MTB[ns] = 2 * 1000000 / Freq[MT] */
+    spd_t.tCK = 2000000 / CONFIG_DDR_CUSTOM_CLK;
+#else
     spd_t.tCK = read_spd(12) * dv;
+#endif
     spd_t.tAA = read_spd(16) * dv;
     spd_t.tWRmin = read_spd(17) * dv;
     spd_t.tRCD = read_spd(18) * dv;
