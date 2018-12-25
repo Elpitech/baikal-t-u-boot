@@ -78,7 +78,7 @@
 #define CONFIG_IMAGE_FORMAT_LEGACY
 #define OF_STDOUT_PATH	"serial0:115200n8"	/* Serial console settings */
 #define CONFIG_OF_LIBFDT			/* Open Firmware devicetree support	*/
-#define CONFIG_OF_EMBED				/* Internal FDT embedded in image */
+#define CONFIG_OF_SEPARATE			/* Append dtb to U-boot binary */
 #define CONFIG_DEFAULT_DEVICE_TREE 		baikal
 
 /*
