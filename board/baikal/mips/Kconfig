@@ -350,10 +350,10 @@ config DDR_FREQ_TWEAK
 
 config DDR_CUSTOM_CLK
 	int "Set custom DDR3 bus clocks frequency"
-	range 1066 1600
 	default "0"
 	help
-	  This allows to set custom DDR3 clocks frequency (MT/s)
+	  This allows to set custom DDR3 clocks frequency (MT/s). Values out
+	  of [1066; 1600] range effectively disable the customization.
 
 config CUSTOM_SPD
 	bool "Use user supplied SPD data"
