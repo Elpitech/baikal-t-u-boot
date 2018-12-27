@@ -279,6 +279,7 @@ static int memory_post_test1(unsigned long start,
 			      unsigned long size,
 			      unsigned long val)
 {
+//	printf("DBG: %s(start=0x%X, size=0x%X, val=0x%X)\n", __func__, start, size, val);
 	unsigned long i;
 	ulong *mem = (ulong *) start;
 	ulong readback;
@@ -309,6 +310,7 @@ static int memory_post_test1(unsigned long start,
 
 static int memory_post_test2(unsigned long start, unsigned long size)
 {
+//	printf("DBG: %s(start=0x%X, size=0x%X)\n", __func__, start, size);
 	unsigned long i;
 	ulong *mem = (ulong *) start;
 	ulong readback;
@@ -339,6 +341,7 @@ static int memory_post_test2(unsigned long start, unsigned long size)
 
 static int memory_post_test3(unsigned long start, unsigned long size)
 {
+//	printf("DBG: %s(start=0x%X, size=0x%X)\n", __func__, start, size);
 	unsigned long i;
 	ulong *mem = (ulong *) start;
 	ulong readback;
@@ -369,6 +372,7 @@ static int memory_post_test3(unsigned long start, unsigned long size)
 
 static int memory_post_test4(unsigned long start, unsigned long size)
 {
+//	printf("DBG: %s(start=0x%X, size=0x%X)\n", __func__, start, size);
 	unsigned long i;
 	ulong *mem = (ulong *) start;
 	ulong readback;
@@ -399,6 +403,7 @@ static int memory_post_test4(unsigned long start, unsigned long size)
 
 static int memory_post_test_lines(unsigned long start, unsigned long size)
 {
+//	printf("DBG: %s(start=0x%X, size=0x%X)\n", __func__, start, size);
 	int ret = 0;
 
 	ret = memory_post_dataline((unsigned long long *)start);
@@ -417,6 +422,9 @@ static int memory_post_test_lines(unsigned long start, unsigned long size)
 
 static int memory_post_test_patterns(unsigned long start, unsigned long size)
 {
+
+	printf("DBG: %s(start=0x%X, size=0x%X)\n", __func__, start, size);
+//	udelay(1000);
 	int ret = 0;
 
 	ret = memory_post_test1(start, size, 0x00000000);
@@ -445,6 +453,7 @@ static int memory_post_test_patterns(unsigned long start, unsigned long size)
 
 static int memory_post_test_regions(unsigned long start, unsigned long size)
 {
+	printf("DBG: %s(start=0x%X, size=0x%X)\n", __func__, start, size);
 	unsigned long i;
 	int ret = 0;
 
@@ -477,6 +486,7 @@ static int memory_post_tests(unsigned long start, unsigned long size)
 __attribute__((weak))
 int arch_memory_test_prepare(u32 *vstart, u32 *size, phys_addr_t *phys_offset)
 {
+	printf("DBG: %s()\n", __func__);
 	bd_t *bd = gd->bd;
 
 	*vstart = CONFIG_SYS_SDRAM_BASE;
@@ -510,6 +520,7 @@ void arch_memory_failure_handle(void)
 
 int memory_regions_post_test(int flags)
 {
+	printf("DBG: %s(flags=0x%X)\n", __func__, flags);
 	int ret = 0;
 	phys_addr_t phys_offset = 0;
 	u32 memsize, vstart;
@@ -525,20 +536,24 @@ int memory_regions_post_test(int flags)
 
 int memory_post_test(int flags)
 {
+	printf("DBG: %s(flags=0x%X)\n", __func__, flags);
 	int ret = 0;
 	phys_addr_t phys_offset = 0;
 	u32 memsize, vstart;
 
 	arch_memory_test_prepare(&vstart, &memsize, &phys_offset);
-
+	printf("DBG:1 %s\n", __func__);
 	do {
 		if (flags & POST_SLOWTEST) {
+			printf("DBG:2 %s\n", __func__);
 			ret = memory_post_tests(vstart, memsize);
 		} else {			/* POST_NORMAL */
+			printf("DBG:3 %s\n", __func__);
 			ret = memory_post_test_regions(vstart, memsize);
 		}
 	} while (!ret &&
 		!arch_memory_test_advance(&vstart, &memsize, &phys_offset));
+	printf("DBG:4 %s\n", __func__);
 
 	arch_memory_test_cleanup(&vstart, &memsize, &phys_offset);
 	if (ret)
