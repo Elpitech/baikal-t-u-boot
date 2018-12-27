@@ -35,8 +35,9 @@
 #define CONFIG_BAIKAL_SPD_ADDRESS	0x50
 #define CONFIG_SYS_SPD_BUS_NUM 		1
 #define CONFIG_CUSTOM_SPD
-#define CONFIG_CUSTOM_SPD_FILE		"AS4C512M16D3L"
-
+//#define CONFIG_CUSTOM_SPD_FILE	"AS4C512M16D3L"
+//#define CONFIG_CUSTOM_SPD_FILE	"MT41K512M16"
+#define CONFIG_CUSTOM_SPD_FILE		"MT41K512M16R2"
 /*
  *-----------------------------------------------
  * CPU clock settings
@@ -47,13 +48,12 @@
 #define CONFIG_BAIKAL_NAME		"RT1MB"
 #define CONFIG_SYS_CPU_CLOCK_MHZ	1200
 #define CONFIG_SYS_CPU_CLOCK_RATE	(CONFIG_SYS_CPU_CLOCK_MHZ * 1000000)
-
+#define CONFIG_DDR_CUSTOM_CLK		1333
 /*
  *-----------------------------------------------
  * Ethernet controller parameters
  *-----------------------------------------------
  */
-#undef CONFIG_DESIGNWARE_ETH1_BASE
 
 /*
  *-----------------------------------------------
@@ -100,7 +100,7 @@
 /* Use llenv32 implementation of saveenv */
 #define CONFIG_LLENV32_SAVEENV
 #define CONFIG_ENV_IS_IN_FLASH
-#define CONFIG_ENV_OFFSET		0x000E0000
+#define CONFIG_ENV_OFFSET		0x00080000
 #define CONFIG_ENV_SIZE			0x00010000 /* 64 KB */
 #define CONFIG_ENV_ADDR			(CONFIG_SYS_FLASH_BASE + CONFIG_ENV_OFFSET)
 #define CONFIG_ENV_SPI_BUS		CONFIG_BOOT_SPI_BUS
@@ -134,7 +134,7 @@
 #define CONFIG_CMD_BOOTMENU
 #define CONFIG_MENU
 #define CONFIG_MENUKEY			's'
-#define CONFIG_AUTOBOOT_KEYED
+//#define CONFIG_AUTOBOOT_KEYED
 #define CONFIG_AUTOBOOT_DELAY_STR	"s"
 #define CONFIG_AUTOBOOT_PROMPT 		"autoboot in %d seconds\n",bootdelay
 #define CONFIG_MENU_HEADER "--== " CONFIG_BAIKAL_NAME " boot menu ==--"
@@ -179,6 +179,11 @@
 #define CONFIG_MTD_CMDLINE_PARTS
 #define CONFIG_MTD_DEVICE
 #define CONFIG_MTD_PARTITIONS
+
+/*
+ * Post support
+ */
+#define CONFIG_POST	(CONFIG_SYS_POST_MEMORY)
 
 /*
  *-----------------------------------------------
