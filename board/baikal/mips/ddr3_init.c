@@ -207,9 +207,9 @@ int llenv_prepare_buffer0 (void)
     memcpy(ddr_buffer0 + 128, static_spd, 8);
     cov = (read_spd(0) & (1U << 7)) ? 116 : 125;
     crc = crc16(cov + 1);
-    if (crc != ((read_spd(127) << 8) | read_spd(126)))
-        rc = -1;
-    else
+//    if (crc != ((read_spd(127) << 8) | read_spd(126)))
+//        rc = -1;
+//    else
         rc = 0;
 #endif /* CONFIG_CUSTOM_SPD */
 
@@ -567,14 +567,14 @@ int llenv_prepare_buffer1 (void)
     LLENV_SET_SPD_REG(DDR3_SPD_ADDRMAP0, reg);
 
     LLENV_SET_SPD_REG(DDR3_SPD_SARBASE0, 0);
-    LLENV_SET_SPD_REG(DDR3_SPD_SARBASE1, 0x2);
-
-    reg = (spd_g.whole_mem / 256) + 2;
-    LLENV_SET_SPD_REG(DDR3_SPD_SARBASE2, reg);
     LLENV_SET_SPD_REG(DDR3_SPD_SARSIZE0, 0);
 
     reg = (spd_g.whole_mem / 256 - 1 - 1);
+    LLENV_SET_SPD_REG(DDR3_SPD_SARBASE1, 0x2);
     LLENV_SET_SPD_REG(DDR3_SPD_SARSIZE1, reg);
+
+    reg = (spd_g.whole_mem / 256) + 2;
+    LLENV_SET_SPD_REG(DDR3_SPD_SARBASE2, reg);
     LLENV_SET_SPD_REG(DDR3_SPD_SARSIZE2, 0);
 
 
