@@ -55,6 +55,7 @@
 #include <dm/root.h>
 #include <linux/compiler.h>
 #include <linux/err.h>
+#include <asm-generic/gpio.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -604,6 +605,12 @@ static int initr_bbmii(void)
 static int initr_net(void)
 {
 	puts("Net:   ");
+	 /* Disable reset for 88E1512 */
+        gpio_direction_output(17,1);
+         /* Disable reset for 88E1690 */
+        gpio_direction_output(18,1);
+	/* Disable reset for  98DX3257 */
+        gpio_direction_output(27,1);
 	eth_initialize(gd->bd);
 #if defined(CONFIG_RESET_PHY_R)
 	debug("Reset Ethernet PHY\n");
