@@ -136,10 +136,12 @@ llenv_init_ddr:
 	sw	ra, 4(sp)
 
 	/* Only core0 initializes DDR. */
+1:
 	mfc0	t0, MIPS_CP0_EBASE
 	ext	t0, t0, CP0_EBASE_CPUNUM_POS, CP0_EBASE_CPUNUM_BITS
-	bnez	t0, _ddr_init_finish
-	nop	/* Delay slot. */
+//	bnez	t0, _ddr_init_finish 
+	bnez	t0, 1b
+	li	t7, 0xFF	/* Delay slot. */
 
 	CALL	(llenv_prepare_buffer0)
 	CALL	(llenv_prepare_buffer1)
