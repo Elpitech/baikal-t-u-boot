@@ -106,6 +106,7 @@ phys_size_t initdram(int board_type)
 	print_ddr_spd();
 #endif /* CONFIG_BAIKAL_PRINT_SPD */
 
+	ddr_ddrc_regs_print();
 	printf("%s SPD, Ranks = %d, %shighmem = %d MiB (%d MiB below 4G), lowmem = ",
 		ddr_buffer0 + 128, rank, ecc ? "ECC, " : "", mem, (ddr_high_size / 1024 / 1024));
 	if (*((int *)(CONFIG_DDR_INIT_RESULT_v0)))
@@ -118,6 +119,7 @@ phys_size_t initdram(int board_type)
 			*((int *)(CONFIG_DDR_INIT_RESULT_i2c))
 		);
 
+		ddr_ddrc_regs_print();
 #ifndef CONFIG_BAIKAL_FW_CONTINUE_ON_DDR_FAIL
 		return 0;
 #endif /* CONFIG_BAIKAL_FW_CONTINUE_ON_DDR_FAIL */
