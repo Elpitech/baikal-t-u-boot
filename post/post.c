@@ -482,6 +482,8 @@ unsigned long post_time_ms(unsigned long base)
 #if defined(CONFIG_PPC) || defined(CONFIG_BLACKFIN) || defined(CONFIG_ARM)
 	return (unsigned long)lldiv(get_ticks(), get_tbclk() / CONFIG_SYS_HZ)
 		- base;
+#elif defined(CONFIG_MIPS)
+	return 0xBABADEDA;
 #else
 #warning "Not implemented yet"
 	return 0; /* Not implemented yet */
