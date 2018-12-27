@@ -157,7 +157,7 @@
 #define CONFIG_SRAM_BUF0_BASE		(CONFIG_SRAM_BASE + 0x200)
 #define CONFIG_SRAM_BUF1_BASE		(CONFIG_SRAM_BASE + 0x300)
 #define CONFIG_SRAM_STACK_BASE		(CONFIG_SRAM_BASE + CONFIG_SRAM_SIZE - 0x100)
-
+#define _POST_WORD_ADDR			(CONFIG_SRAM_BASE + 0x400)
 /*
  *-----------------------------------------------
  * Physical Memory Map
@@ -281,6 +281,7 @@
 #define CONFIG_CMD_MII
 #define CONFIG_PHYLIB
 #define CONFIG_PHY_GIGE
+#define CONFIG_PHY_MARVELL
 
 /*
  *-----------------------------------------------
