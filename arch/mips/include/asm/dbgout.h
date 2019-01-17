@@ -50,5 +50,10 @@ void ddr_ddrc_regs_print(void);
 #define CFG4		0xDEADCF40
 #define CFG5		0xDEADCF50
 #define CFG6		0xDEADCF60
+#define TLBINDEX	0xDEADCF70
+#define PGMASK		0xDEADCF80
+#define TLBENTRY0	0xDEADCF90
+#define TLBENTRY1	0xDEADCFA0
+#define TLBENTRYHI	0xDEADCFB0
 #define VAL		0xDEAD0010
 #endif // DEBUG_OUT

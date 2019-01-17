@@ -2,7 +2,6 @@
 #include <asm/dbgout.h>
 
 void debug_out(unsigned int type, unsigned int val) {
-	int arr[4] = {0x12345678, 0xA55A5AA5, 0xBEAFDEAD, 0xBABADEDA};
 //	printf("DBG: arr address 0x%08X\n", arr);
 //	printf("DBG: %s()\n", __func__);
 //	printf("DBG: type: 0x%08X, TYPEMASK: 0x%08X, TYPEMAGIC: 0x%08X\n", type, TYPEMASK, TYPEMAGIC);
@@ -10,6 +9,40 @@ void debug_out(unsigned int type, unsigned int val) {
 //	printf("DBG: type & TYPEMASK != TYPEMAGIC: %d\n", type & TYPEMASK != TYPEMAGIC);
 	if(type & TYPEMASK != TYPEMAGIC) {
 		printf("DBG_OUT: Type:0x%X, Value:0x%X\n", type, val);
+		return;
+	}
+	if(type == TLBINDEX) {
+		printf("DBG_OUT: TLBIndex: 0x%X\n", val);
+		return;
+	}
+	if(type == TLBENTRY0) {
+		printf("DBG_OUT: TLBEntry0: 0x%08X. PFN: 0x%X, C: 0x%X, D: 0x%X, V: 0x%X, G: 0x%X\n", 
+			val,
+			(val >> 6) & 0xFFFFFF,
+			(val & 0x38)>> 3,
+			(val & 0x4) >> 2,
+			(val & 0x2) >> 1,
+			(val & 0x1) 
+		      );
+return;
+	}	
+	if(type == TLBENTRY1) {
+		printf("DBG_OUT: TLBEntry1: 0x%08X. PFN: 0x%X, C: 0x%X, D: 0x%X, V: 0x%X, G: 0x%X\n", 
+			val,
+			(val >> 6) & 0xFFFFFF,
+			(val & 0x38)>> 3,
+			(val & 0x4) >> 2,
+			(val & 0x2) >> 1,
+			(val & 0x1) 
+		      );
+		return;
+	}	
+	if(type == TLBENTRYHI) {
+		printf("DBG_OUT: TLBEntryHi: 0x%08X. VPN2: 0x%X\n" ,val, val >> 13);
+		return;
+	}	
+	if(type == PGMASK) {
+		printf("DBG_OUT: PageMask: 0x%08X\n", val);
 		return;
 	}
 	if(type == VAL) {
