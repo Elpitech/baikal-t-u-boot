@@ -23,6 +23,7 @@
 #include <i2c.h>
 #include <initcall.h>
 #include <logbuff.h>
+#include <asm/dbgout.h>
 
 /* TODO: Can we move these into arch/ headers? */
 #ifdef CONFIG_8xx
@@ -182,10 +183,11 @@ static int init_func_ram(void)
 	int board_type = gd->board_type;
 #else
 	int board_type = 0;	/* use dummy arg */
-#endif
-
+#endif	
 	gd->ram_size = initdram(board_type);
 
+	cfgreg_out();
+	prepare_mmu();
 	if (gd->ram_size > 0)
 		return 0;
 
@@ -213,7 +215,7 @@ static int show_dram_config(void)
 #else
 	size = gd->ram_size;
 #endif
-
+	printf("DRAM: lowmem = ");
 	print_size(size, "");
 	board_add_ram_info(0);
 	putc('\n');
@@ -952,7 +954,7 @@ static init_fnc_t init_sequence_f[] = {
 	INIT_FUNC_WATCHDOG_RESET
 
 #ifdef CONFIG_POST
-	init_post,
+//	init_post,
 #endif
 	INIT_FUNC_WATCHDOG_RESET
 	/*

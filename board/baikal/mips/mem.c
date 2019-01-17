@@ -106,12 +106,17 @@ phys_size_t initdram(int board_type)
 	print_ddr_spd();
 #endif /* CONFIG_BAIKAL_PRINT_SPD */
 
-	ddr_ddrc_regs_print();
-	printf("%s SPD, Ranks = %d, %shighmem = %d MiB (%d MiB below 4G), lowmem = ",
-		ddr_buffer0 + 128, rank, ecc ? "ECC, " : "", mem, (ddr_high_size / 1024 / 1024));
+//	ddr_ddrc_regs_print();
+	printf("%s SPD, Ranks = %d, %shighmem = %d MiB (%d MiB below 4G)\n",
+		ddr_buffer0 + 128,
+		rank,
+		ecc ? "ECC, " : "",
+		mem,
+		(ddr_high_size / 1024 / 1024));
+
 	if (*((int *)(CONFIG_DDR_INIT_RESULT_v0)))
 	{
-		printf( /*lowmem*/ "...\n");
+		//printf( /*lowmem*/ "...\n");
 		printf("Baikal FW: DDR init failed v0=0x%x, v1=0x%x, step=0x%x, i2c=0x%x\n",
 			*((int *)(CONFIG_DDR_INIT_RESULT_v0)),
 			*((int *)(CONFIG_DDR_INIT_RESULT_v1)),
