@@ -1,0 +1,72 @@
+#################################################################
+ How to build and run the llenv32 low-level test.
+#################################################################
+ Copyright (C) 2014 Baikal Electronics.
+
+ Author: Alexey Malahov <Alexey.Malahov@baikalelectronics.ru>
+#################################################################
+
+1) make config_{arch}
+
+2) Edit .config according to the test settings
+
+3) Just to build a bunch of standalone test suites:
+	make
+   To build library for brom:
+	make brom
+
+The following images should be built:
+
+<path_to_llenv32>/standalone/llenv32_test.image.srec - the
+image performing all test suites.
+
+<path_to_llenv32>/standalone/suites/llenv32_<ts_name>.srec -
+the image performing the single <ts_name> test suite only.
+
+4) The S-rec images can be ran using brom (Baikal ROM Monitor):
+
+4.1) Run brom under qemu:
+
+Create pipe:
+
+# mknod serial1 p
+
+# <path_to_qemu>/qemu-system-mipsel -bios boot_rom.text -machine baikal-t
+-net none -icount 0 -vnc none -serial stdio -serial pipe:serial1 -smp 2
+
+4.2) Issue the load command from brom.
+
+brom > load_uart
+
+4.3) On the host write the S-rec image into the serial1 pipe:
+
+# cat <path_to_srec>/llenv32_test.image.srec >> <path_to_pipe>/serial1
+
+4.4) Start the S-rec image using the go command.
+
+brom > load_uart
+Load image llenv32_test.image.srec
+.............................................................
+.............................................................
+.............................................................
+.............................................................
+.............................................................
+..................................
+Download 230062 bytes / 6767 S-records, start address=0xa0101000
+
+brom > go 0xa0101000 0xa0101000
+
+Low-Level tests.
+
+Press '?' for help.
+
+llenv32 > 
+
+Good luck!
+
+5) standalone images could be also run on qemu without brom:
+
+<path_to_qemu>/qemu-system-mipsel -bios <path_to_llenv32>/standalone/suites/llenv_<ts_name>.boot.text -test
+<path_to_llenv32>/standalone/suites/llenv_<ts_name>.image.text -machine baikal-t -net none -icount 0 -vnc none  -smp 2
+
+#################################################################

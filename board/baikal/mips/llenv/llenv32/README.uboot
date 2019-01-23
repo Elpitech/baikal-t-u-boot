@@ -1,0 +1,114 @@
+#################################################################
+ How to build BAIKAL FirmWare for uboot.
+#################################################################
+ Copyright (C) 2015 Baikal Electronics.
+
+ Author: Alexey Malahov <Alexey.Malahov@baikalelectronics.ru>
+#################################################################
+
+
+1) make config_{arch}
+
+2) Edit .config according to the following settings
+
+***** CASE I: BUILD UBOOT-FIRMWARE *****
+
+2.1)
+
+INVALIDATE_L1_ON_START = yes
+INVALIDATE_L2_ON_START = yes
+USE_FTLB = yes
+COHERENCE_ENABLE = no
+POWER_ON_CORES = no
+INIT_DDR = yes
+ECC_DDR_ENABLE = no
+
+BUILD_FOR_UBOOT_LIB = no
+BUILD_FOR_UBOOT_FW = yes
+
+2.2) Optionally the following parameters can be set.
+
+USE_DDR_SPD = yes
+DDR_GEOMETRY = MT41K2G4
+
+The baikal FW is linked by address 0x9FC7D000 (0x7D000 offset, 500 Kbytes)
+with these parameters set. The DDR SPD block should be written by address
+0x9FC7FC00 (0x7FC00 offset, 511 Kbytes). The baikal FW includes the SPD block
+of the DDR_GEOMETRY chip by default.
+
+
+3) Just build:
+
+make uboot_fw
+
+The following image should be built:
+
+<path_to_llenv32>/uboot_fw/uboot_baikal.fw - BAIKAL firmware image.
+
+
+
+4) Install the BAIKAL FW into uboot:
+
+4.1) cp uboot_fw/uboot_baikal.fw <path_to_uboot>
+
+4.2) Edit <path_to_uboot>/include/configs/baikal_mips.h to define CONFIG_BAIKAL_FW
+
+4.3) Build uboot.
+
+
+
+
+
+***** CASE II: BUILD LOW-LEVEL LIBRARY  *****
+
+2.1) 
+Set options in config-file
+
+INVALIDATE_L1_ON_START = yes
+INVALIDATE_L2_ON_START = yes
+USE_FTLB = yes
+COHERENCE_ENABLE = no
+POWER_ON_CORES = no
+INIT_DDR = yes
+ECC_DDR_ENABLE = no
+
+BUILD_FOR_UBOOT_LIB = yes
+BUILD_FOR_UBOOT_FW = no
+
+2.2) Adjust the library with the tests you need.
+
+Add the files necessary for your test-suite in .config file.
+
+ Example:
+ #TS_DEV_LIST = ddr_irq dma_cfgreg dma_crypto gmac gpio i2c mem memtest low_power pcie pmu pmu_i2c rtc sata spi terminator timer uart usb wdt xgmac
+ TS_DEV_LIST = memtest
+
+config.sh will automatically generate conf.c file with list of test cases.
+Check that all chosen testcases included in src/tmp/conf.c
+
+2.3) Adjust the Makefiles with the tests you need.
+
+Add the files necessary for your test-suite in Makefiles, under UBOOT_LIB-option.
+In src/Makefile (if the files are in src/dev) or
+In src/<arch>/Makefile.inc (if the files are in src/<arch>)
+
+
+3) Just build:
+
+make uboot_lib
+
+The following library should be build:
+src/libllenv.a
+
+
+4) Copy the library to uboot
+
+4.1) cp src/libllenv.a <uboot_dir>/lib
+
+4.2) Edit <path_to_uboot>/include/configs/baikal_mips.h to define CONFIG_BAIKAL_LLENV
+
+4.3) Build uboot.
+
+Good luck!
+
+#################################################################

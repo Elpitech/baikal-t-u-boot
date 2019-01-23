@@ -80,7 +80,7 @@ dbg_out PGMASK, t6
 	and t5, t1, t5			// PFN0 = PhysAddr & 0xF000 0000
 //dbg_out TREG, t5
 	srl t5, 22			// Load PFN[29:6] =  PFN0 >> (PageSizeBits(28) - 6)
-	ori t5, 0x13			// Add C[5:3]=2, D[2]=0, V[1]=1, G[0]=1 bits
+	ori t5, 0x17			// Add C[5:3]=2, D[2]=0, V[1]=1, G[0]=1 bits
 
 // 3	// Set Entry0
 //dbg_out TLBENTRY0, t5
@@ -100,7 +100,7 @@ dbg_out TLBENTRY0, t6
 	and t5, t1, t5			// PFN1 = PhysAddr & 0xF000 0000
 //dbg_out TREG, t5
 	srl t5, 22			// Load PFN[29:6] =  PFN1 >> (PageSizeBits(28) - 6)
-	ori t5, 0x13			// Add C[5:3]=2, D[2]=0, V[1]=1, G[0]=1 bits
+	ori t5, 0x17			// Add C[5:3]=2, D[2]=1, V[1]=1, G[0]=1 bits
 
 // 4	// Set TLBEntry1 
 //dbg_out TLBENTRY1, t5
@@ -131,6 +131,9 @@ dbg_out TLBENTRYHI, t6
 	// Eval next TLBIndex number
 	subu t2, t2, 0x1		// Decrement 
 //dbg_out_val 0x4
+
+	tlbwi
+
 	// Go to next iteration
 	b 1b
 	nop

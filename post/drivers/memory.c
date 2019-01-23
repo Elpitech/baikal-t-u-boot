@@ -423,7 +423,7 @@ static int memory_post_test_lines(unsigned long start, unsigned long size)
 static int memory_post_test_patterns(unsigned long start, unsigned long size)
 {
 
-	printf("DBG: %s(start=0x%X, size=0x%X)\n", __func__, start, size);
+//	printf("DBG: %s(start=0x%X, size=0x%X)\n", __func__, start, size);
 //	udelay(1000);
 	int ret = 0;
 
@@ -453,19 +453,19 @@ static int memory_post_test_patterns(unsigned long start, unsigned long size)
 
 static int memory_post_test_regions(unsigned long start, unsigned long size)
 {
-	printf("DBG: %s(start=0x%X, size=0x%X)\n", __func__, start, size);
+//	printf("DBG: %s(start=0x%X, size=0x%X)\n", __func__, start, size);
 	unsigned long i;
 	int ret = 0;
-
+	printf("DBG: Memory testing ");
 	for (i = 0; i < (size >> 20) && (!ret); i++) {
 		if (!ret)
-			ret = memory_post_test_patterns(start + (i << 20),
-				0x800);
+			ret = memory_post_test_patterns(start + (i << 20),0x800);
 		if (!ret)
-			ret = memory_post_test_patterns(start + (i << 20) +
-				0xff800, 0x800);
+			ret = memory_post_test_patterns(start + (i << 20) + 0xff800, 0x800);
+		if (i % 64 == 0)
+			printf(".");
 	}
-
+	printf("\n");
 	return ret;
 }
 
@@ -486,16 +486,18 @@ static int memory_post_tests(unsigned long start, unsigned long size)
 __attribute__((weak))
 int arch_memory_test_prepare(u32 *vstart, u32 *size, phys_addr_t *phys_offset)
 {
-	printf("DBG: %s()\n", __func__);
+//	printf("DBG: %s()\n", __func__);
 	bd_t *bd = gd->bd;
-
-	*vstart = CONFIG_SYS_SDRAM_BASE;
+//	printf("DBG: %s() bd:0x%08X\n", __func__, uint32_t(bd));
+/*	*vstart = CONFIG_SYS_SDRAM_BASE;
 	*size = (gd->ram_size >= 256 << 20 ?
 			256 << 20 : gd->ram_size) - (1 << 20);
-
+*/
+	*vstart = 512 * 1024 * 1024;
+	*size = (1024 + 512) * 1024 * 1024;
 	/* Limit area to be tested with the board info struct */
-	if ((*vstart) + (*size) > (ulong)bd)
-		*size = (ulong)bd - *vstart;
+//	if ((*vstart) + (*size) > (ulong)bd)
+//		*size = (ulong)bd - *vstart;
 
 	return 0;
 }
@@ -520,7 +522,7 @@ void arch_memory_failure_handle(void)
 
 int memory_regions_post_test(int flags)
 {
-	printf("DBG: %s(flags=0x%X)\n", __func__, flags);
+//	printf("DBG: %s(flags=0x%X)\n", __func__, flags);
 	int ret = 0;
 	phys_addr_t phys_offset = 0;
 	u32 memsize, vstart;
@@ -542,23 +544,33 @@ int memory_post_test(int flags)
 	u32 memsize, vstart;
 
 	arch_memory_test_prepare(&vstart, &memsize, &phys_offset);
-	printf("DBG:1 %s\n", __func__);
+//	printf("DBG:1 %s\n", __func__);
 	do {
 		if (flags & POST_SLOWTEST) {
-			printf("DBG:2 %s\n", __func__);
+//			printf("DBG:2 %s\n", __func__);
 			ret = memory_post_tests(vstart, memsize);
 		} else {			/* POST_NORMAL */
-			printf("DBG:3 %s\n", __func__);
+//			printf("DBG:3 %s\n", __func__);
 			ret = memory_post_test_regions(vstart, memsize);
 		}
 	} while (!ret &&
 		!arch_memory_test_advance(&vstart, &memsize, &phys_offset));
-	printf("DBG:4 %s\n", __func__);
+//	printf("DBG:4 %s\n", __func__);
 
 	arch_memory_test_cleanup(&vstart, &memsize, &phys_offset);
 	if (ret)
 		arch_memory_failure_handle();
 
+	return ret;
+}
+
+int memory_test(mem_test_t *mem_test) {
+	int ret = 0;
+	printf("DBG: %s(): \n\timmediate_stop: %d, \n\titeration_count: %d, \n\tstart_addr: 0x%08X, \n\tstop_addr: 0x%08X\n", __func__, 
+			mem_test->immediate_stop,
+			mem_test->iteration_count,
+			mem_test->start_addr,
+			mem_test->stop_addr);
 	return ret;
 }
 

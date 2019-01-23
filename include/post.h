@@ -123,6 +123,14 @@ struct post_test {
 	void (*reloc) (void);
 	unsigned long testid;
 };
+
+typedef struct {
+	int immediate_stop;
+	int iteration_count;
+	int start_addr;
+	int stop_addr;
+} mem_test_t;
+
 int post_init_f (void);
 void post_bootmode_init (void);
 int post_bootmode_get (unsigned int * last_test);
@@ -140,7 +148,7 @@ extern struct post_test post_list[];
 extern unsigned int post_list_size;
 extern int post_hotkeys_pressed(void);
 extern int memory_post_test(int flags);
-
+extern int memory_test(mem_test_t *mem_test);
 /*
  *  If GCC is configured to use a version of GAS that supports
  * the .gnu_attribute directive, it will use that directive to

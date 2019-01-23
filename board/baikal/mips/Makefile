@@ -6,6 +6,7 @@
 # SPDX-License-Identifier:	GPL-2.0+
 #
 
+obj-y += memtest.o
 obj-y += preparemmu.o dbgout.o dbgllout.o
 obj-y += cpu.o
 obj-y += clock.o

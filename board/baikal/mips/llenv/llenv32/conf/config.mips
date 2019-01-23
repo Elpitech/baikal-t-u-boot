@@ -1,0 +1,102 @@
+TEST_ARCH = mips
+#CROSS_COMPILE32 = '/sw/tools/x-tools/mipsel-unknown-linux-gnu-hard_fp/bin/mipsel-unknown-linux-gnu-'
+#CROSS_COMPILE32 = '/sw/tools/x-tools/mips-2014.11/bin/mips-sde-elf-'
+CROSS_COMPILE32 = '/sw/tools/x-tools/mipsel-unknown-linux-gnu-5.1/bin/mipsel-unknown-linux-gnu-'
+RUN_SHELL = no
+RUN_ON_ALL_CORES = no
+#TEST_SUITE_ON_CORE1 = sysreg
+INVALIDATE_L1_ON_START = yes
+INVALIDATE_L2_ON_START = no
+USE_FTLB = no
+COHERENCE_ENABLE = no
+POWER_ON_CORES = yes
+UART_FIFO_ENABLE = no
+CM2 = yes
+MMU_CACHEABLE = yes
+BROM_HCI_CHECK = no
+BROM_DEBUG = no
+DEBUG = yes
+TLB_DEBUG = yes
+EXC_DEBUG = yes
+PAGE_SIZE = 4K
+#PAGE_SIZE = 4K 16K 64K 256K 1M 16M 64M 256M
+SIMD_ENABLE = no
+EARLY_PRINTK = no
+INCLUDE_BOOT = yes
+CP0_SYSREG_TEST = no
+
+INIT_DDR = no
+USE_DDR_SPD = no
+UBOOT_I2C_SPD = no
+DDR_INIT_FILL = no
+ECC_DDR_ENABLE = no
+#ECC_DBG_ERR = correctable
+SINGLE_RANK_DDR = no
+DDR_SPD_TEST = no
+
+# Specify DDR3 Speed Bin
+DDR_SPEED_BIN = 1600
+#DDR_SPEED_BIN = 1333
+#DDR_SPEED_BIN = 1066
+
+#CPU_SET_FREQ = yes
+#CPU_FREQ_NR = 1
+#CPU_FREQ_NF = 96
+#CPU_FREQ_OD = 2
+
+# Specify DDR chip. MT41K2G4 is used by default.
+# MT41K1G8 – 64 Meg x 8 x 8 Banks x 2 Ranks
+#DDR_GEOMETRY = MT41K1G8
+
+# MT41K2G4 – 128 Meg x 4 x 8 Banks x 2 Ranks
+DDR_GEOMETRY = MT41K2G4
+
+# MT41K2G4SN – 256 Meg x 4 x 8 banks
+#DDR_GEOMETRY = MT41K2G4SN
+
+# MT41K1G8SN – 128 Meg x 8 x 8 banks
+#DDR_GEOMETRY = MT41K1G8SN
+
+# MT41K512M16 – 64 Meg x 16 x 8 banks
+#DDR_GEOMETRY = MT41K512M16
+
+# K4B4G0846D - 64 Meg X 8 X 8 banks (Samsung)
+#DDR_GEOMETRY = K4B4G0846D
+
+# KVR16S11 - 128 Meg x 8 x 8 Banks x 2 Ranks
+#DDR_GEOMETRY = KVR16S11
+
+# SAMSUNG M471B5173EB0 – 512 Meg x 8 x 8 Banks x 1 Rank
+#DDR_GEOMETRY = M471B5173EB0
+
+# DEPO DP4M3SH3U - 256 Meg × 8 x 8 Banks x 2 Rank
+#DDR_GEOMETRY = DP4M3SH3U
+
+# SAMSUNG K4B4G1646B
+DDR_GEOMETRY = K4B4G1646B
+
+BUILD_FOR_BAIKAL_T = yes
+BUILD_FOR_RTL = no
+BUILD_FOR_HAPS = no
+BUILD_FOR_QEMU = yes
+BUILD_FOR_MALTA = no
+BUILD_FOR_UBOOT_LIB = no
+BUILD_FOR_UBOOT_FW = no
+BUILD_FOR_FCT = no
+BUILD_FOR_FORMULA = no
+
+PHYS_OFFSET = 0xA0100000
+SREC_START = 0xA0101000
+VTABLE_OFFSET = 0x0
+START_TEST_TEXT = 0xA0104000
+VTABLE_BASE = 0xBFC00000
+
+# List of all avialable dev tests:
+# ddr_irq dma_cfgreg dma_crypto gmac gpio i2c mem memtest pcie pmu pmu_i2c rtc sata spi terminator timer uart usb wdt xgmac
+
+TS_DEV_LIST = ddr_irq dma_cfgreg dma_crypto gmac gpio i2c mem memtest pcie pmu pmu_i2c rtc sata spi terminator timer uart usb wdt xgmac
+
+#List of all avialable tests for MIPS
+#cores cp0 cp1 cpc crypto  ddr dgemm dhry except except_tlb fct formula gcr gic instr l1 l2 memset mmu msa sram stream sysreg
+
+TS_MIPS_LIST = cores cp0 cp1 cpc crypto  ddr dgemm dhry except except_tlb fct formula gcr gic instr l1 l2 memset mmu msa sram stream sysreg

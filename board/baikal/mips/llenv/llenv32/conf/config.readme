@@ -1,0 +1,80 @@
+#
+# Low-level and POST tests.
+#
+# Copyright (C) 2014 Baikal Electronics.
+#
+# Author: Alexey Malahov <Alexey.Malahov@baikalelectronics.com>
+#
+# Description: Configuration file.
+#
+
+###################
+# Global settings #
+###################
+
+# Specify architecture: ARM or MIPS.
+TEST_ARCH = MIPS
+#TEST_ARCH = ARM
+
+# Run the shell.
+RUN_SHELL = no
+
+# Start tests on all the cores.
+RUN_ON_ALL_CORES = yes
+#
+# Set TEST_SUITE_ON_CORE1 to run a different test suite on core1.
+# If this variable is not set then the identical test suite runs on
+# both core0 and core1.
+#
+#TEST_SUITE_ON_CORE1 = sysreg
+
+# Invalidate all caches on start.
+INVALIDATE_L1_ON_START = yes
+INVALIDATE_L2_ON_START = no
+
+# Enable coherence.
+COHERENCE_ENABLE = no
+
+# Power other cores on.
+POWER_ON_CORES = yes
+
+# Initialize DDR
+INIT_DDR = no
+
+# Enable DDR ECC.
+ECC_DDR_ENABLE = no
+
+# Enable UART RX/TX FIFOs.
+UART_FIFO_ENABLE = no
+
+###################
+# MIPS settings   #
+###################
+# Set CM2 to yes to enable GIC, GCR and CPC.
+CM2 = yes
+
+# Set MMU_CACHEABLE to yes to set MMU cacheable attribute.
+MMU_CACHEABLE = yes
+
+# Set to yes to check hardware initialization enabled, testing mode.
+BROM_HCI_CHECK = no
+
+###################
+# ARM settings    #
+###################
+###################
+
+# Set environment to build for.
+BUILD_FOR_RTL = no
+BUILD_FOR_HAPS = no
+BUILD_FOR_QEMU = yes
+BUILD_FOR_MALTA = no
+BUILD_FOR_UBOOT = no
+BUILD_FOR_FCT = no
+
+# Set link parmeters.
+PHYS_OFFSET = 0xA0100000
+SREC_START = 0xA0101000
+VTABLE_OFFSET = 0x0
+START_TEST_TEXT = 0xA0104000
+VTABLE_BASE = 0xBFC00000

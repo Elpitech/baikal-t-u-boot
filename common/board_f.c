@@ -187,7 +187,7 @@ static int init_func_ram(void)
 	gd->ram_size = initdram(board_type);
 
 	cfgreg_out();
-	prepare_mmu();
+//	prepare_mmu();
 	if (gd->ram_size > 0)
 		return 0;
 
@@ -954,7 +954,7 @@ static init_fnc_t init_sequence_f[] = {
 	INIT_FUNC_WATCHDOG_RESET
 
 #ifdef CONFIG_POST
-//	init_post,
+	init_post,
 #endif
 	INIT_FUNC_WATCHDOG_RESET
 	/*
