@@ -61,7 +61,7 @@
 #define CONFIG_SYS_I2C_PCA953X_WIDTH	{{CONFIG_SYS_I2C_PCA953X_ADDR, 16, CONFIG_SYS_I2C_PCA953X_BUS_NUM}}
 #define CONFIG_SYS_SHRED_BUS_NUM	1
 #define CONFIG_SYS_SHRED_I2C_ADDR	0x20
-#define CONFIG_PCIE_RST_PIN		0x80
+#define CONFIG_PCIE_RST_PIN		15
 
 /*
  *-----------------------------------------------

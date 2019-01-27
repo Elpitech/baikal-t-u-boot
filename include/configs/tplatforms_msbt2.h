@@ -64,7 +64,7 @@
 #define CONFIG_SYS_BMC_BUS_NUM		1
 #define CONFIG_SYS_BMC_I2C_ADDR		0x08
 #define CONFIG_USB_RST_PIN		0x19
-#define CONFIG_PCIE_RST_PIN		0x80
+#define CONFIG_PCIE_RST_PIN		15
 
 /*
  *-----------------------------------------------
