@@ -736,7 +736,27 @@ static int init_post(void)
 	return 0;
 }
 #endif
-
+static int memtest(void) {
+	
+	void* addr = CONFIG_SRAM_MEMTEST_BASE;
+	uint32_t *crc = ((uint32_t*)addr);
+	mem_test_t *mem_test = ((mem_test_t*)(addr + sizeof(uint32_t)));
+	
+	uint32_t eval_crc = crc16(mem_test, sizeof(mem_test_t));
+	
+	printf("DBG: %s(): crc=0x%08X, eval_crc=0x%08X, immediate_stop=%d,\n" 
+		"iteration_count=%d, start_add=0x%08X, stop_addr=0x%08X\n",
+		__func__, *crc, eval_crc, mem_test->immediate_stop, mem_test->iteration_count,
+		mem_test->start_addr, mem_test->stop_addr);
+//	addr = 0x20000000;
+//	*((uint32_t*)addr) = 0x12345678;
+//	printf("Reading 0x%08X\n", *((uint32_t*)addr));
+	if (*crc == eval_crc) {
+		*crc = 0xFFFFFFFF;
+		memory_test(mem_test);
+	}
+	return 0;
+}
 static int setup_dram_config(void)
 {
 	/* Ram is board specific, so move it to board code ... */
@@ -957,6 +977,8 @@ static init_fnc_t init_sequence_f[] = {
 	init_post,
 #endif
 	INIT_FUNC_WATCHDOG_RESET
+	
+	memtest,
 	/*
 	 * Now that we have DRAM mapped and working, we can
 	 * relocate the code and continue running from DRAM.

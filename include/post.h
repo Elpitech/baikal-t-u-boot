@@ -125,10 +125,10 @@ struct post_test {
 };
 
 typedef struct {
-	int immediate_stop;
-	int iteration_count;
-	int start_addr;
-	int stop_addr;
+	uint32_t immediate_stop;
+	uint32_t iteration_count;
+	uint32_t start_addr;
+	uint32_t stop_addr;
 } mem_test_t;
 
 int post_init_f (void);

@@ -5,6 +5,7 @@
 # SPDX-License-Identifier:	GPL-2.0+
 #
 
+obj-y += crc.o
 obj-y += dbgout.o
 # core
 ifndef CONFIG_SPL_BUILD

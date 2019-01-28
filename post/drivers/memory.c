@@ -205,14 +205,21 @@ const static unsigned long long pattern[] = {
 };
 const unsigned long long otherpattern = 0x0123456789abcdefULL;
 
+uint32_t immediate_stop = 0;
+uint32_t manual = 0;
 
 static int memory_post_dataline(unsigned long long * pmem)
 {
+	if (manual == 1) {
+	//	printf("DBG: %s(pmem=%p)\n", __func__, pmem);
+		printf("Data line testing\n");
+	}
+	int ret = 0;
 	unsigned long long temp64 = 0;
 	int num_patterns = ARRAY_SIZE(pattern);
 	int i;
 	unsigned int hi, lo, pathi, patlo;
-	int ret = 0;
+
 
 	for ( i = 0; i < num_patterns; i++) {
 		move64(&(pattern[i]), pmem++);
@@ -238,6 +245,8 @@ static int memory_post_dataline(unsigned long long * pmem)
 				  "wrote %08x%08x, read %08x%08x !\n",
 					  pmem, pathi, patlo, hi, lo);
 			ret = -1;
+			if (immediate_stop == 1)
+				return ret;
 		}
 	}
 	return ret;
@@ -245,6 +254,10 @@ static int memory_post_dataline(unsigned long long * pmem)
 
 static int memory_post_addrline(ulong *testaddr, ulong *base, ulong size)
 {
+	if (manual == 1) {
+	//	printf("DBG: %s(testaddr=0x%08X, base=0x%08X, size=0x%08X)\n", __func__, testaddr, base, size);
+		printf("Address line testing\n");
+	}
 	ulong *target;
 	ulong *end;
 	ulong readback;
@@ -269,6 +282,8 @@ static int memory_post_addrline(ulong *testaddr, ulong *base, ulong size)
 					"XOR value %08x !\n",
 					testaddr, target, xor);
 				ret = -1;
+				if (immediate_stop == 1)
+					return ret;
 			}
 		}
 	}
@@ -279,12 +294,14 @@ static int memory_post_test1(unsigned long start,
 			      unsigned long size,
 			      unsigned long val)
 {
-//	printf("DBG: %s(start=0x%X, size=0x%X, val=0x%X)\n", __func__, start, size, val);
+	if (manual == 1) {
+	//	printf("DBG: %s(start=0x%X, size=0x%X, val=0x%X)\n", __func__, start, size, val);
+		printf("Writing-reading test: \n\tstart address=0x%08X, size of memory=0x%08X, value=0x%08X\n", start, size, val);
+	}
 	unsigned long i;
 	ulong *mem = (ulong *) start;
 	ulong readback;
 	int ret = 0;
-
 	for (i = 0; i < size / sizeof (ulong); i++) {
 		mem[i] = val;
 		if (i % 1024 == 0)
@@ -310,7 +327,10 @@ static int memory_post_test1(unsigned long start,
 
 static int memory_post_test2(unsigned long start, unsigned long size)
 {
-//	printf("DBG: %s(start=0x%X, size=0x%X)\n", __func__, start, size);
+	if (manual == 1) {
+	//	printf("DBG: %s(start=0x%X, size=0x%X)\n", __func__, start, size);
+		printf("Running bit test: \n\tstart address=0x%08X, size of memory=0x%08X\n", start, size);
+	}
 	unsigned long i;
 	ulong *mem = (ulong *) start;
 	ulong readback;
@@ -341,7 +361,10 @@ static int memory_post_test2(unsigned long start, unsigned long size)
 
 static int memory_post_test3(unsigned long start, unsigned long size)
 {
-//	printf("DBG: %s(start=0x%X, size=0x%X)\n", __func__, start, size);
+	if (manual == 1) {
+	//	printf("DBG: %s(start=0x%X, size=0x%X)\n", __func__, start, size);
+		printf("Writing incrementing counter value test: \n\tstart address=0x%08X, size of memory=0x%08X\n", start, size);
+	}
 	unsigned long i;
 	ulong *mem = (ulong *) start;
 	ulong readback;
@@ -372,7 +395,10 @@ static int memory_post_test3(unsigned long start, unsigned long size)
 
 static int memory_post_test4(unsigned long start, unsigned long size)
 {
-//	printf("DBG: %s(start=0x%X, size=0x%X)\n", __func__, start, size);
+	if (manual == 1) {
+	//	printf("DBG: %s(start=0x%X, size=0x%X)\n", __func__, start, size);i
+		printf("Writing inverted incrementing counter value test: \n\tstart address=0x%08X, size of memory=0x%08X\n", start, size);
+	}
 	unsigned long i;
 	ulong *mem = (ulong *) start;
 	ulong readback;
@@ -403,7 +429,8 @@ static int memory_post_test4(unsigned long start, unsigned long size)
 
 static int memory_post_test_lines(unsigned long start, unsigned long size)
 {
-//	printf("DBG: %s(start=0x%X, size=0x%X)\n", __func__, start, size);
+//	if (manual == 1)
+//		printf("DBG: %s(start=0x%08X, size=0x%08X)\n", __func__, start, size);
 	int ret = 0;
 
 	ret = memory_post_dataline((unsigned long long *)start);
@@ -422,13 +449,15 @@ static int memory_post_test_lines(unsigned long start, unsigned long size)
 
 static int memory_post_test_patterns(unsigned long start, unsigned long size)
 {
-
-//	printf("DBG: %s(start=0x%X, size=0x%X)\n", __func__, start, size);
+//	if (manual == 1)
+//		printf("DBG: %s(start=0x%X, size=0x%X)\n", __func__, start, size);
 //	udelay(1000);
 	int ret = 0;
 
 	ret = memory_post_test1(start, size, 0x00000000);
+//	printf("DBG: %s():1\n", __func__);
 	WATCHDOG_RESET();
+//	printf("DBG: %s():2\n", __func__);
 	if (!ret)
 		ret = memory_post_test1(start, size, 0xffffffff);
 	WATCHDOG_RESET();
@@ -459,7 +488,7 @@ static int memory_post_test_regions(unsigned long start, unsigned long size)
 	printf("DBG: Memory testing ");
 	for (i = 0; i < (size >> 20) && (!ret); i++) {
 		if (!ret)
-			ret = memory_post_test_patterns(start + (i << 20),0x800);
+			ret = memory_post_test_patterns(start + (i << 20), 0x800);
 		if (!ret)
 			ret = memory_post_test_patterns(start + (i << 20) + 0xff800, 0x800);
 		if (i % 64 == 0)
@@ -472,7 +501,8 @@ static int memory_post_test_regions(unsigned long start, unsigned long size)
 static int memory_post_tests(unsigned long start, unsigned long size)
 {
 	int ret = 0;
-
+//	if (manual == 1)
+//		printf("DBG: %s(start=0x%X, size=0x%X)\n", __func__, start, size);
 	ret = memory_post_test_lines(start, size);
 	if (!ret)
 		ret = memory_post_test_patterns(start, size);
@@ -538,7 +568,7 @@ int memory_regions_post_test(int flags)
 
 int memory_post_test(int flags)
 {
-	printf("DBG: %s(flags=0x%X)\n", __func__, flags);
+//	printf("DBG: %s(flags=0x%X)\n", __func__, flags);
 	int ret = 0;
 	phys_addr_t phys_offset = 0;
 	u32 memsize, vstart;
@@ -565,12 +595,49 @@ int memory_post_test(int flags)
 }
 
 int memory_test(mem_test_t *mem_test) {
-	int ret = 0;
-	printf("DBG: %s(): \n\timmediate_stop: %d, \n\titeration_count: %d, \n\tstart_addr: 0x%08X, \n\tstop_addr: 0x%08X\n", __func__, 
+	printf("Memore testing: \n\timmediate_stop: %d, \n\titeration_count: %d, \n\tstart_addr: 0x%08X, \n\tstop_addr: 0x%08X\n", 
 			mem_test->immediate_stop,
 			mem_test->iteration_count,
 			mem_test->start_addr,
 			mem_test->stop_addr);
+	
+
+	int ret = 0;
+	phys_addr_t phys_offset = 0;
+	u32 memsize = mem_test->stop_addr - mem_test->start_addr;
+	u32 vstart = mem_test->start_addr;
+	uint32_t iteration = mem_test->iteration_count;
+	immediate_stop = mem_test->immediate_stop;
+	
+	if (mem_test->start_addr == 0 && mem_test->stop_addr == 0) {
+		ret = arch_memory_test_prepare(&vstart, &memsize, &phys_offset);
+		if (ret)
+			return ret;
+	}
+	else {
+		if (mem_test->start_addr >= mem_test->stop_addr) {
+			// TODO Print error
+			printf("%s(): Error. Invalid address range\n");
+			return ERANGE; // TODO Define ERANGE
+		}
+	
+		if (mem_test->start_addr < 0x20000000) {
+			mem_test->start_addr = 0x20000000;
+			printf("%s(): Warning. Start address should be greater 512MB\n");
+		}
+	}
+	manual = 1;	
+	do {
+		printf("\n\nNew testing\n");
+		ret = memory_post_tests(vstart, memsize);
+
+		if(ret && immediate_stop)
+			return ret;
+
+		--iteration;
+		
+	} while ( !mem_test->iteration_count || ((iteration > 0) && mem_test->iteration_count));
+
 	return ret;
 }
 
