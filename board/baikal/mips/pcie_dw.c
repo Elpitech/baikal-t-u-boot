@@ -94,6 +94,7 @@ static void dw_set_iatu_region(int dir, int index, int base_addr, int limit_addr
 	smp_mb();
 }
 
+#ifndef CONFIG_BAIKAL_T1
 #define PLL_WAIT_RETRIES 1000
 static int dw_init_pll(const unsigned int pmu_register)
 {
@@ -121,16 +122,20 @@ static int dw_init_pll(const unsigned int pmu_register)
 
 	return OK;
 }
+#endif
 
 static int dw_pcie_init(void)
 {
 	volatile uint32_t reg;
 	int i, st = 0;
+	uint32_t rstc_mask = 0;
 
 	/* PMU PCIe init. */
 
+#ifndef CONFIG_BAIKAL_T1
 	/* 1., 2. Start BK_PMU_PCIEPLL_CTL. */
 	dw_init_pll(BK_PMU_PCIEPLL_CTL);
+#endif
 
 	/* 3. Read value of BK_PMU_AXI_PCIE_M_CTL, set EN bit. */
 	reg = READ_PMU_REG(BK_PMU_AXI_PCIE_M_CTL);
@@ -143,32 +148,53 @@ static int dw_pcie_init(void)
 	WRITE_PMU_REG(BK_PMU_AXI_PCIE_S_CTL, reg);
 
 	/*
-	 * 5. Read value of BK_PMU_PCIE_RSTC, set bits: PHY_RESET,
-	 * PIPE_RESET, CORE_RST, PWR_RST, STICKY_RST, NONSTICKY_RST, HOT_RESET.
+	 * 5. Manage RESET* bits
+	 * (PHY_RESET, PIPE_RESET, CORE_RST, PWR_RST, STICKY_RST, NONSTICKY_RST)
 	 */
-#if 0
 	reg = READ_PMU_REG(BK_PMU_PCIE_RSTC);
-	reg |= (PMU_PCIE_RSTC_PHY_RESET | PMU_PCIE_RSTC_PIPE_RESET |
-		PMU_PCIE_RSTC_CORE_RST|  PMU_PCIE_RSTC_PWR_RST |
-		PMU_PCIE_RSTC_STICKY_RST | PMU_PCIE_RSTC_NONSTICKY_RST
-		/*PMU_PCIE_RSTC_HOT_RESET*/);
-	WRITE_PMU_REG(BK_PMU_PCIE_RSTC, reg);
+#ifdef CONFIG_BAIKAL_T1
+	/* we have Baikal-T1 chip, perform enhanced reset procedure */
+	if (reg & PMU_PCIE_RSTC_REQ_PHY_RST)
+		rstc_mask |= PMU_PCIE_RSTC_PHY_RESET;
+	if (reg & PMU_PCIE_RSTC_REQ_CORE_RST)
+		rstc_mask |= PMU_PCIE_RSTC_CORE_RST;
+	if (reg & PMU_PCIE_RSTC_REQ_STICKY_RST)
+		rstc_mask |= PMU_PCIE_RSTC_STICKY_RST;
+	if (reg & PMU_PCIE_RSTC_REQ_NON_STICKY_RST)
+		rstc_mask |= PMU_PCIE_RSTC_NONSTICKY_RST;
+#else /* BAIKAL-T */
+	/* we have Baikal-T chip, perform simplified reset procedure */
+	rstc_mask = (PMU_PCIE_RSTC_PHY_RESET | PMU_PCIE_RSTC_PIPE_RESET |
+		     PMU_PCIE_RSTC_CORE_RST|  PMU_PCIE_RSTC_PWR_RST |
+		     PMU_PCIE_RSTC_STICKY_RST | PMU_PCIE_RSTC_NONSTICKY_RST);
 #endif
-
-	/* 6. Read value of BK_PMU_PCIE_RSTC, reset PHY_RESET bit. */
+	WRITE_PMU_REG(BK_PMU_PCIE_RSTC, reg | rstc_mask);
+	udelay(10);
 	reg = READ_PMU_REG(BK_PMU_PCIE_RSTC);
-	reg &= ~(PMU_PCIE_RSTC_PHY_RESET | PMU_PCIE_RSTC_PIPE_RESET |
-		 PMU_PCIE_RSTC_CORE_RST|  PMU_PCIE_RSTC_PWR_RST |
-		 PMU_PCIE_RSTC_STICKY_RST | PMU_PCIE_RSTC_NONSTICKY_RST);
-	WRITE_PMU_REG(BK_PMU_PCIE_RSTC, reg);
-
-	/* 3.1 Set DBI2 mode, dbi2_cs = 0x1 */
-	reg = READ_PMU_REG(BK_PMU_PCIE_GENC);
-	reg |= PMU_PCIE_GENC_DBI2_MODE;
-	WRITE_PMU_REG(BK_PMU_PCIE_GENC, reg);
+	reg &= ~rstc_mask;
+	reg = READ_PMU_REG(BK_PMU_PCIE_RSTC);
+	printf("BK_PMU_PCIE_RSTC = %08x\n", reg);
+	if (reg & 0x3f11) {
+		reg &= ~0x3f11;
+		WRITE_PMU_REG(BK_PMU_PCIE_RSTC, reg);
+		udelay(10);
+		reg = READ_PMU_REG(BK_PMU_PCIE_RSTC);
+		printf("New PCIE_RSTC: %08x\n", reg);
+	}
 
 	/* 3.2 Set writing to RO Registers Using DBI */
 	WRITE_PCIE_REG(PCIE_MISC_CONTROL_1_OFF, DBI_RO_WR_EN);
+
+	/* 3.1 Set DBI2 mode, dbi2_cs = 0x1 */
+	reg = READ_PMU_REG(BK_PMU_PCIE_GENC);
+	reg &= ~PMU_PCIE_GENC_DBI2_MODE;
+	WRITE_PMU_REG(BK_PMU_PCIE_GENC, reg);
+	/* set PCI bridge class (subtractive decode) */
+	WRITE_PCIE_REG(PCI_CLASS_REVISION, (PCI_CLASS_CODE_BRIDGE << 24) |
+					   (PCI_CLASS_SUB_CODE_BRIDGE_PCI << 16) |
+					   (0x1 << 8) | 0x01); /* transparent, rev.1 */
+	reg |= PMU_PCIE_GENC_DBI2_MODE;
+	WRITE_PMU_REG(BK_PMU_PCIE_GENC, reg);
 
 	/* 4.1 Allow access to the PHY registers, phy0_mgmt_pcs_reg_sel = 0x1. */
 	reg = READ_PMU_REG(BK_PMU_PCIE_GENC);
@@ -203,34 +229,16 @@ static int dw_pcie_init(void)
 	 * PWR_RST, STICKY_RST, NONSTICKY_RST, HOT_RESET.
 	 */
 	reg = READ_PMU_REG(BK_PMU_PCIE_RSTC);
+#if 1 //vvv: debug
+printf("BK_PMU_PCIE_RSTC(2): %08x\n", reg);
+#endif
 	reg &= ~(PMU_PCIE_RSTC_PIPE_RESET | PMU_PCIE_RSTC_CORE_RST | PMU_PCIE_RSTC_PWR_RST |
 		 PMU_PCIE_RSTC_STICKY_RST | PMU_PCIE_RSTC_NONSTICKY_RST | PMU_PCIE_RSTC_HOT_RESET);
 	WRITE_PMU_REG(BK_PMU_PCIE_RSTC, reg);
 
 	debug("%s: DEV_ID_VEND_ID=0x%x CLASS_CODE_REV_ID=0x%x\n", __FUNCTION__,
-		READ_PCIE_REG(PCIE_TYPE1_DEV_ID_VEND_ID_REG),
-		READ_PCIE_REG(PCIE_TYPE1_CLASS_CODE_REV_ID_REG));
-
-	/* 5. Set the fast mode. */
-	reg = READ_PCIE_REG(PCIE_PORT_LINK_CTRL_OFF);
-	reg |= FAST_LINK_MODE;
-	WRITE_PCIE_REG(PCIE_PORT_LINK_CTRL_OFF, reg);
-
-	reg = dw_pcie_phy_read(PCIE_PHY_DWC_GLBL_PLL_CFG_0);
-	reg &= ~PCS_SDS_PLL_FTHRESH_MASK;
-	dw_pcie_phy_write(PCIE_PHY_DWC_GLBL_PLL_CFG_0, reg);
-
-	reg = dw_pcie_phy_read(PCIE_PHY_DWC_GLBL_TERM_CFG);
-	reg |= FAST_TERM_CAL;
-	dw_pcie_phy_write(PCIE_PHY_DWC_GLBL_TERM_CFG, reg);
-
-	reg = dw_pcie_phy_read(PCIE_PHY_DWC_RX_LOOP_CTRL);
-	reg |= (FAST_OFST_CNCL | FAST_DLL_LOCK);
-	dw_pcie_phy_write(PCIE_PHY_DWC_RX_LOOP_CTRL, reg);
-
-	reg = dw_pcie_phy_read(PCIE_PHY_DWC_TX_CFG_0);
-	reg |= (FAST_TRISTATE_MODE | FAST_RDET_MODE | FAST_CM_MODE);
-	dw_pcie_phy_write(PCIE_PHY_DWC_TX_CFG_0, reg);
+		READ_PCIE_REG(PCI_VENDOR_ID),
+		READ_PCIE_REG(PCI_CLASS_REVISION));
 
 	/* 6. Set number of lanes. */
 	reg = READ_PCIE_REG(PCIE_GEN2_CTRL_OFF);
@@ -243,45 +251,38 @@ static int dw_pcie_init(void)
 	reg |= (0x7 << LINK_CAPABLE_SHIFT);
 	WRITE_PCIE_REG(PCIE_PORT_LINK_CTRL_OFF, reg);
 
-	/* 7. Enable GEN3 */
-	reg = READ_PCIE_REG(PCIE_GEN3_EQ_CONTROL_OFF);
-	reg &= ~(GEN3_EQ_FB_MODE_MASK | GEN3_EQ_PSET_REQ_VEC_MASK);
-	reg |= ((GEN3_EQ_EVAL_2MS_DISABLE) | (0x1 << GEN3_EQ_FB_MODE_SHIFT) |
-			    (0x1 << GEN3_EQ_PSET_REQ_VEC_SHIFT));
-	WRITE_PCIE_REG(PCIE_GEN3_EQ_CONTROL_OFF, reg);
+	/* 7.1 Disable entire DFE */
+	reg = dw_pcie_phy_read(PCIE_PHY_DWC_RX_LOOP_CTRL);
+	reg |= 0x2;
+	dw_pcie_phy_write(PCIE_PHY_DWC_RX_LOOP_CTRL, reg);
 
-	WRITE_PCIE_REG(PCIE_LANE_EQUALIZATION_CONTROL01_REG, 0);
-	WRITE_PCIE_REG(PCIE_LANE_EQUALIZATION_CONTROL23_REG, 0);
+	reg = 0x3F;
+	dw_pcie_phy_write(PCIE_PHY_DWC_RX_AEQ_VALBBD_2, reg);
 
-	dw_pcie_phy_write(PCIE_PHY_DWC_RX_PRECORR_CTRL, 0);
-	dw_pcie_phy_write(PCIE_PHY_DWC_RX_CTLE_CTRL, 0x200);
-	dw_pcie_phy_write(PCIE_PHY_DWC_RX_VMA_CTRL, 0xc000);
-	dw_pcie_phy_write(PCIE_PHY_DWC_PCS_LANE_VMA_FINE_CTRL_0, 0);
-	dw_pcie_phy_write(PCIE_PHY_DWC_PCS_LANE_VMA_FINE_CTRL_1, 0);
-	dw_pcie_phy_write(PCIE_PHY_DWC_PCS_LANE_VMA_FINE_CTRL_2, 0);
-	dw_pcie_phy_write(PCIE_PHY_DWC_EQ_WAIT_TIME, 0xa);
+	reg = 0;
+	dw_pcie_phy_write(PCIE_PHY_DWC_RX_AEQ_VALBBD_1, reg);
 
 	/* Configure bus. */
-	reg = READ_PCIE_REG(PCIE_SEC_LAT_TIMER_SUB_BUS_SEC_BUS_PRI_BUS_REG);
-	reg &= 0xff000000;
-	reg |= (0x00ff0000 | (PCIE_ROOT_BUS_NUM << 8)); /* IDT PCI Bridge don't like the primary bus equals 0 */
-	WRITE_PCIE_REG(PCIE_SEC_LAT_TIMER_SUB_BUS_SEC_BUS_PRI_BUS_REG, reg);
+	reg = READ_PCIE_REG(PCI_PRIMARY_BUS);
+	reg &= 0xff000000;	/* keep latency */
+	reg |= ((0xff << 16) | ((PCIE_ROOT_BUS_NUM + 1) << 8) | PCIE_ROOT_BUS_NUM);
+	WRITE_PCIE_REG(PCI_PRIMARY_BUS, reg);
 
 	/* Setup memory base. */
-	reg = ((PHYS_PCIMEM_LIMIT_ADDR & 0xfff00000) | ((PHYS_PCIMEM_BASE_ADDR & 0xfff00000) >> 16));
-	WRITE_PCIE_REG(PCIE_MEM_LIMIT_MEM_BASE_REG, reg);
+	reg = ((PCIMEM_BUS_LIMIT & 0xfff00000) | ((PCIMEM_BUS_ADDR & 0xfff00000) >> 16));
+	WRITE_PCIE_REG(PCI_MEMORY_BASE, reg);
 
 	/* Setup IO base. */
-	reg = ((PHYS_PCIIO_LIMIT_ADDR & 0x0000f000) | ((PHYS_PCIIO_BASE_ADDR & 0x0000f000) >> 8));
-	WRITE_PCIE_REG(PCIE_SEC_STAT_IO_LIMIT_IO_BASE_REG, reg);
-	reg = ((PHYS_PCIIO_LIMIT_ADDR & 0xffff0000) | ((PHYS_PCIIO_BASE_ADDR & 0xffff0000) >> 16));
-	WRITE_PCIE_REG(PCIE_IO_LIMIT_UPPER_IO_BASE_UPPER_REG, reg);
+	reg = (0 << 8) | 0xf0;	/* I/O base is 0, limit 0xffff */
+	WRITE_PCIE_REG(PCI_IO_BASE, reg);
+	reg = 0;	/* upper base/limit = 0 */
+	WRITE_PCIE_REG(PCI_IO_BASE_UPPER16, reg);
 
 	/* 8. Set master for PCIe EP. */
-	reg = READ_PCIE_REG(PCIE_TYPE1_STATUS_COMMAND_REG);
-	reg |= (TYPE1_STATUS_COMMAND_REG_BME | TYPE1_STATUS_COMMAND_REG_MSE | TYPE1_STATUS_COMMAND_REG_IOSE);
+	reg = READ_PCIE_REG(PCI_COMMAND);
+	reg |= (PCI_COMMAND_MASTER | PCI_COMMAND_MEMORY | PCI_COMMAND_IO);
 	reg |= (PCI_COMMAND_PARITY | PCI_COMMAND_SERR); // Add check error.
-	WRITE_PCIE_REG(PCIE_TYPE1_STATUS_COMMAND_REG, reg);
+	WRITE_PCIE_REG(PCI_COMMAND, reg);
 
 	/* AER */
 	reg =  READ_PCIE_REG(PCIE_DEVICE_CONTROL_DEVICE_STATUS);
@@ -301,19 +302,6 @@ static int dw_pcie_init(void)
 	WRITE_PCIE_REG(PCIE_CORR_ERR_STATUS_OFF, reg);
 	WRITE_PCIE_REG(PCIE_CORR_ERR_MASK_OFF, 0);
 
-#if 0
-#ifdef DW_CHECK_ECRC
-	reg = READ_PCIE_REG(PCIE_ADV_ERR_CAP_CTRL_OFF);
-	/* ECRC Generation Enable */
-	if (reg & PCI_ERR_CAP_ECRC_GENC)
-		reg |= PCI_ERR_CAP_ECRC_GENE;
-	/* ECRC Check Enable */
-	if (reg & PCI_ERR_CAP_ECRC_CHKC)
-		reg |= PCI_ERR_CAP_ECRC_CHKE;
-	WRITE_PCIE_REG(PCIE_ADV_ERR_CAP_CTRL_OFF, reg);
-#endif /* DW_CHECK_ECRC */
-#endif
-
 	/* 9. Set Inbound/Outbound iATU regions. */
 
 	/* dw_set_iatu_region(dir,  index, base_addr, limit_addr, target_addr, tlp_type) */
@@ -321,17 +309,25 @@ static int dw_pcie_init(void)
 	dw_set_iatu_region(REGION_DIR_OUTBOUND, IATU_RD0_INDEX, PHYS_PCI_RD0_BASE_ADDR >> 16,
 			   PHYS_PCI_RD0_LIMIT_ADDR >> 16, 0x0000, TLP_TYPE_CFGRD0);
 
-	dw_set_iatu_region(REGION_DIR_OUTBOUND, IATU_RD1_INDEX, PHYS_PCI_RD1_BASE_ADDR >> 16,
-			   PHYS_PCI_RD1_LIMIT_ADDR >> 16, 0x0000, TLP_TYPE_CFGRD1);
-
 	dw_set_iatu_region(REGION_DIR_OUTBOUND, IATU_MEM_INDEX, PHYS_PCIMEM_BASE_ADDR >> 16,
-			   PHYS_PCIMEM_LIMIT_ADDR >> 16, PHYS_PCIMEM_BASE_ADDR >> 16, TLP_TYPE_MEM);
+			   PHYS_PCIMEM_LIMIT_ADDR >> 16, PCIMEM_BUS_ADDR >> 16, TLP_TYPE_MEM);
 
 	dw_set_iatu_region(REGION_DIR_OUTBOUND, IATU_IO_INDEX, PHYS_PCIIO_BASE_ADDR >> 16,
-			   PHYS_PCIIO_LIMIT_ADDR >> 16, PHYS_PCIIO_BASE_ADDR >> 16,  TLP_TYPE_IO);
+			   PHYS_PCIIO_LIMIT_ADDR >> 16, 0x0000,  TLP_TYPE_IO);
 
 	smp_mb();
 
+	/* Set GEN3/GEN2 speed */
+	reg = READ_PCIE_REG(PCIE_LINK_CONTROL2_LINK_STATUS2_REG);
+	reg &= ~PCIE_LINK_CONTROL2_GEN_MASK;
+#ifdef CONFIG_BAIKAL_T1
+	reg |= PCIE_LINK_CONTROL2_GEN3;
+#else
+	reg |= PCIE_LINK_CONTROL2_GEN2;
+#endif
+	WRITE_PCIE_REG(PCIE_LINK_CONTROL2_LINK_STATUS2_REG, reg);
+	smp_mb();
+	
 	/* 10. Set LTSSM enable, app_ltssm_enable=0x1 */
 	reg = READ_PMU_REG(BK_PMU_PCIE_GENC);
 	reg |= PMU_PCIE_GENC_LTSSM_ENABLE;
@@ -358,7 +354,8 @@ static int dw_pcie_init(void)
 		}
 	}
 
-	debug("%s: PCIe error core = 0x%x\n", __FUNCTION__, st);
+	if (st)
+		printf("%s: PCIe error core = 0x%x\n", __FUNCTION__, st);
 
 	/* Check that GEN3 is set in PCIE_LINK_CONTROL_LINK_STATUS_REG. */
 	reg = READ_PCIE_REG(PCIE_LINK_CONTROL_LINK_STATUS_REG);
@@ -376,22 +373,27 @@ static int dw_pcibios_read(struct pci_controller *hose, pci_dev_t d,
 	u32 addr;
 	u16 target;
 
-	if ((PCI_BUS(d) == PCIE_ROOT_BUS_NUM) && (PCI_DEV(d) != 0)) {
-		*val = 0xffffffff;
-		return -EINVAL;
-	}
-
 	target = (d >> 8) & 0xffff;
 
 	if (PCI_BUS(d) == PCIE_ROOT_BUS_NUM) {
+		if (PCI_DEV(d) != 0) {
+			*val = 0xffffffff;
+			return -EINVAL;
+		}
+		addr = PCIE_CFG_BASE;
+	} else if (PCI_BUS(d) == (PCIE_ROOT_BUS_NUM + 1)) {
+		if (PCI_DEV(d) != 0) {
+			*val = 0xffffffff;
+			return -EINVAL;
+		}
 		/* dw_set_iatu_region(dir, index, base_addr, limit_addr, target_addr, tlp_type) */
 		dw_set_iatu_region(REGION_DIR_OUTBOUND, IATU_RD0_INDEX, PHYS_PCI_RD0_BASE_ADDR >> 16,
 			                 PHYS_PCI_RD0_LIMIT_ADDR >> 16, target, TLP_TYPE_CFGRD0);
 		addr = PCI_RD0_BASE_ADDR;
 	} else {
-		dw_set_iatu_region(REGION_DIR_OUTBOUND, IATU_RD1_INDEX, PHYS_PCI_RD1_BASE_ADDR >> 16,
-			                 PHYS_PCI_RD1_LIMIT_ADDR >> 16, target, TLP_TYPE_CFGRD1);
-		addr = PCI_RD1_BASE_ADDR;
+		dw_set_iatu_region(REGION_DIR_OUTBOUND, IATU_RD0_INDEX, PHYS_PCI_RD0_BASE_ADDR >> 16,
+			                 PHYS_PCI_RD0_LIMIT_ADDR >> 16, target, TLP_TYPE_CFGRD1);
+		addr = PCI_RD0_BASE_ADDR;
 	}
 
 	smp_mb();
@@ -408,21 +410,23 @@ static int dw_pcibios_write(struct pci_controller *hose, pci_dev_t d,
 	u32 addr;
 	u16 target;
 
-	if ((PCI_BUS(d) == PCIE_ROOT_BUS_NUM) && (PCI_DEV(d) != 0)) {
-		return -EINVAL;
-	}
-
 	target = (d >> 8) & 0xffff;
 
 	if (PCI_BUS(d) == PCIE_ROOT_BUS_NUM) {
+		if (PCI_DEV(d) != 0)
+			return -EINVAL;
+		addr = PCIE_CFG_BASE;
+	} else if (PCI_BUS(d) == (PCIE_ROOT_BUS_NUM + 1)) {
+		if (PCI_DEV(d) != 0)
+			return -EINVAL;
 		/* dw_set_iatu_region(dir, index, base_addr, limit_addr, target_addr, tlp_type) */
 		dw_set_iatu_region(REGION_DIR_OUTBOUND, IATU_RD0_INDEX, PHYS_PCI_RD0_BASE_ADDR >> 16,
 				   PHYS_PCI_RD0_LIMIT_ADDR >> 16, target, TLP_TYPE_CFGRD0);
 		addr = PCI_RD0_BASE_ADDR;
 	} else {
-		dw_set_iatu_region(REGION_DIR_OUTBOUND, IATU_RD1_INDEX, PHYS_PCI_RD1_BASE_ADDR >> 16,
-				   PHYS_PCI_RD1_LIMIT_ADDR >> 16, target, TLP_TYPE_CFGRD1);
-		addr = PCI_RD1_BASE_ADDR;
+		dw_set_iatu_region(REGION_DIR_OUTBOUND, IATU_RD0_INDEX, PHYS_PCI_RD0_BASE_ADDR >> 16,
+				   PHYS_PCI_RD0_LIMIT_ADDR >> 16, target, TLP_TYPE_CFGRD1);
+		addr = PCI_RD0_BASE_ADDR;
 	}
 
 	smp_mb();
@@ -439,14 +443,32 @@ void pci_init_board(void)
 	/* Static instance of the controller. */
 	static struct pci_controller    pcc;
 	struct pci_controller           *hose = &pcc;
+	int rc, region = 0;
+	unsigned long bus_addr, phys_addr, size;
 
 	memset(&pcc, 0, sizeof(pcc));
 
-	/* PCI memory space */
-	pci_set_region(&hose->regions[0], PHYS_PCIMEM_BASE_ADDR, KSEG1ADDR(PHYS_PCIMEM_BASE_ADDR),
-			PHYS_PCIMEM_LIMIT_ADDR - PHYS_PCIMEM_BASE_ADDR + 1, PCI_REGION_MEM);
+	bus_addr = PCIMEM_BUS_ADDR;
+	phys_addr = KSEG1ADDR(PHYS_PCIMEM_BASE_ADDR);
+	size = PHYS_PCIMEM_LIMIT_ADDR - PHYS_PCIMEM_BASE_ADDR + 1;
 
-	hose->region_count = 1;
+#ifdef CONFIG_PCIPREF_SIZE
+	pci_set_region(&hose->regions[region], bus_addr, phys_addr,
+			CONFIG_PCIPREF_SIZE, PCI_REGION_PREFETCH);
+	bus_addr += CONFIG_PCIPREF_SIZE;
+	phys_addr += CONFIG_PCIPREF_SIZE;
+	size -= CONFIG_PCIPREF_SIZE;
+	region++;
+#endif
+	/* PCI memory space */
+	pci_set_region(&hose->regions[region], bus_addr, phys_addr,
+			size, PCI_REGION_MEM);
+	region++;
+
+	pci_set_region(&hose->regions[region], 0, KSEG1ADDR(PHYS_PCIIO_BASE_ADDR),
+			PHYS_PCIIO_LIMIT_ADDR - PHYS_PCIIO_BASE_ADDR + 1, PCI_REGION_IO);
+
+	hose->region_count = region + 1;
 
 	pci_set_ops(hose, pci_hose_read_config_byte_via_dword,
 			  pci_hose_read_config_word_via_dword,
@@ -455,13 +477,16 @@ void pci_init_board(void)
 			  pci_hose_write_config_word_via_dword,
 			  dw_pcibios_write);
 
+	/* Release 'reset' from devices (board specific) */
+	board_pci_reset();
+
 	/* Start the controller. */
-	if (dw_pcie_init())
-		return;
+	rc = dw_pcie_init();
 
 	pci_register_hose(hose);
 	hose->first_busno = PCIE_ROOT_BUS_NUM;
-	hose->last_busno = pci_hose_scan(hose);
+	if (rc == 0)
+		hose->last_busno = pci_hose_scan(hose);
 }
 
 int pci_skip_dev(struct pci_controller *hose, pci_dev_t dev)
