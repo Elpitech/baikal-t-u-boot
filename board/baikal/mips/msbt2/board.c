@@ -12,6 +12,8 @@
 #include <netdev.h>
 #include <pca953x.h>
 
+#include <fru.h>
+
 DECLARE_GLOBAL_DATA_PTR;
 
 #define BIT(x)			(1<<(x))
@@ -19,6 +21,8 @@ DECLARE_GLOBAL_DATA_PTR;
 #ifdef CONFIG_BOARD_EARLY_INIT_R
 int board_early_init_r(void)
 {
+	fru_open_parse();
+
 	return 0;
 }
 #endif /* CONFIG_BOARD_EARLY_INIT_R */
