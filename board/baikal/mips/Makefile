@@ -43,6 +43,7 @@ obj-$(CONFIG_TPLATFORMS_TC_SFBT1) += tclient/
 obj-$(CONFIG_TPLATFORMS_TC_MSBT2) += tclient/
 obj-$(CONFIG_TPLATFORMS_CNC_SFBT1) += cnc/
 obj-$(CONFIG_TPLATFORMS_CNC_MSBT2) += cnc/
+obj-$(CONFIG_TPLATFORMS_BN1BT1) += bn1bt1/
 #ifdef CONFIG_CUSTOM_SPD
 SPD_FILE := $(patsubst "%", SPD_%.o, $(CONFIG_CUSTOM_SPD_FILE))
 obj-y += $(SPD_FILE)

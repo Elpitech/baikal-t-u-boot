@@ -99,9 +99,14 @@ config TPLATFORMS_CNC_MSBT2
 	help
 	  Select this option for T-platforms CNC boards with MSBT2 installed
 
+config TPLATFORMS_BN1BT1
+	bool "Baikal-T1 for T-platforms BN1BT1 Board"
+	help
+	  Select this option for T-platforms Baikal-T1 based BN1BT1 board
+
 endchoice # Board type
 
-if TPLATFORMS_MITX
+if TPLATFORMS_MITX || TPLATFORMS_BN1BT1
 
 choice
         prompt "Choose the way to enter recovery"
@@ -115,7 +120,7 @@ config LONGPRESS
 config JUMPER
 	bool "Enter recovery by jumper connecting rx to tx"
 	help
-	  Select this option well...  in other case"
+	  Select this option well...  in other case
 
 endchoice # the way to enter recovery
 
@@ -150,11 +155,11 @@ config SYS_CONFIG_NAME
 
 config TP_BOOTCONF
 	bool
-	default TPLATFORMS_MITX || TPLATFORMS_MRBT1
+	default TPLATFORMS_MITX || TPLATFORMS_MRBT1 || TPLATFORMS_BN1BT1
 
 config TP_FRU
 	bool
-	default TPLATFORMS_MITX || TPLATFORMS_MRBT1
+	default TPLATFORMS_MITX || TPLATFORMS_MRBT1 || TPLATFORMS_BN1BT1
 
 endif # TARGET_BAIKAL_MIPS
 
