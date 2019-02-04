@@ -6,6 +6,3 @@
 #
 
 obj-y  = board.o
-obj-y += bootconf.o
-obj-y += fru.o
-obj-$(CONFIG_CMD_SERVICE) += cmd_service.o

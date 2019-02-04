@@ -23,6 +23,9 @@ KCFLAGS += -I$(KBUILD_SRC)/lib/baikal/llenv
 #endif
 obj-$(CONFIG_PCIE_DW) += pcie_dw.o
 obj-$(CONFIG_VIDEO_SM750) += video.o font8x8.o logo.o
+obj-$(CONFIG_TP_BOOTCONF) += bootconf.o
+obj-$(CONFIG_TP_FRU) += fru.o
+obj-$(CONFIG_CMD_SERVICE) += cmd_service.o
 obj-$(CONFIG_BAIKAL_BFK) += bfk/
 obj-$(CONFIG_BAIKAL_BFKX) += bfk/
 obj-$(CONFIG_BAIKAL_BFK3) += bfk/
@@ -44,3 +47,4 @@ obj-$(CONFIG_TPLATFORMS_CNC_MSBT2) += cnc/
 SPD_FILE := $(patsubst "%", SPD_%.o, $(CONFIG_CUSTOM_SPD_FILE))
 obj-y += $(SPD_FILE)
 #endif
+ccflags-y += -I$(srctree)/board/baikal/mips

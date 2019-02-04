@@ -148,6 +148,14 @@ config SYS_CONFIG_NAME
 	string "Define this to include include/configs/<config_name>.h"
 	default "baikal_mips"
 
+config TP_BOOTCONF
+	bool
+	default TPLATFORMS_MITX || TPLATFORMS_MRBT1
+
+config TP_FRU
+	bool
+	default TPLATFORMS_MITX || TPLATFORMS_MRBT1
+
 endif # TARGET_BAIKAL_MIPS
 
 # -----------------------------------------------
