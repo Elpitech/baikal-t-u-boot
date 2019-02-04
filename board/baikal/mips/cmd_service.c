@@ -90,13 +90,13 @@ static int do_service_shred(int argc, char * const argv[])
 
 static int do_service_memory(int argc, char * const argv[])
 {
-  const uint32_t max_mem = 0xd0000000;
-  uint64_t real_mem = tp_get_mem_size()<<20;
-	printf("DDR size: %i\n", tp_get_mem_size());
-  setenv_hex("ddr_size", tp_get_mem_size()<<20);
-  setenv_hex("accessible_mem", (real_mem>max_mem ? max_mem : (uint32_t)real_mem));
+  uint32_t high_mem = get_ddr_highmem_size();
 
-	return CMD_RET_SUCCESS;
+  setenv_hex("ddr_size", high_mem);
+  setenv_hex("accessible_mem", high_mem);
+  printf("DDR size: %u\n", high_mem);
+
+  return CMD_RET_SUCCESS;
 }
 
 static int do_service_mmc_speed(int argc, char * const argv[])
