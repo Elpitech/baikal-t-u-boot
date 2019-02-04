@@ -467,15 +467,6 @@ tp_gpio_set(int usb, int pcie, int hdd) {
   gpio_free(gpio_hdd_led);
 }
 
-#define DDR3_SPD_SARSIZE1       21
-#define DDR3_SEG_SIZE		256
-uint32_t
-tp_get_mem_size(void) {
-  int *s = (int *)(CONFIG_SRAM_BASE + 0x1000);
-  uint32_t mem = (s[DDR3_SPD_SARSIZE1] + 1)*DDR3_SEG_SIZE;
-  return mem;
-}
-
 void
 tp_bmc_set_bootreason(uint8_t reason, uint8_t arg) {
   if (bmc_version[0]>=2) {

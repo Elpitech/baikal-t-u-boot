@@ -25,32 +25,31 @@
 #include <asm/addrspace.h>
 #include <asm/io.h>
 
-/* Define DW_CHECK_ECRC to add checking CRC. */
-//#define DW_CHECK_ECRC
-
 #define PCIE_CFG_BASE                   0xBF052000
 #define PMU_BASE                        0xBF04D000
-/* Start enumerating the buses from 1 since IDT-switch oddly acts, when it's
- * directly connected to the RC and has bus number 0 */
-#define PCIE_ROOT_BUS_NUM       1
+
+#define PCIE_ROOT_BUS_NUM       0
 
 #define	PHYS_PCIMEM_BASE_ADDR		(0x08000000)
-#define	PHYS_PCIMEM_LIMIT_ADDR		(0x18000000 - 1)
-#define IATU_MEM_INDEX			2
+#define	PHYS_PCIMEM_LIMIT_ADDR		(0x1BD00000 - 1)
+#define IATU_MEM_INDEX			0
 
-#define	PHYS_PCI_RD0_BASE_ADDR		(0x18000000)
-#define	PHYS_PCI_RD0_LIMIT_ADDR		(0x18010000 - 1)
+#define PHYS_PCI_RD0_BASE_ADDR		(0x1BD10000)
+#define PHYS_PCI_RD0_LIMIT_ADDR		(0x1BDB0000 - 1)
 #define PCI_RD0_BASE_ADDR		KSEG1ADDR(PHYS_PCI_RD0_BASE_ADDR)
-#define IATU_RD0_INDEX			0
+#define IATU_RD0_INDEX			1	// compatible with linux driver
 
-#define	PHYS_PCI_RD1_BASE_ADDR		(0x18010000)
-#define	PHYS_PCI_RD1_LIMIT_ADDR		(0x18020000 - 1)
-#define PCI_RD1_BASE_ADDR		KSEG1ADDR(PHYS_PCI_RD1_BASE_ADDR)
-#define IATU_RD1_INDEX			1
+#define	PHYS_PCIIO_BASE_ADDR		0x1BD00000
+#define	PHYS_PCIIO_LIMIT_ADDR		(0x1BD10000 - 1)
+#define IATU_IO_INDEX			2
 
-#define	PHYS_PCIIO_BASE_ADDR		0x18020000
-#define	PHYS_PCIIO_LIMIT_ADDR		(0x1BDB0000 - 1)
-#define IATU_IO_INDEX			3
+#ifndef CONFIG_PCIMEM_BUS_ADDR
+#define PCIMEM_BUS_ADDR		PHYS_PCIMEM_BASE_ADDR	/* no translation */
+#else
+#define PCIMEM_BUS_ADDR		CONFIG_PCIMEM_BUS_ADDR
+#endif
+
+#define PCIMEM_BUS_LIMIT	(PCIMEM_BUS_ADDR + (PHYS_PCIMEM_LIMIT_ADDR - PHYS_PCIMEM_BASE_ADDR))
 
 #define	PHYS_PCI_MSI_BASE_ADDR		(0x1BDB0000)
 #define	PHYS_PCI_START_ADDR		(0x08000000)
@@ -377,6 +376,12 @@
 /* IATU_REGION_CTRL_2_OFF_OUTBOUND_0 */
 #define IATU_REGION_CTRL_2_OFF_OUTBOUND_0_REGION_EN	(1 << 31)
 
+/* PCIE_LINK_CONTROL2_LINK_STATUS2 */
+#define PCIE_LINK_CONTROL2_GEN_MASK		(0xF)
+#define PCIE_LINK_CONTROL2_GEN1			(1)
+#define PCIE_LINK_CONTROL2_GEN2			(2)
+#define PCIE_LINK_CONTROL2_GEN3			(3)
+
 /* PHY control registers. */
 #define PCIE_PHY_DWC_GLBL_PLL_CFG_0		(0x1c000)	/* PLL Global Configuration Register #0 */
 #define PCIE_PHY_DWC_GLBL_PLL_CFG_1		(0x1c001)	/* PLL Global Configuration Register #1 */
@@ -632,6 +637,12 @@
 #define PMU_PCIE_RSTC_NONSTICKY_RST	(1 << 11)	/* PCIe core nonsticky_rst_n reset control bit. */
 #define PMU_PCIE_RSTC_HOT_RESET		(1 << 12)	/* Hot Reset control bit. */
 #define PMU_PCIE_RSTC_REQ_RESET		(1 << 13)	/* PCIe core link_req_rst_not ready for reset signal status bit */
+#define PMU_PCIE_RSTC_SMLH_REQ_RST	(1 << 14)
+#define PMU_PCIE_RSTC_REQ_PHY_RST	(1 << 16)
+#define PMU_PCIE_RSTC_REQ_CORE_RST	(1 << 24)
+#define PMU_PCIE_RSTC_REQ_STICKY_RST	(1 << 26)
+#define PMU_PCIE_RSTC_REQ_NON_STICKY_RST (1 << 27)
+
 #define PMU_PCIE_RSTC_BRIDGE_FLUSH	(1 << 19)	/* PCIe AXI bridge bridge_flush_not signal status bit. */
 
 /* BK_PMU_PCIE_GENC */
