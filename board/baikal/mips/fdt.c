@@ -43,6 +43,11 @@
 #include <errno.h>
 #include <libfdt.h>
 #include <asm/io.h>
+#include <board.h>
+
+#define HIGHMEM_MAX_SIZE32 0xE0000000U
+#define HIGHMEM_BASE_ADDR  0x20000000U
+#define LOWMEM_BASE_SIZE   0x08000000U
 
 /*
  * Convert the passed property to be of physical address
@@ -54,7 +59,7 @@ static int fdt_convert_prop(void *data, int len)
 	/* Copy the value from the data, convert and get it back */
 	if (len == 8) {
 		uint64_t val = fdt64_to_cpu(*(uint64_t *)data);
-		val = cpu_to_fdt64(XPHYSADDR(val));
+		val = cpu_to_fdt64(CPHYSADDR(val));
 		memmove(data, &val, len);
 	} else if (len == 4) {
 		uint32_t val = fdt32_to_cpu(*(uint32_t *)data);
@@ -69,12 +74,38 @@ static int fdt_convert_prop(void *data, int len)
 }
 
 /*
- * Translate the /memreserve/ nodes to be within KSEG0
+ * Set the passed property in accordance with the passed size flag
+ */
+static int fdt_setprop_uxx(void *fdt, int nodeoffset, const char *name,
+			   uint64_t val, int is_u64)
+{
+	if (is_u64)
+		return fdt_setprop_u64(fdt, nodeoffset, name, val);
+	else
+		return fdt_setprop_u32(fdt, nodeoffset, name, (uint32_t)val);
+}
+
+/*
+ * Append the passed property in accordance with the passed size flag
+ */
+static int fdt_appendprop_uxx(void *fdt, int nodeoffset, const char *name,
+			      uint64_t val, int is_u64)
+{
+	if (is_u64)
+		return fdt_appendprop_u64(fdt, nodeoffset, name, val);
+	else
+		return fdt_appendprop_u32(fdt, nodeoffset, name, (uint32_t)val);
+}
+
+/*
+ * Translate the /memreserve/ nodes to be within KSEG0 and initialize
+ * the memory node by data retrieved from the SPD blob.
  */
 int arch_fixup_fdt(void *fdt_blob)
 {
+	int n, total, ret, offset, ac, sc;
 	uint64_t addr, size;
-	int n, total, ret;
+	bool ac_64, sc_64;
 
 	/*
 	 * Walk through all the memreserve nodes deleting a first one and
@@ -104,6 +135,49 @@ int arch_fixup_fdt(void *fdt_blob)
 			puts("Failed to get memreserve back");
 			return ret;
 		}
+	}
+
+	/*
+	 * Find memory node and try to reinitialize it reg property with
+	 * default lowmem range and with highmem range read from SPD
+	 */
+	offset = fdt_path_offset(fdt_blob, "/");
+	if (offset < 0) {
+		puts("Couldn't find root fdt node\n");
+		return offset;
+	}
+	ac = fdt_address_cells(fdt_blob, offset);
+	sc = fdt_size_cells(fdt_blob, offset);
+	if (ac < 0 || sc < 0) {
+		puts("Couldn't get address or size cells\n");
+		return -EINVAL;
+	}
+	ac_64 = (ac == 2);
+	sc_64 = (sc == 2);
+	offset = fdt_path_offset(fdt_blob, "/memory");
+	if (offset < 0) {
+		puts("Couldn't find memory fdt node\n");
+		return offset;
+	}
+	/* First setup the lowmem base address and default size */
+	ret = fdt_setprop_uxx(fdt_blob, offset, "reg", 0, ac_64);
+	if (!ret)
+		ret = fdt_appendprop_uxx(fdt_blob, offset, "reg", LOWMEM_BASE_SIZE, sc_64);
+	if (ret < 0) {
+		puts("Couldn't set lowmem fdt property\n");
+		return ret;
+	}
+	/* Then retrieve the highmem size and push its range to the fdt blob */
+	ret = fdt_appendprop_uxx(fdt_blob, offset, "reg", HIGHMEM_BASE_ADDR, ac_64);
+	if (!ret) {
+		size = get_ddr_highmem_size();
+		/* Manually clamp the size if there is no room for 64-bit value */
+		size = (!sc_64 && size > HIGHMEM_MAX_SIZE32) ? HIGHMEM_MAX_SIZE32 : size;
+		ret = fdt_appendprop_uxx(fdt_blob, offset, "reg", size, sc_64);
+	}
+	if (ret < 0) {
+		puts("Couldn't set highmem fdt property\n");
+		return ret;
 	}
 
 	return 0;

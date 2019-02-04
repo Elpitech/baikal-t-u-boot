@@ -8,6 +8,6 @@
 #ifndef _BOARD_H_
 #define _BOARD_H_
 
-uint32_t get_ddr_highmem_size(void);
+uint64_t get_ddr_highmem_size(void);
 
 #endif /* _BOARD_H_ */

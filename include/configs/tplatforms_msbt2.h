@@ -32,6 +32,7 @@
  * Init caches, tlb, DDR, cp0, PMU
  *-----------------------------------------------
  */
+#define CONFIG_BAIKAL_ECC
 #define CONFIG_BAIKAL_SPD_ADDRESS       0x50
 #define CONFIG_SYS_SPD_BUS_NUM          1
 #define CONFIG_CUSTOM_SPD
