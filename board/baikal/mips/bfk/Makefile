@@ -8,4 +8,4 @@
 
 obj-y  = board.o
 obj-y += nvram.o
-obj-$(CONFIG_CMD_SERVICE) += cmd_service.o oem.o
+obj-$(CONFIG_BFK_CMD_SERVICE) += cmd_service.o oem.o

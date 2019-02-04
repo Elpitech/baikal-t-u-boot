@@ -73,7 +73,7 @@
  * OEM, FRU, NVRAM and service options
  *-----------------------------------------------
  */
-#define CONFIG_CMD_SERVICE
+#define CONFIG_BFK_CMD_SERVICE
 #define CONFIG_SYS_NVRAM_BUS_NUM	0x01
 #define CONFIG_SYS_I2C_NVRAM_ADDR	0x56
 #define CONFIG_SYS_OEM_BUS_NUM		0x01
