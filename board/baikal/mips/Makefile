@@ -48,4 +48,4 @@ obj-$(CONFIG_TPLATFORMS_BN1BT1) += bn1bt1/
 SPD_FILE := $(patsubst "%", SPD_%.o, $(CONFIG_CUSTOM_SPD_FILE))
 obj-y += $(SPD_FILE)
 #endif
-ccflags-y += -I$(srctree)/board/baikal/mips
+subdir-ccflags-y += -I$(srctree)/board/baikal/mips

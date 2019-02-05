@@ -8,6 +8,7 @@
 #define TAG "FRU"
 
 #include <common.h>
+#include <net.h>
 #include <i2c.h>
 #define fmsg(...) {printf (__VA_ARGS__); }
 #define flog(...) {printf ("L["TAG"]: "__VA_ARGS__); }
@@ -335,6 +336,32 @@ fru_mrec_update_mac(struct fru *f, uint8_t *mac, int iface) {
   return -1;
 }
 
+static void fru_setall_macaddr(void)
+{
+  uchar enetaddr[6];
+  char name[32];
+  int i;
+
+  for (i = 0; i < CONFIG_FRU_MAX_IFACES; ++i) {
+    switch (i) {
+    case 0:
+      memcpy(enetaddr, fru.mac0, 6);
+      break;
+    case 1:
+      memcpy(enetaddr, fru.mac1, 6);
+      break;
+    case 2:
+      memcpy(enetaddr, fru.mac2, 6);
+      break;
+    default:
+      break;
+    }
+
+    sprintf(name, i ? "eth%daddr" : "ethaddr", i);
+    eth_setenv_enetaddr(name, enetaddr);
+  }
+}
+
 int
 fru_mrec_update_bootdevice(struct fru *f, uint8_t *bootdevice) {
   int i = 0;
@@ -539,6 +566,7 @@ fru_update_mrec_eeprom(void) {
 int
 fru_open_parse(void) {
   int i = 0;
+  memset(fru.bootdevice, 0, FRU_STR_MAX);
   fru.mac0 = fru.mac_data;
   fru.mac1 = fru.mac_data+6;
   fru.mac2 = fru.mac_data+12;
@@ -574,5 +602,15 @@ fru_open_parse(void) {
       fru_dbg("FRU: found power policy record [0x%02x]\n", fru.power_policy);
     }
   }
+
+  printf("P/N:   %s\n", fru.val_part_number);
+  printf("S/N:   %s\n", fru.val_serial_number);
+
+  fru_setall_macaddr();
+
+  setenv("board_serial", (char *)fru.val_serial_number);
+  setenv("board_rev", (char *)fru.val_part_number);
+  setenv("board_name", (char *)fru.val_product_name);
+
   return 0;
 }

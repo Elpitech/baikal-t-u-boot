@@ -74,7 +74,6 @@ struct fru {
 
 extern struct fru fru;
 int fru_open_parse(void);
-int fru_update_mac(uint8_t *mac, int iface);
 int fru_update_mrec_eeprom(void);
 int fru_mrec_update_mac(struct fru *f, uint8_t *mac, int iface);
 int fru_mrec_update_bootdevice(struct fru *f, uint8_t *bootdevice);
