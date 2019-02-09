@@ -27,8 +27,6 @@ int board_early_init_r(void)
     int start = 0;
     int gpio_usb_reset = 13;
 
-    fru_open_parse();
-
     /* reset USB hub and configure it */
     debug("Reset and configure USB hub: ");
     err = gpio_request(gpio_usb_reset, "usb_reset");
@@ -77,6 +75,7 @@ int board_early_init_r(void)
 #ifdef CONFIG_BOARD_LATE_INIT
 int board_late_init(void)
 {
+    fru_open_parse();
     tp_bmc_get_version();
     tp_check_boot();
 

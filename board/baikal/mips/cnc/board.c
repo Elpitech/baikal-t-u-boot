@@ -22,10 +22,6 @@ DECLARE_GLOBAL_DATA_PTR;
 #ifdef CONFIG_BOARD_EARLY_INIT_R
 int board_early_init_r(void)
 {
-#ifdef CONFIG_TP_FRU
-	fru_open_parse();
-#endif
-
 	return 0;
 }
 #endif /* CONFIG_BOARD_EARLY_INIT_R */
@@ -61,6 +57,9 @@ static int cnc_clear_pcie_reset(void)
 
 int board_late_init(void)
 {
+#ifdef CONFIG_TP_FRU
+	fru_open_parse();
+#endif
 	cnc_detect_board();
 
 	cnc_clear_pcie_reset();

@@ -30,8 +30,6 @@ DECLARE_GLOBAL_DATA_PTR;
 #ifdef CONFIG_BOARD_EARLY_INIT_R
 int board_early_init_r(void)
 {
-    fru_open_parse();
-
     tp_reset_peripherals();
 
     /* Return success */
@@ -42,6 +40,7 @@ int board_early_init_r(void)
 #ifdef CONFIG_BOARD_LATE_INIT
 int board_late_init(void)
 {
+    fru_open_parse();
     tp_bmc_get_version();
     tp_check_boot();
 
