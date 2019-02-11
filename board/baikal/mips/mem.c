@@ -45,18 +45,13 @@ int baikal_read_spd(uint32_t addr, int alen, uint8_t *buffer, int len)
 }
 #endif
 
-/* Add this function for transmit high memory size to common/image.c */
-#define MAX_HIGHMEM_SIZE    0xDFFFFFF0
 #define DDR3_SEG_SIZE		256
 
-uint32_t get_ddr_highmem_size(void)
+uint64_t get_ddr_highmem_size(void)
 {
-	uint32_t size;
+	uint64_t size;
 	size = ddr_buffer1 [DDR3_SPD_SARSIZE1] + 1;
 	size *= DDR3_SEG_SIZE * 1024 * 1024;
-
-	if (size > MAX_HIGHMEM_SIZE)
-		size = MAX_HIGHMEM_SIZE;
 
 	return size;
 }
@@ -95,7 +90,6 @@ void print_ddr_spd (void)
 phys_size_t initdram(int board_type)
 {
 	uint32_t rank = get_ddr_rank();
-	uint32_t ddr_high_size = get_ddr_highmem_size();
 	uint32_t mem = (ddr_buffer1[DDR3_SPD_SARSIZE1] + 1)*DDR3_SEG_SIZE;
 	uint32_t ecc = ddr_buffer1[DDR3_SPD_ECCCFG0];
 
@@ -106,8 +100,8 @@ phys_size_t initdram(int board_type)
 	print_ddr_spd();
 #endif /* CONFIG_BAIKAL_PRINT_SPD */
 
-	printf("%s SPD, Ranks = %d, %shighmem = %d MiB (%d MiB below 4G), lowmem = ",
-		ddr_buffer0 + 128, rank, ecc ? "ECC, " : "", mem, (ddr_high_size / 1024 / 1024));
+	printf("%s SPD, Ranks = %u, %shighmem = %u MiB, lowmem = ",
+		ddr_buffer0 + 128, rank, ecc ? "ECC, " : "", mem);
 	if (*((int *)(CONFIG_DDR_INIT_RESULT_v0)))
 	{
 		printf( /*lowmem*/ "...\n");

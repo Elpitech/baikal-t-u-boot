@@ -1226,18 +1226,6 @@ int image_setup_linux(bootm_headers_t *images)
 	ulong rd_len;
 	int ret;
 
-	/* Variables for dtc replacing */
-#define HIGH_MEM_BASEADDR 0x2000000000000000
-#define MAX_HIGHMEM_SIZE  0xC0000000
-#define LOWMEM_BASE_SIZE  0x0000000008000000
-
-	uint32_t ddr_high_size;
-	uint64_t val;
-	int offset,prop_offset;
-	void *fdt_blob;
-	const char *path = "/memory";				/* Name of subnode in fdt  */
-	const char *prop_name = "reg";				/* Name of property in fdt */
-
 	if (IMAGE_ENABLE_OF_LIBFDT)
 		boot_fdt_add_mem_rsv_regions(lmb, *of_flat_tree);
 
@@ -1260,27 +1248,6 @@ int image_setup_linux(bootm_headers_t *images)
 		ret = boot_relocate_fdt(lmb, of_flat_tree, &of_size);
 		if (ret)
 			return ret;
-
-		fdt_blob = *of_flat_tree; 			 /* Addr of dtb in ddr */
-		ddr_high_size = get_ddr_highmem_size(); 	 /* Call from board/baikal/mips/board.c */
-		val = HIGH_MEM_BASEADDR | (uint64_t) ddr_high_size;
-
-		if (fdt_check_header(fdt_blob) != 0) {
-			printf("It is not a fdt");
-			return 1;
-		}
-		/* Find offset of memory node and replace values */
-		offset = fdt_path_offset(fdt_blob,path);
-		prop_offset = fdt_first_property_offset(fdt_blob,offset);
-		prop_offset = fdt_next_property_offset(fdt_blob,prop_offset);
-		if (fdt_setprop_u64(fdt_blob,offset,prop_name,LOWMEM_BASE_SIZE) != 0){
-			printf("Fail at setting mem property");
-			return 1;
-		}
-		if (fdt_appendprop_u64(fdt_blob,offset,prop_name,val) != 0){
-			printf("Fail at append to mem property");
-			return 1;
-		}
 	}
 
 	if (IMAGE_ENABLE_OF_LIBFDT && of_size) {

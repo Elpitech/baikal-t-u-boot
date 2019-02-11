@@ -17,6 +17,7 @@
 #include "pvt.h"
 #include "video.h"
 #include "bootconf.h"
+#include "board.h"
 
 //#define debug printf
 
@@ -90,11 +91,13 @@ static int do_service_shred(int argc, char * const argv[])
 
 static int do_service_memory(int argc, char * const argv[])
 {
-  uint32_t high_mem = get_ddr_highmem_size();
+  uint64_t high_mem = get_ddr_highmem_size();
+  char buf[17];
 
-  setenv_hex("ddr_size", high_mem);
-  setenv_hex("accessible_mem", high_mem);
-  printf("DDR size: %u\n", high_mem);
+  snprintf(buf, sizeof(buf), "%llx", high_mem);
+  setenv("ddr_size", buf);
+  setenv("accessible_mem", buf);
+  printf("DDR size: %llu\n", high_mem);
 
   return CMD_RET_SUCCESS;
 }
