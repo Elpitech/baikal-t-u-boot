@@ -221,7 +221,7 @@ long baikal_pll_get(int id)
 	nf = BE_RD_CLKF(val) + 1;
 	od = BE_RD_CLKOD(val) + 1;
 
-	return (CONFIG_BAIKAL_OSC_CLOCK * nf) / nr / od;
+	return (CONFIG_BAIKAL_OSC_CLOCK / nr / od) * nf;
 }
 
 void baikal_clock_init(void)
