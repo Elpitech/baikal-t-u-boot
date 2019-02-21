@@ -109,26 +109,6 @@ int board_late_init(void)
 }
 #endif /* CONFIG_BOARD_LATE_INIT */
 
-int board_pci_reset()
-{
-    int ret;
-    int delay;
-
-    delay = getenv_ulong("pci_delay", 10, 0);
-    if (delay > 1000)
-        delay = 1000;
-    ret = gpio_request(CONFIG_PCIE_RST_PIN, "pcie_rst");
-    if (ret) {
-        printf("failed to request GPIO %d (ret %d)\n", CONFIG_PCIE_RST_PIN, ret);
-        return ret;
-    }
-    printf("Resetting PCI peripherals (delay %d)...\n", delay);
-    gpio_direction_output(CONFIG_PCIE_RST_PIN, 1);
-    mdelay(delay);
-
-    return 0;
-}
-
 /* Initialization of network */
 int board_eth_init(bd_t *bis)
 {

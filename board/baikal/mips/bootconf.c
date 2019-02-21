@@ -539,45 +539,6 @@ tp_bmc_get_version(void) {
   }
 }
 
-int
-tp_reset_peripherals(void) {
-  uint8_t def_val[256] = {0};
-  int err;
-  uint8_t tmp[17];
-  int start = 0;
-  printf("Reset: ");
-  tp_gpio_set(1, 1, 1);
-  udelay(1000);
-  def_val[0] = 0x24;
-  def_val[1] = 0x04;
-  def_val[2] = 0x17;
-  def_val[3] = 0x25;
-  def_val[4] = 0x00;
-  def_val[5] = 0x00;
-  def_val[6] = 0x9b;
-  def_val[7] = 0x20;
-  def_val[8] = 0x00;
-  def_val[9] = 0x00;
-  def_val[10] = 0x00;
-  def_val[11] = 0x00;
-  def_val[12] = 0x32;
-  def_val[13] = 0x32;
-  def_val[14] = 0x32;
-  def_val[15] = 0x32;
-  def_val[16] = 0x32;
-  def_val[255] = 1;
-  i2c_set_bus_num(1);
-  for (;start<256;start+=16) {
-    memcpy(tmp+1, def_val+start, 16);
-    tmp[0] = 16;
-    err = i2c_write(0x2c, start, 1, tmp, 17);
-    debug("i2c_write[%i] 0x2c returned %i\n", start, err);
-  }
-  mdelay(3);
-  printf("Done\n");
-  return CMD_RET_SUCCESS;
-}
-
 #ifdef SHRED_PCF8574
 int
 tp_read_pcf8574(int bus, int addr) {

@@ -25,10 +25,9 @@ int board_early_init_r(void)
 }
 #endif /* CONFIG_BOARD_EARLY_INIT_R */
 
-#ifdef CONFIG_BOARD_LATE_INIT
-static int board_clear_pcie_reset(void)
+int board_pci_reset(void)
 {
-#if defined(CONFIG_PCIE_RST_PIN) && defined(CONFIG_TPLATFORMS_CNC_MSBT2)
+#if defined(CONFIG_PCIE_RST_PIN) && defined(CONFIG_TPLATFORMS_TC_MSBT2)
 	int ret, pcie_mask = BIT(CONFIG_PCIE_RST_PIN);
 
 	ret = pca953x_set_dir(CONFIG_SYS_SHRED_I2C_ADDR, pcie_mask, 0);
@@ -53,12 +52,20 @@ static int board_clear_pcie_reset(void)
 	return 0;
 }
 
+#ifdef CONFIG_BOARD_LATE_INIT
 int board_late_init(void)
 {
 #ifdef CONFIG_TP_FRU
 	fru_open_parse();
 #endif
-	board_clear_pcie_reset();
+
+	/*
+	 * If CONFIG_PCI is enabled board_pci_reset() will be called
+	 * from pci_init_board()
+	 */
+#ifndef CONFIG_PCIE_DW
+	board_pci_reset();
+#endif
 
 	return 0;
 }

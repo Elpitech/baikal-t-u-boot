@@ -19,7 +19,6 @@ void tp_check_boot(void);
 void tp_gpio_set(int usb, int video, int hdd);
 void tp_bmc_set_bootreason(uint8_t reason, uint8_t arg);
 void tp_bmc_get_version(void);
-int tp_reset_peripherals(void);
 int tp_read_pcf8574(int bus, int addr);
 
 #endif/*__BOOTCONF_H__*/

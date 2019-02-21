@@ -14,6 +14,7 @@
 #include <asm/io.h>
 #include <asm/system.h>
 #include <asm/arch/pci.h>
+#include <asm/gpio.h>
 
 #define PCIE_PHY_RETRIES        1000000
 #define PCIE_ERROR_VALUE        0xFFFFFFFF
@@ -433,6 +434,26 @@ static int dw_pcibios_write(struct pci_controller *hose, pci_dev_t d,
 
 	addr += where & ~0x3;
 	writel(val, addr);
+
+	return 0;
+}
+
+__weak int board_pci_reset(void)
+{
+#ifdef CONFIG_PCIE_RST_PIN
+	int ret, delay;
+
+	delay = getenv_ulong("pci_delay", 10, 0);
+	if (delay > 1000)
+		delay = 1000;
+	ret = gpio_request(CONFIG_PCIE_RST_PIN, "pcie_rst");
+	if (ret) {
+		printf("PCIe:  failed to request GPIO %d (ret %d)\n", CONFIG_PCIE_RST_PIN, ret);
+		return ret;
+	}
+	gpio_direction_output(CONFIG_PCIE_RST_PIN, 1);
+	mdelay(delay);
+#endif
 
 	return 0;
 }

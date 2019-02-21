@@ -27,7 +27,7 @@ int board_early_init_r(void)
 
 #ifdef CONFIG_BOARD_LATE_INIT
 
-static int board_clear_pcie_reset(void)
+int board_pci_reset(void)
 {
 #ifdef CONFIG_PCIE_RST_PIN
 	int ret, pcie_mask = BIT(CONFIG_PCIE_RST_PIN);
@@ -58,7 +58,13 @@ int board_late_init(void)
 {
 	fru_open_parse();
 
-	board_clear_pcie_reset();
+	/*
+	 * If CONFIG_PCI is enabled board_pci_reset() will be called
+	 * from pci_init_board()
+	 */
+#ifndef CONFIG_PCIE_DW
+	board_pci_reset();
+#endif
 
 	return 0;
 }

@@ -20,6 +20,11 @@ int board_early_init_r(void)
 }
 #endif /* CONFIG_BOARD_EARLY_INIT_R */
 
+int board_pci_reset(void)
+{
+	return 0;
+}
+
 #ifdef CONFIG_BOARD_LATE_INIT
 int board_late_init(void)
 {
