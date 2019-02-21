@@ -76,6 +76,7 @@ int rtc_get (struct rtc_time *tmp)
 	if (tmp->tm_year < 70) {
 		tmp->tm_year += 100;	/* assume we are in 1970...2069 */
 	}
+	tmp->tm_year += 1900;
 
 	debug ( "Get DATE: %4d-%02d-%02d (wday=%d)	TIME: %2d:%02d:%02d\n",
 					tmp->tm_year, tmp->tm_mon, tmp->tm_mday, tmp->tm_wday,
