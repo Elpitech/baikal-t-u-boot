@@ -43,7 +43,7 @@ static struct descriptor {
 	struct usb_ss_ep_comp_descriptor ep_companion;
 } __attribute__ ((packed)) descriptor = {
 	{
-		0xc,		/* bDescLength */
+		0x9,		/* bDescLength */
 		0x2a,		/* bDescriptorType: hub descriptor */
 		2,		/* bNrPorts -- runtime modified */
 		cpu_to_le16(0x8), /* wHubCharacteristics */
@@ -94,7 +94,7 @@ static struct descriptor {
 		5,		/* bDescriptorType: UDESC_ENDPOINT */
 		0x81,		/* bEndpointAddress: IN endpoint 1 */
 		3,		/* bmAttributes: UE_INTERRUPT */
-		8,		/* wMaxPacketSize */
+		cpu_to_le16(8),	/* wMaxPacketSize */
 		255		/* bInterval */
 	},
 	{
@@ -667,7 +667,7 @@ static int xhci_submit_root(struct usb_device *udev, unsigned long pipe,
 		case USB_DT_CONFIG:
 			debug("USB_DT_CONFIG config\n");
 			srcptr = &descriptor.config;
-			srclen = 0x19;
+			srclen = 0x1f;
 			break;
 		case USB_DT_STRING:
 			debug("USB_DT_STRING config\n");
@@ -702,7 +702,7 @@ static int xhci_submit_root(struct usb_device *udev, unsigned long pipe,
 		case USB_DT_HUB:
 			debug("USB_DT_HUB config\n");
 			srcptr = &descriptor.hub;
-			srclen = 0x8;
+			srclen = descriptor.hub.bLength;
 			break;
 		default:
 			printf("unknown value %x\n", le16_to_cpu(req->value));
@@ -826,7 +826,7 @@ static int xhci_submit_root(struct usb_device *udev, unsigned long pipe,
 		goto unknown;
 	}
 
-	debug("scrlen = %d\n req->length = %d\n",
+	debug("srclen = %d\n req->length = %d\n",
 		srclen, le16_to_cpu(req->length));
 
 	len = min(srclen, le16_to_cpu(req->length));
