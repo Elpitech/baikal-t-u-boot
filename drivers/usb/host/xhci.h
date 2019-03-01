@@ -1099,6 +1099,19 @@ static inline void xhci_writel(uint32_t volatile *regs, const unsigned int val)
 }
 
 /*
+ * Mapping between physycal and virtual addresses
+ */
+
+#define __pa(v)	virt_to_phys(v)
+
+#if defined(CONFIG_ARM) || defined(CONFIG_PPC) || defined(CONFIG_X86)
+/* These platforms do not define phys_to_virt() */
+#define __va(p)	map_physmem(p, 8, 0)
+#else
+#define __va(p)	phys_to_virt(p)
+#endif
+
+/*
  * Registers should always be accessed with double word or quad word accesses.
  * Some xHCI implementations may support 64-bit address pointers.  Registers
  * with 64-bit address pointers should be written to with dword accesses by

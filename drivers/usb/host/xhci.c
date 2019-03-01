@@ -364,8 +364,7 @@ static int xhci_set_configuration(struct usb_device *udev)
 			cpu_to_le32(((0 & MAX_BURST_MASK) << MAX_BURST_SHIFT) |
 			((3 & ERROR_COUNT_MASK) << ERROR_COUNT_SHIFT));
 
-		trb_64 = (uintptr_t)
-				virt_dev->eps[ep_index].ring->enqueue;
+		trb_64 = __pa(virt_dev->eps[ep_index].ring->enqueue);
 		ep_ctx[ep_index]->deq = cpu_to_le64(trb_64 |
 				virt_dev->eps[ep_index].ring->cycle_state);
 	}

@@ -273,7 +273,7 @@ void xhci_queue_command(struct xhci_ctrl *ctrl, u8 *ptr, u32 slot_id,
 			u32 ep_index, trb_type cmd)
 {
 	u32 fields[4];
-	u64 val_64 = (uintptr_t)ptr;
+	u64 val_64 = __pa(ptr);
 
 	BUG_ON(prepare_ring(ctrl, ctrl->cmd_ring, EP_STATE_RUNNING));
 
@@ -390,7 +390,7 @@ void xhci_acknowledge_event(struct xhci_ctrl *ctrl)
 
 	/* Inform the hardware */
 	xhci_writeq(&ctrl->ir_set->erst_dequeue,
-		(uintptr_t)ctrl->event_ring->dequeue | ERST_EHB);
+		__pa(ctrl->event_ring->dequeue) | ERST_EHB);
 }
 
 /**
@@ -563,15 +563,13 @@ int xhci_bulk_tx(struct usb_device *udev, unsigned long pipe,
 	union xhci_trb *event;
 	void *sbuf = buffer;
 
-	buffer = (void *)KSEG1ADDR(buffer);
-
 	int running_total, trb_buff_len;
 	unsigned int total_packet_count;
 	int maxpacketsize;
 	u64 addr;
 	int ret;
 	u32 trb_fields[4];
-	u64 val_64 = (uintptr_t)buffer;
+	u64 val_64 = __pa(buffer);
 
 	debug("dev=%p, pipe=%lx, buffer=%p, length=%d\n",
 		udev, pipe, buffer, length);
@@ -720,8 +718,19 @@ int xhci_bulk_tx(struct usb_device *udev, unsigned long pipe,
 
 	BUG_ON(TRB_TO_SLOT_ID(field) != slot_id);
 	BUG_ON(TRB_TO_EP_INDEX(field) != ep_index);
+#ifdef DEBUG
+	{
+		void **bp = __va(le64_to_cpu(event->trans_event.buffer));
+		if (__va((uintptr_t)*bp) - buffer > (size_t)length)
+			debug("BUG_ON test failed: event buffer %p, buffer %p, "
+				"orig buffer %p, length %d\n",
+				bp, __va((uintptr_t)*bp), buffer, length);
+	}
+#endif
+#if 0 /* vvv: the test does not seem correct */
 	BUG_ON(*(void **)(uintptr_t)le64_to_cpu(event->trans_event.buffer) -
 		buffer > (size_t)length);
+#endif
 
 	record_transfer_result(udev, event, length);
 	xhci_acknowledge_event(ctrl);
@@ -871,7 +880,7 @@ int xhci_ctrl_tx(struct usb_device *udev, unsigned long pipe,
 	if (length > 0) {
 		if (req->requesttype & USB_DIR_IN)
 			field |= TRB_DIR_IN;
-		buf_64 = (uintptr_t)buffer;
+		buf_64 = __pa(buffer);
 
 		trb_fields[0] = lower_32_bits(buf_64);
 		trb_fields[1] = upper_32_bits(buf_64);
