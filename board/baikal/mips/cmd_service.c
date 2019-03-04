@@ -21,6 +21,19 @@
 
 //#define debug printf
 
+static int
+tp_read_pcf8574(int bus, int addr) {
+  int oldbus = i2c_get_bus_num();
+  char val = 0;
+  i2c_set_bus_num(bus);
+  int ret = i2c_read(addr, 0, 0, (unsigned char*)&val, 1);
+  i2c_set_bus_num(oldbus);
+  if (ret!=0) {
+    return -1;
+  }
+  return val;
+}
+
 /* Get CPU temperature routine */
 static int do_service_temp(int argc, char * const argv[])
 {
@@ -84,7 +97,7 @@ static int do_service_serial(int argc, char * const argv[])
 
 static int do_service_shred(int argc, char * const argv[])
 {
-  int ret = tp_read_shred(CONFIG_SYS_SHRED_BUS_NUM, CONFIG_SYS_SHRED_I2C_ADDR);
+  int ret = tp_read_pcf8574(CONFIG_SYS_SHRED_BUS_NUM, CONFIG_SYS_SHRED_I2C_ADDR);
   printf("SHRED: %i\n", ret);
   return CMD_RET_SUCCESS;
 }
@@ -104,7 +117,7 @@ static int do_service_memory(int argc, char * const argv[])
 
 static int do_service_mmc_speed(int argc, char * const argv[])
 {
-  int ret = tp_read_shred(CONFIG_SYS_SHRED_BUS_NUM, CONFIG_SYS_SHRED_I2C_ADDR);
+  int ret = tp_read_pcf8574(CONFIG_SYS_SHRED_BUS_NUM, CONFIG_SYS_SHRED_I2C_ADDR);
   int mmc_speed=10000000;
   if (ret<4) {
     mmc_speed=1000000;

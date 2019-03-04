@@ -406,68 +406,6 @@ tp_check_boot(void) {
 }
 
 void
-tp_gpio_set(int usb, int pcie, int hdd) {
-  unsigned int gpio_usb_reset = 0;
-  unsigned int gpio_pcie_reset = 0;
-  unsigned int gpio_hdd_led = 0;
-  int ret;
-#if defined(CONFIG_DM_GPIO)
-  static const char pcie_gpio[8] = {0};
-  sprintf(pcie_gpio, "%i", CONFIG_PCIE_RST_PIN);
-
-  ret = gpio_lookup_name("13", NULL, NULL, &gpio_usb_reset);
-  if (ret)
-  {
-    printf("failed to lookup name of GPIO %i\n", gpio_usb_reset);
-    return;
-  }
-  ret = gpio_lookup_name(pcie_gpio, NULL, NULL, &gpio_pcie_reset);
-  if (ret)
-  {
-    printf("failed to lookup name of GPIO %i\n", gpio_pcie_reset);
-    return;
-  }
-  ret = gpio_lookup_name("18", NULL, NULL, &gpio_hdd_led);
-  if (ret)
-  {
-    printf("failed to lookup name of GPIO %i\n", gpio_hdd_led);
-    return;
-  }
-#else/* ! CONFIG_DM_GPIO*/
-  gpio_usb_reset = 13;
-  gpio_pcie_reset = CONFIG_PCIE_RST_PIN;
-  gpio_hdd_led = 18;
-#endif/*CONFIG_DM_GPIO*/
-
-  debug("GPIO[usb]->0x%08x\n", gpio_usb_reset);
-  ret = gpio_request(gpio_usb_reset, "usb_reset");
-  if (ret) {
-    printf("Failed to request GPIO %i; ret: %i\n", gpio_usb_reset, ret);
-    return;
-  }
-  gpio_direction_output(gpio_usb_reset, usb);
-  gpio_free(gpio_usb_reset);
-
-  debug("GPIO[pcie]->0x%08x\n", gpio_pcie_reset);
-  ret = gpio_request(gpio_pcie_reset, "pcie_reset");
-  if (ret) {
-    printf("Failed to request GPIO %i; ret: %i\n", gpio_pcie_reset, ret);
-    return;
-  }
-  gpio_direction_output(gpio_pcie_reset, pcie);
-  gpio_free(gpio_pcie_reset);
-
-  debug("GPIO[hdd]->0x%08x\n", gpio_hdd_led);
-  ret = gpio_request(gpio_hdd_led, "hdd_led");
-  if (ret) {
-    printf("Failed to request GPIO %i; ret: %i\n", gpio_hdd_led, ret);
-    return;
-  }
-  gpio_direction_output(gpio_hdd_led, hdd);
-  gpio_free(gpio_hdd_led);
-}
-
-void
 tp_bmc_set_bootreason(uint8_t reason, uint8_t arg) {
   if (bmc_version[0]>=2) {
     printf("BMC:   Setting bootreason: %i\n", reason);
@@ -538,18 +476,3 @@ tp_bmc_get_version(void) {
     printf("Unknown version [0x%02x] in register 0x%02x\n", err, R_ID4);
   }
 }
-
-#ifdef SHRED_PCF8574
-int
-tp_read_pcf8574(int bus, int addr) {
-  int oldbus = i2c_get_bus_num();
-  char val = 0;
-  i2c_set_bus_num(bus);
-  int ret = i2c_read(addr, 0, 0, (unsigned char*)&val, 1);
-  i2c_set_bus_num(oldbus);
-  if (ret!=0) {
-    return -1;
-  }
-  return val;
-}
-#endif
