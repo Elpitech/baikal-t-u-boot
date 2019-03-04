@@ -201,7 +201,7 @@ static void xhci_link_segments(struct xhci_segment *prev,
 		return;
 	prev->next = next;
 	if (link_trbs) {
-		val_64 = (uintptr_t)next->trbs;
+		val_64 = __pa(next->trbs);
 		prev->trbs[TRBS_PER_SEGMENT-1].link.segment_ptr = val_64;
 
 		/*
@@ -395,7 +395,7 @@ int xhci_alloc_virt_device(struct usb_device *udev)
 	/* Allocate endpoint 0 ring */
 	virt_dev->eps[0].ring = xhci_ring_alloc(1, true);
 
-	byte_64 = (uintptr_t)(virt_dev->out_ctx->bytes);
+	byte_64 = __pa(virt_dev->out_ctx->bytes);
 
 	/* Point to output device context in dcbaa. */
 	ctrl->dcbaa->dev_context_ptrs[slot_id] = byte_64;
@@ -432,7 +432,7 @@ int xhci_mem_init(struct xhci_ctrl *ctrl, struct xhci_hccr *hccr,
 		return -ENOMEM;
 	}
 
-	val_64 = (uintptr_t)ctrl->dcbaa;
+	val_64 = __pa(ctrl->dcbaa);
 	/* Set the pointer in DCBAA register */
 	xhci_writeq(&hcor->or_dcbaap, val_64);
 
@@ -440,7 +440,7 @@ int xhci_mem_init(struct xhci_ctrl *ctrl, struct xhci_hccr *hccr,
 	ctrl->cmd_ring = xhci_ring_alloc(1, true);
 
 	/* Set the address in the Command Ring Control register */
-	trb_64 = (uintptr_t)ctrl->cmd_ring->first_seg->trbs;
+	trb_64 = __pa(ctrl->cmd_ring->first_seg->trbs);
 	val_64 = xhci_readq(&hcor->or_crcr);
 	val_64 = (val_64 & (u64) CMD_RING_RSVD_BITS) |
 		(trb_64 & (u64) ~CMD_RING_RSVD_BITS) |
@@ -471,7 +471,7 @@ int xhci_mem_init(struct xhci_ctrl *ctrl, struct xhci_hccr *hccr,
 			val < ERST_NUM_SEGS;
 			val++) {
 		trb_64 = 0;
-		trb_64 = (uintptr_t)seg->trbs;
+		trb_64 = __pa(seg->trbs);
 		struct xhci_erst_entry *entry = &ctrl->erst.entries[val];
 		xhci_writeq(&entry->seg_addr, trb_64);
 		entry->seg_size = cpu_to_le32(TRBS_PER_SEGMENT);
@@ -481,7 +481,7 @@ int xhci_mem_init(struct xhci_ctrl *ctrl, struct xhci_hccr *hccr,
 	xhci_flush_cache((uint32_t)ctrl->erst.entries,
 			ERST_NUM_SEGS * sizeof(struct xhci_erst_entry));
 
-	deq = (unsigned long)ctrl->event_ring->dequeue;
+	deq = __pa(ctrl->event_ring->dequeue);
 
 	/* Update HC event ring dequeue pointer */
 	xhci_writeq(&ctrl->ir_set->erst_dequeue,
@@ -496,7 +496,7 @@ int xhci_mem_init(struct xhci_ctrl *ctrl, struct xhci_hccr *hccr,
 	/* this is the event ring segment table pointer */
 	val_64 = xhci_readq(&ctrl->ir_set->erst_base);
 	val_64 &= ERST_PTR_MASK;
-	val_64 |= ((u32)(ctrl->erst.entries) & ~ERST_PTR_MASK);
+	val_64 |= (__pa(ctrl->erst.entries) & ~ERST_PTR_MASK);
 
 	xhci_writeq(&ctrl->ir_set->erst_base, val_64);
 
@@ -710,7 +710,7 @@ void xhci_setup_addressable_virt_dev(struct usb_device *udev)
 			cpu_to_le32(((0 & MAX_BURST_MASK) << MAX_BURST_SHIFT) |
 			((3 & ERROR_COUNT_MASK) << ERROR_COUNT_SHIFT));
 
-	trb_64 = (uintptr_t)virt_dev->eps[0].ring->first_seg->trbs;
+	trb_64 = __pa(virt_dev->eps[0].ring->first_seg->trbs);
 	ep0_ctx->deq = cpu_to_le64(trb_64 | virt_dev->eps[0].ring->cycle_state);
 
 	/* Steps 7 and 8 were done in xhci_alloc_virt_device() */
