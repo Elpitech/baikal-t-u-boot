@@ -68,8 +68,8 @@ _start:
 	/* TLB refill, 32 bit task */
 other_exc_base:
 #ifdef CONFIG_BAIKAL_LLENV
-        la      t0, trap_exc32
-        jr      t0 // Handle TLB Refill vector and StatusEXL = 0.
+	la	t9, trap_exc32
+	jr	t9 // Handle TLB Refill vector and StatusEXL = 0.
 #else
 1:	b	1b
 #endif
@@ -91,8 +91,8 @@ cache_error_exc_vector:
 general_exc_vector:
 interrupt_vector_cause0:
 #ifdef CONFIG_BAIKAL_LLENV
-        la      t0, trap_exc32
-        jr      t0
+	la	t9, trap_exc32
+	jr	t9
 #else
 1:	b	1b
 #endif
@@ -103,8 +103,8 @@ interrupt_vector_cause0:
 pecial_interrupt_exc_vector:
 interrupt_vector_cause1:
 #ifdef CONFIG_BAIKAL_LLENV
-        la      t0, trap_irq32
-        jr      t0
+	la	t9, trap_irq32
+	jr	t9
 #else
 1:	b	1b
 #endif
