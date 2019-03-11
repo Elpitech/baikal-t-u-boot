@@ -673,10 +673,6 @@ libs-y		:= $(patsubst %/, %/built-in.o, $(libs-y))
 u-boot-init := $(head-y)
 u-boot-main := $(libs-y)
 
-ifeq ($(CONFIG_BAIKAL_LLENV), y)
-LLENV_LIBS = -v -L $(srctree)/board/baikal/mips/llenv  -lllenv --gc-sections
-endif
-
 # Add GCC lib
 ifdef CONFIG_USE_PRIVATE_LIBGCC
 ifeq ($(CONFIG_USE_PRIVATE_LIBGCC),y)

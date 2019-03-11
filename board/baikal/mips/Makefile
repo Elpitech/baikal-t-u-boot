@@ -17,10 +17,8 @@ obj-$(CONFIG_BAIKAL_PLL) += clock_manager.o cmd_cpu.o
 obj-$(CONFIG_CMD_SATA_PHY) += cmd_phy.o
 obj-$(CONFIG_CMD_EXIT) += cmd_exit.o
 obj-$(CONFIG_OF_LIBFDT) += fdt.o
-#ifdef CONFIG_BAIKAL_LLENV
 obj-$(CONFIG_BAIKAL_LLENV) += llenv32.o
-KCFLAGS += -I$(KBUILD_SRC)/lib/baikal/llenv
-#endif
+obj-$(CONFIG_BAIKAL_LLENV) += llenv/
 obj-$(CONFIG_PCIE_DW) += pcie_dw.o
 obj-$(CONFIG_VIDEO_SM750) += video.o font8x8.o logo.o
 obj-$(CONFIG_TP_BOOTCONF) += bootconf.o
