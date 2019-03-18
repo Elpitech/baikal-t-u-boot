@@ -10,6 +10,7 @@
 #include <asm/io.h>
 #include <miiphy.h>
 #include <netdev.h>
+#include <asm/gpio.h>
 
 #include <fru.h>
 
@@ -22,15 +23,31 @@ int board_early_init_r(void)
 }
 #endif /* CONFIG_BOARD_EARLY_INIT_R */
 
-int board_pci_reset(void)
+static int board_usb_reset()
 {
-	return 0;
+    int err;
+    int gpio_usb_reset = 13;
+
+    /* reset USB hub and configure it */
+    debug("Reset USB: ");
+    err = gpio_request(gpio_usb_reset, "usb_reset");
+    if (err) {
+        printf("Failed to request GPIO %d (ret %d)\n", gpio_usb_reset, err);
+        return err;
+    }
+    gpio_direction_output(gpio_usb_reset, 1);
+    gpio_free(gpio_usb_reset);
+    mdelay(3);
+    debug("Done\n");
+
+    return 0;
 }
 
 #ifdef CONFIG_BOARD_LATE_INIT
 int board_late_init(void)
 {
 	fru_open_parse();
+	board_usb_reset();
 
 	return 0;
 }
