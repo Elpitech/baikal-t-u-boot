@@ -62,8 +62,8 @@
 #define BE_CORE_PLL_700MHZ		BE_PLL_CLK_VAL(1, 112, 4)
 #define BE_CORE_PLL_600MHZ		BE_PLL_CLK_VAL(1, 96, 4)
 
-#if CONFIG_SYS_CPU_CLOCK_RATE > 1200000000
-# error "Core PLL clock higher than 1200 MHz is not supported"
+#if CONFIG_SYS_CPU_CLOCK_RATE > 1500000000
+# error "Core PLL clock higher than 1500 MHz is not supported"
 #elif CONFIG_SYS_CPU_CLOCK_RATE < 100000000
 # error "Core PLL clock less than 100 MHz is not supported"
 #else

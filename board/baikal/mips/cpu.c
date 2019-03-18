@@ -84,7 +84,7 @@ int arch_cpufreq_setup(void)
     unsigned int freq = getenv_ulong("cpufreq", 10, 0);
 
     /* Set freq */
-    if ((freq > 99) && (freq < 1200)) {
+    if ((freq > 99) && (freq <= 1500)) {
         baikal_clock_core_mhz(freq);
         printf("ARCH:  CPU core freq is set to %uMHz\n", freq);
         gd->arch.cpu_clk  = MHZ_TO_HZ(freq);
