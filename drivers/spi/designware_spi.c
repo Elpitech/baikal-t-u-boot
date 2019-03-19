@@ -419,3 +419,29 @@ void spi_release_bus(struct spi_slave *slave)
 	/* Disable controller */
 	spi_enable_chip(priv, 0);
 }
+
+int spi_cs_is_valid(unsigned int bus, unsigned int cs)
+{
+	return cs < 8;
+}
+
+void spi_cs_activate(struct spi_slave *slave)
+{
+	struct dw_spi_priv *priv = to_dw_spi_priv(slave);
+	u32 cs;
+
+	cs = 1 << priv->cs;
+	dw_writel(priv, DW_SPI_SER, cs);
+
+	gpio_set_value(priv->gpio, 0);
+}
+
+void spi_cs_deactivate(struct spi_slave *slave)
+{
+	struct dw_spi_priv *priv = to_dw_spi_priv(slave);
+
+	dw_writel(priv, DW_SPI_SER, 0);
+
+	gpio_set_value(priv->gpio, 1);
+}
+
