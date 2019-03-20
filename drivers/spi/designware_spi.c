@@ -85,6 +85,16 @@ DECLARE_GLOBAL_DATA_PTR;
 
 #define RX_TIMEOUT			1000		/* timeout in ms */
 
+/*
+ * MMC-SPI requires all ones to be written during read requests.
+ * Allow board config to override default tx data.
+ */
+#ifdef CONFIG_SPI_TX_WORD
+#define DEFAULT_TX_WORD CONFIG_SPI_TX_WORD
+#else
+#define DEFAULT_TX_WORD 0x0
+#endif
+
 struct dw_spi_priv {
 	struct spi_slave slave;
 	void __iomem *regs;
@@ -285,7 +295,7 @@ static inline u32 rx_max(struct dw_spi_priv *priv)
 static void dw_writer(struct dw_spi_priv *priv)
 {
 	u32 max = tx_max(priv);
-	u16 txw = 0;
+	u16 txw = DEFAULT_TX_WORD;
 
 	while (max--) {
 		/* Set the tx word if the transfer's original "tx" is not null */
@@ -419,3 +429,29 @@ void spi_release_bus(struct spi_slave *slave)
 	/* Disable controller */
 	spi_enable_chip(priv, 0);
 }
+
+int spi_cs_is_valid(unsigned int bus, unsigned int cs)
+{
+	return cs < 8;
+}
+
+void spi_cs_activate(struct spi_slave *slave)
+{
+	struct dw_spi_priv *priv = to_dw_spi_priv(slave);
+	u32 cs;
+
+	cs = 1 << priv->cs;
+	dw_writel(priv, DW_SPI_SER, cs);
+
+	gpio_set_value(priv->gpio, 0);
+}
+
+void spi_cs_deactivate(struct spi_slave *slave)
+{
+	struct dw_spi_priv *priv = to_dw_spi_priv(slave);
+
+	dw_writel(priv, DW_SPI_SER, 0);
+
+	gpio_set_value(priv->gpio, 1);
+}
+

@@ -280,6 +280,18 @@
 #define CONFIG_BOOTFILE			"uImage"
 #define CONFIG_LOADADDR 		CONFIG_SYS_LOAD_ADDR
 
+/* MMC-SPI support */
+#undef CONFIG_DW_SPI
+#define CONFIG_DESIGNWARE_SPI
+#define CONFIG_DW_GPIO_CS	14
+#define CONFIG_DW_SPI_BASE	CONFIG_SPI1_BASE
+#define CONFIG_MMC
+#define CONFIG_GENERIC_MMC
+#define CONFIG_MMC_SPI
+#define CONFIG_CMD_MMC
+#define CONFIG_CMD_MMC_SPI
+#define CONFIG_SPI_TX_WORD	0xff	/* mmc-spi wants all-ones rather than zeros */
+
 /* #define CONFIG_EXTRA_ENV_SETTINGS                                       \ */
 /*   "build_image=Baikal boot image\0"                                     \ */
 /*   "build_version=1.0.0\0"                                               \ */
