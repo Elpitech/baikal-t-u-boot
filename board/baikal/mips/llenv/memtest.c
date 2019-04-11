@@ -139,7 +139,7 @@ uint32_t check_memory_range(uint64_t phyaddr, uint64_t psize, uint64_t def_phyad
 	}
 }
 
-uint32_t init_vars(){
+uint32_t init_vars(void){
 	memtest_debug = getenv_ulong("memtest_debug", 10, 0);
 	debug_msg("\nMemory ranges:");
 	ddr_high_size = get_ddr_highmem_size(); /* B */

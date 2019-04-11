@@ -23,7 +23,7 @@ int board_early_init_r(void)
 }
 #endif /* CONFIG_BOARD_EARLY_INIT_R */
 
-static int board_usb_reset()
+static int board_usb_reset(void)
 {
     int err;
     int gpio_usb_reset = 13;

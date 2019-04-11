@@ -55,6 +55,7 @@
  *-----------------------------------------------
  */
 #define CONFIG_CMD_SERVICE
+#define CONFIG_TP_BOOTCONF
 #define CONFIG_PCF857X
 #define CONFIG_CMD_PCF857X
 #define CONFIG_CMD_PCF857X_INFO
