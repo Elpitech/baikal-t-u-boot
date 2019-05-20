@@ -30,21 +30,22 @@ int board_late_init(void)
 /* Initialization of network */
 int board_eth_init(bd_t *bis)
 {
+	debug("DBG: %s\n", __func__);
 	int err = 0;
 
 #if defined(CONFIG_DESIGNWARE_ETH0_BASE)
 	if (designware_initialize(CONFIG_DESIGNWARE_ETH0_BASE,
-			  PHY_INTERFACE_MODE_RGMII) < 0)
+			  PHY_INTERFACE_MODE_RGMII_RXID) < 0)
 		err |= (1 << 0);
 #endif /* CONFIG_DESIGNWARE_ETH0_BASE */
 #if defined(CONFIG_DESIGNWARE_ETH1_BASE)
 	if (designware_initialize(CONFIG_DESIGNWARE_ETH1_BASE,
-			  PHY_INTERFACE_MODE_RGMII) < 0)
+			  PHY_INTERFACE_MODE_RGMII_RXID) < 0)
 		err |= (1 << 1);
 #endif /* CONFIG_DESIGNWARE_ETH1_BASE */
 #if defined(CONFIG_DESIGNWARE_ETH2_BASE)
 	if (designware_initialize(CONFIG_DESIGNWARE_ETH2_BASE,
-			  PHY_INTERFACE_MODE_RGMII) < 0)
+			  PHY_INTERFACE_MODE_RGMII_RXID) < 0)
 		err |= (1 << 1);
 #endif /* CONFIG_DESIGNWARE_ETH2_BASE */
 	return (! err);
