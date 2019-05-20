@@ -270,6 +270,8 @@ int eth_initialize(bd_t *bis)
 	eth_devices = NULL;
 	eth_current = NULL;
 
+	debug("DBG: %s\n", __func__);
+
 	bootstage_mark(BOOTSTAGE_ID_NET_ETH_START);
 #if defined(CONFIG_MII) || defined(CONFIG_CMD_MII) || defined(CONFIG_PHYLIB)
 	miiphy_init();

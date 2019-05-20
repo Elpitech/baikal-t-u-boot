@@ -507,6 +507,7 @@ static int dw_phy_init(struct eth_device *dev)
 
 int designware_initialize(ulong base_addr, u32 interface)
 {
+	debug("DBG: %s\n", __func__);
 	struct eth_device *dev;
 	struct dw_eth_dev *priv;
 

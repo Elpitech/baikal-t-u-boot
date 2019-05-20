@@ -604,13 +604,14 @@ static int initr_bbmii(void)
 #ifdef CONFIG_CMD_NET
 static int initr_net(void)
 {
+	debug("DBG: %s\n", __func__);
 	puts("Net:   ");
-	 /* Disable reset for 88E1512 */
-        gpio_direction_output(17,1);
-         /* Disable reset for 88E1690 */
-        gpio_direction_output(18,1);
+	/* Disable reset for 88E1512 */
+	gpio_direction_output(17,1);
+	/* Disable reset for 88E1690 */
+	gpio_direction_output(18,1);
 	/* Disable reset for  98DX3257 */
-        gpio_direction_output(27,1);
+	gpio_direction_output(27,1);
 	eth_initialize(gd->bd);
 #if defined(CONFIG_RESET_PHY_R)
 	debug("Reset Ethernet PHY\n");
