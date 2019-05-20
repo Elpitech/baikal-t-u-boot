@@ -174,16 +174,16 @@ struct fixed_link {
 static inline int phy_read(struct phy_device *phydev, int devad, int regnum)
 {
 	struct mii_dev *bus = phydev->bus;
-
-	return bus->read(bus, phydev->addr, devad, regnum);
+	int ret = bus->read(bus, phydev->addr, devad, regnum);
+	return ret;
 }
 
 static inline int phy_write(struct phy_device *phydev, int devad, int regnum,
 			u16 val)
 {
 	struct mii_dev *bus = phydev->bus;
-
-	return bus->write(bus, phydev->addr, devad, regnum, val);
+	int ret = bus->write(bus, phydev->addr, devad, regnum, val);
+	return ret;
 }
 
 #ifdef CONFIG_PHYLIB_10G
@@ -236,6 +236,17 @@ int phy_vitesse_init(void);
 int phy_mscc_init(void);
 
 int board_phy_config(struct phy_device *phydev);
+
+/**
+ * phy_interface_is_rgmii - Convenience function for testing if a PHY interface
+ * is RGMII (all variants)
+ * @phydev: the phy_device struct
+ */
+static inline bool phy_interface_is_rgmii(struct phy_device *phydev)
+{
+	return phydev->interface >= PHY_INTERFACE_MODE_RGMII &&
+		phydev->interface <= PHY_INTERFACE_MODE_RGMII_TXID;
+}
 
 /* PHY UIDs for various PHYs that are referenced in external code */
 #define PHY_UID_TN2020	0x00a19410
