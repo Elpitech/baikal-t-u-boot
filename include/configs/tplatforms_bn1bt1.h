@@ -1,5 +1,5 @@
 /*
- * Configuration settings for the Baikal-T1 based MRBT1 boards.
+ * Configuration settings for the Baikal-T1 based BN1BT1 boards.
  *
  * Copyright (C) 2018 T-platforms JSC
  *
@@ -123,7 +123,7 @@
 /* Use llenv32 implementation of saveenv */
 #define CONFIG_LLENV32_SAVEENV
 #define CONFIG_ENV_IS_IN_FLASH
-#define CONFIG_ENV_OFFSET		0x00080000
+#define CONFIG_ENV_OFFSET		0x000E0000
 #define CONFIG_ENV_SIZE			0x00010000 /* 64 KB */
 #define CONFIG_ENV_ADDR			(CONFIG_SYS_FLASH_BASE + CONFIG_ENV_OFFSET)
 #define CONFIG_ENV_SPI_BUS		CONFIG_BOOT_SPI_BUS
