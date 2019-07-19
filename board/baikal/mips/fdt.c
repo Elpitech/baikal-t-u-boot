@@ -74,6 +74,34 @@ static int fdt_convert_prop(void *data, int len)
 }
 
 /*
+ * Get value of an element from array with passed size flag
+ */
+static int fdt_getprop_uxx(void *fdt, int nodeoffset, const char *name,
+			   int off, uint64_t *val, int is_u64)
+{
+	void *data;
+	int len;
+
+	/* Get the property data pointer */
+	data = fdt_getprop_w(fdt, nodeoffset, name, &len);
+	if (!data)
+		return len;
+
+	/* Sanity check the requested offset */
+	if (off + (is_u64 ? 8 : 4) > len)
+		return -EINVAL;
+
+	/* Seek to the requested position and get a data placed there */
+	data += off;
+	if (is_u64)
+		*val = fdt64_to_cpu(*(uint64_t *)data);
+	else
+		*val = fdt32_to_cpu(*(uint32_t *)data);
+
+	return 0;
+}
+
+/*
  * Set the passed property in accordance with the passed size flag
  */
 static int fdt_setprop_uxx(void *fdt, int nodeoffset, const char *name,
@@ -104,7 +132,7 @@ static int fdt_appendprop_uxx(void *fdt, int nodeoffset, const char *name,
 int arch_fixup_fdt(void *fdt_blob)
 {
 	int n, total, ret, offset, ac, sc;
-	uint64_t addr, size;
+	uint64_t addr, size, lowmem;
 	bool ac_64, sc_64;
 
 	/*
@@ -159,10 +187,17 @@ int arch_fixup_fdt(void *fdt_blob)
 		puts("Couldn't find memory fdt node\n");
 		return offset;
 	}
+	/*
+	 * Try to read the low memory size property and reuse it then for compatibility
+	 * with older kernels. If the property doesn't exist, the default constant value
+	 * is utilized
+	 */
+	lowmem = LOWMEM_BASE_SIZE;
+	(void)fdt_getprop_uxx(fdt_blob, offset, "reg", (ac_64 ? 8 : 4), &lowmem, sc_64);
 	/* First setup the lowmem base address and default size */
 	ret = fdt_setprop_uxx(fdt_blob, offset, "reg", 0, ac_64);
 	if (!ret)
-		ret = fdt_appendprop_uxx(fdt_blob, offset, "reg", LOWMEM_BASE_SIZE, sc_64);
+		ret = fdt_appendprop_uxx(fdt_blob, offset, "reg", lowmem, sc_64);
 	if (ret < 0) {
 		puts("Couldn't set lowmem fdt property\n");
 		return ret;
