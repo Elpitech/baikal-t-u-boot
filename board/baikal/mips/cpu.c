@@ -105,10 +105,6 @@ int cpu_init_r(void)
     /* L2$ init */
     mips_sc_init();
 #endif
-#ifdef CONFIG_BAIKAL_CPU_WARMUP
-    /* Warm CPU up */
-    pvt_cpu_warmup();
-#endif
     /* CPU frequency */
     arch_cpufreq_setup();
     /* Return success */

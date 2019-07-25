@@ -45,7 +45,6 @@
 #define CONFIG_BAIKAL_NAME		"BN1BT1"
 #define CONFIG_SYS_CPU_CLOCK_MHZ	1200
 #define CONFIG_SYS_CPU_CLOCK_RATE	(CONFIG_SYS_CPU_CLOCK_MHZ * 1000000)
-#define CONFIG_BAIKAL_CPU_WARMUP
 
 /*
  *-----------------------------------------------
