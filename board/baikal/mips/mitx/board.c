@@ -133,7 +133,6 @@ int board_late_init(void)
 
     setenv("sata_port", "0");
     if (fru.bootdevice[0] != 0) {
-        setenv("sata_dev", (char *)fru.bootdevice);
         static const char disk1[] = "sata0:0";
         static const char disk2[] = "sata0:1";
         if (memcmp(fru.bootdevice, disk2, strlen(disk2))==0) {
