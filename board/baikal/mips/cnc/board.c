@@ -31,19 +31,22 @@ int board_pci_reset(void)
 #if defined(CONFIG_PCIE_RST_PIN) && defined(CONFIG_TPLATFORMS_CNC_MSBT2)
 	int ret, pcie_mask = BIT(CONFIG_PCIE_RST_PIN);
 
+	ret = pca953x_set_val(CONFIG_SYS_SHRED_I2C_ADDR, pcie_mask, pcie_mask);
+	if (ret) {
+		printf("PCIe:  Can't init reset-GPIO val\n");
+		return ret;
+	}
+
 	ret = pca953x_set_dir(CONFIG_SYS_SHRED_I2C_ADDR, pcie_mask, 0);
 	if (ret) {
 		printf("PCIe:  Can't set reset-GPIO dir\n");
 		return ret;
 	}
 
-	ret = pca953x_set_val(CONFIG_SYS_SHRED_I2C_ADDR, pcie_mask, pcie_mask);
-	if (!ret) {
-		/* Need to create a pulse since the pca953x GPIO-expander doesn't have
-		 * reset pin, so it isn't reset on restart. */
-		udelay(500);
-		ret = pca953x_set_val(CONFIG_SYS_SHRED_I2C_ADDR, pcie_mask, 0);
-	}
+	/* Need to create a pulse since the pca953x GPIO-expander doesn't have
+	 * reset pin, so it isn't reset on restart. */
+	udelay(500);
+	ret = pca953x_set_val(CONFIG_SYS_SHRED_I2C_ADDR, pcie_mask, 0);
 	if (ret) {
 		printf("PCIe:  Can't set reset-GPIO val\n");
 		return ret;
