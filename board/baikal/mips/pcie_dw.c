@@ -174,13 +174,11 @@ static int dw_pcie_init(void)
 	reg = READ_PMU_REG(BK_PMU_PCIE_RSTC);
 	reg &= ~rstc_mask;
 	reg = READ_PMU_REG(BK_PMU_PCIE_RSTC);
-	printf("BK_PMU_PCIE_RSTC = %08x\n", reg);
 	if (reg & 0x3f11) {
 		reg &= ~0x3f11;
 		WRITE_PMU_REG(BK_PMU_PCIE_RSTC, reg);
 		udelay(10);
 		reg = READ_PMU_REG(BK_PMU_PCIE_RSTC);
-		printf("New PCIE_RSTC: %08x\n", reg);
 	}
 
 	/* 3.2 Set writing to RO Registers Using DBI */
@@ -230,9 +228,6 @@ static int dw_pcie_init(void)
 	 * PWR_RST, STICKY_RST, NONSTICKY_RST, HOT_RESET.
 	 */
 	reg = READ_PMU_REG(BK_PMU_PCIE_RSTC);
-#if 1 //vvv: debug
-printf("BK_PMU_PCIE_RSTC(2): %08x\n", reg);
-#endif
 	reg &= ~(PMU_PCIE_RSTC_PIPE_RESET | PMU_PCIE_RSTC_CORE_RST | PMU_PCIE_RSTC_PWR_RST |
 		 PMU_PCIE_RSTC_STICKY_RST | PMU_PCIE_RSTC_NONSTICKY_RST | PMU_PCIE_RSTC_HOT_RESET);
 	WRITE_PMU_REG(BK_PMU_PCIE_RSTC, reg);

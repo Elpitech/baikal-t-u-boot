@@ -41,35 +41,6 @@ static int do_service_temp(int argc, char * const argv[])
 	return CMD_RET_SUCCESS;
 }
 
-/* CPU warmup routine */
-static int do_service_warmup(int argc, char * const argv[])
-{
-  int i = 0;
-  int ctr33 = 0;
-  int temp = 0;
-  int t_achieved = 0;
-  
-  for (;i<30; i++) {
-    temp = pvt_get_temp();
-    printf("CPU temp: %i\n", temp);
-    if (temp>-33000) {
-      ctr33++;
-      if (ctr33>3) {
-        printf("Warmup finished\n");
-        t_achieved = 1;
-        break;
-      }
-    } else {
-      ctr33 = 0;
-    }
-    mdelay(1000);
-  }
-  if (!t_achieved) {
-    printf("PVT POWERUP TIMEOUT\n");
-  }
-	return CMD_RET_SUCCESS;
-}
-
 /* Board type get / set routine */
 static int do_service_board(int argc, char * const argv[])
 {
@@ -292,9 +263,6 @@ static int do_service(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
   if (strcmp(argv[1], "memory") == 0)
     return do_service_memory(argc-2, &argv[2]);
 
-  if (strcmp(argv[1], "warmup") == 0)
-    return do_service_warmup(argc-2, &argv[2]);
-
   if (strcmp(argv[1], "temp") == 0)
     return do_service_temp(argc-2, &argv[2]);
 
@@ -318,8 +286,6 @@ U_BOOT_CMD(
     "- get / set board revision (decimal, 18 digits max)\n"
     "service mac <iface_no> "
     "- manage mac address for <iface_no> (0-3)\n"
-    "service warmup         "
-    "- warmup CPU\n"
     "service temp           "
     "- get CPU temperature\n"
     "service memory         "

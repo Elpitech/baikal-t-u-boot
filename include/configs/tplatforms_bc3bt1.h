@@ -28,6 +28,9 @@
  * Axitech board specific hardware
  *-----------------------------------------------
  */
+#define CONFIG_PCA953X
+#define CONFIG_CMD_PCA953X
+#define CONFIG_CMD_PCA953X_INFO
 #define CONFIG_SYS_CTRL_BUS_NUM		0
 #define CONFIG_SYS_CTRL_I2C_ADDR	0x22
 #define CONFIG_SYS_LEDS_BUS_NUM		0
@@ -39,7 +42,11 @@
 #define CONFIG_SYS_CTRL_SSD_RST_PIN	5
 #define CONFIG_SYS_CTRL_GSM_RST_PIN	6
 #define CONFIG_SYS_CTRL_FTDI_RST_PIN	9
-#define CONFIG_SYS_CTRL_USBHUB_RST_PIN	11
+#define CONFIG_SYS_CTRL_SIM_SEL_PIN	14
+#define CONFIG_SYS_USB2513_BUS_NUM	0
+#define CONFIG_SYS_USB2513_I2C_ADDR	0x2C
+#define CONFIG_SYS_USB2513_RST_PIN	23
+#define CONFIG_SYS_GSM_PWR_OFF_PIN	22
 
 /*
  *-----------------------------------------------

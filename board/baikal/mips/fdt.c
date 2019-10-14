@@ -45,7 +45,11 @@
 #include <asm/io.h>
 #include <board.h>
 
-#define HIGHMEM_MAX_SIZE32 0xE0000000U
+/*
+ * Reduce maximum high memory size with one byte so the memory limits wouldn't
+ * overflow.
+ */
+#define HIGHMEM_MAX_SIZE32 0xDFFF0000U
 #define HIGHMEM_BASE_ADDR  0x20000000U
 #define LOWMEM_BASE_SIZE   0x08000000U
 
