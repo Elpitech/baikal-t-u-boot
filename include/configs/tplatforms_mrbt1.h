@@ -18,8 +18,6 @@
  */
 #include <configs/baikal_mips.h>
 
-#define DEBUG
-
 /*
  *-----------------------------------------------
  * Generic Configurations

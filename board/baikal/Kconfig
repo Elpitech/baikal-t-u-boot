@@ -36,4 +36,34 @@ config SYS_CONFIG_NAME
 config SYS_TEXT_BASE
 	default 0x9FC00000
 
+config BAIKAL_ECC
+	bool "ECC enable mode"
+	default n
+
+config DDR_FREQ_TWEAK
+	int "Adjust DDR3 PLL frequency"
+	range -2 2
+	default "0"
+	help
+	  This allows to increase or decrease DDR3 PLL frequency in 3% steps
+
+config DDR_CUSTOM_CLK
+	int "Set custom DDR3 bus clocks frequency"
+	default "0"
+	help
+	  This allows to set custom DDR3 clocks frequency (MT/s). Values out
+	  of [1066; 1600] range effectively disable the customization.
+
+config CUSTOM_SPD
+	bool "Use user supplied SPD data"
+	default n
+
+if CUSTOM_SPD
+
+config CUSTOM_SPD_FILE
+	string "User defined SPD file"
+	help
+	  Read DDR3 SPD data from SPD_<name>.c file
+
+endif # CUSTOM_SPD
 endif
