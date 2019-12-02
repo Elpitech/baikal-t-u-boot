@@ -116,6 +116,7 @@
 struct dw_spi_plat {
 	s32 frequency;		/* Default clock frequency, -1 for none */
 	void __iomem *regs;
+	u16 dummy_tx;
 };
 
 struct dw_spi_priv {
@@ -124,6 +125,7 @@ struct dw_spi_priv {
 	struct gpio_desc cs_gpio;	/* External chip-select gpio */
 
 	u32 (*update_cr0)(struct dw_spi_priv *priv);
+	u16 dummy_tx;
 
 	void __iomem *regs;
 	unsigned long bus_clk_rate;
@@ -243,7 +245,9 @@ static int dw_spi_of_to_plat(struct udevice *bus)
 	if (dev_read_bool(bus, "spi-slave"))
 		return -EINVAL;
 
-	dev_info(bus, "max-frequency=%d\n", plat->frequency);
+	plat->dummy_tx = dev_read_u32_default(bus, "dummy-tx", 0);
+	debug("%s: regs=%p max-frequency=%d\n", __func__, plat->regs,
+	      plat->frequency);
 
 	return request_gpio_cs(bus);
 }
@@ -349,6 +353,7 @@ static int dw_spi_probe(struct udevice *bus)
 
 	priv->regs = plat->regs;
 	priv->freq = plat->frequency;
+	priv->dummy_tx = plat->dummy_tx;
 
 	ret = dw_spi_get_clk(bus, &priv->bus_clk_rate);
 	if (ret)
@@ -413,7 +418,7 @@ static inline u32 rx_max(struct dw_spi_priv *priv)
 static void dw_writer(struct dw_spi_priv *priv)
 {
 	u32 max = tx_max(priv);
-	u32 txw = 0xFFFFFFFF;
+	u16 txw = priv->dummy_tx;
 
 	while (max--) {
 		/* Set the tx word if the transfer's original "tx" is not null */
