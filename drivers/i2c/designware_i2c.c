@@ -768,7 +768,7 @@ int designware_i2c_of_to_plat(struct udevice *bus)
 	int ret;
 
 	if (!priv->regs)
-		priv->regs = dev_read_addr_ptr(bus);
+		priv->regs = (struct i2c_regs *)devfdt_map_physmem(bus, 0x100);
 	dev_read_u32(bus, "i2c-scl-rising-time-ns", &priv->scl_rise_time_ns);
 	dev_read_u32(bus, "i2c-scl-falling-time-ns", &priv->scl_fall_time_ns);
 	dev_read_u32(bus, "i2c-sda-hold-time-ns", &priv->sda_hold_time_ns);
