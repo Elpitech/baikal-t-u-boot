@@ -197,4 +197,11 @@ config SANDBOX_CLK_CCF
 	  Enable this option if you want to test the Linux kernel's Common
 	  Clock Framework [CCF] code in U-Boot's Sandbox clock driver.
 
+config CLK_BAIKAL
+	bool "Enable clock driver support for Baikal-T"
+	depends on TARGET_BAIKAL_MIPS
+	help
+	  This clock driver adds support for clock realted settings for
+	  Baikal-T platform.
+
 endmenu
