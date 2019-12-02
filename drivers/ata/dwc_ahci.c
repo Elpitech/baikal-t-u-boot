@@ -13,6 +13,7 @@
 #include <ahci.h>
 #include <scsi.h>
 #include <sata.h>
+#include <clk.h>
 #include <asm/arch/sata.h>
 #include <asm/io.h>
 #include <generic-phy.h>
@@ -20,6 +21,7 @@
 struct dwc_ahci_priv {
 	void *base;
 	void *wrapper_base;
+	struct clk_bulk clk_bulk;
 };
 
 static int dwc_ahci_bind(struct udevice *dev)
@@ -33,6 +35,7 @@ static int dwc_ahci_of_to_plat(struct udevice *dev)
 {
 	struct dwc_ahci_priv *priv = dev_get_priv(dev);
 	fdt_addr_t addr;
+	int ret;
 
 	priv->base = map_physmem(dev_read_addr(dev), sizeof(void *),
 				 MAP_NOCACHE);
@@ -45,7 +48,13 @@ static int dwc_ahci_of_to_plat(struct udevice *dev)
 		priv->wrapper_base = NULL;
 	}
 
-	return 0;
+	ret = clk_get_bulk(dev, &priv->clk_bulk);
+	if (ret == -ENOSYS || ret == -ENOENT)
+		ret = 0; /* not supported or not specified - assume OK */
+	else if (CONFIG_IS_ENABLED(CLK) && ret == 0)
+		ret = clk_enable_bulk(&priv->clk_bulk);
+
+	return ret;
 }
 
 static int dwc_ahci_probe(struct udevice *dev)
