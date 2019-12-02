@@ -35,6 +35,18 @@
 		#phy-cells = <0>;
 		clocks;
 	};
+
+	macgpio0: macgpio@1F05E0E0 {
+		compatible = "snps,dwmac-gpio";
+		reg = <0 0x1f05e0e0 0 0x4>;
+		#gpio-cells = <2>;
+	};
+
+	macgpio1: macgpio@1F0600E0 {
+		compatible = "snps,dwmac-gpio";
+		reg = <0 0x1f0600e0 0 0x4>;
+		#gpio-cells = <2>;
+	};
 };
 
 &usb {
@@ -54,10 +66,16 @@
 
 &gmac0 {
 	status = "okay";
+	snps,reset-gpio = <&macgpio0 0 GPIO_ACTIVE_LOW>;
+	dwmac-reset-phy;
+	dwmac-reconfig-phy;
 };
 
 &gmac1 {
 	status = "okay";
+	snps,reset-gpio = <&macgpio1 0 GPIO_ACTIVE_LOW>;
+	dwmac-reset-phy;
+	dwmac-reconfig-phy;
 };
 
 &gpio {
