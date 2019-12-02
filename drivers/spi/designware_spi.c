@@ -232,7 +232,7 @@ static int dw_spi_of_to_plat(struct udevice *bus)
 {
 	struct dw_spi_plat *plat = dev_get_plat(bus);
 
-	plat->regs = dev_read_addr_ptr(bus);
+	plat->regs = (struct dw_spi *)devfdt_map_physmem(bus, 0x100);
 	if (!plat->regs)
 		return -EINVAL;
 
