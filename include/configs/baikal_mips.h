@@ -75,24 +75,28 @@
  * UART Configuration
  *-----------------------------------------------
  */
-/* UART pool base address */
-#define BAIKAL_NS16550_BASE			0xBF04A000
 /* Device vemory load/store as word */
 #define CONFIG_SYS_NS16550_MEM32
+
+#ifndef CONFIG_DM_SERIAL
+/* UART pool base address */
+#define BAIKAL_NS16550_BASE			0xBF04A000
 /* Register width 4 bytes, little endian */
 #define CONFIG_SYS_NS16550_REG_SIZE		(-4)
 /* Use NS16550 UART as Serial device */
 #define CONFIG_SYS_NS16550_SERIAL		1
+/* UART1 is enable and COM1 Port base */
+#define CONFIG_SYS_NS16550_COM1			(BAIKAL_NS16550_BASE + 0x0000)
+/* UART2 is enable and COM2 Port base  */
+#define CONFIG_SYS_NS16550_COM2			(BAIKAL_NS16550_BASE + 0x1000)
+#endif
+
 /* UART CLK divisor */
 #if defined(CONFIG_BAIKAL_T1)
 #define CONFIG_SYS_NS16550_CLK			(7350000) /* 7.35MHZ / DIV=4 */
 #else
 #define CONFIG_SYS_NS16550_CLK			(12500000) /* 12.5MHZ / DIV=10 */
 #endif /* CONFIG_BAIKAL_T1 */
-/* UART1 is enable and COM1 Port base */
-#define CONFIG_SYS_NS16550_COM1			(BAIKAL_NS16550_BASE + 0x0000)
-/* UART2 is enable and COM2 Port base  */
-#define CONFIG_SYS_NS16550_COM2			(BAIKAL_NS16550_BASE + 0x1000)
 
 /*
  *-----------------------------------------------
