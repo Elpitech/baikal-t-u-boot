@@ -248,6 +248,9 @@ struct dw_eth_dev {
 
 	struct phy_device *phydev;
 	struct mii_dev *bus;
+	u32 flags;
+#define DWMAC_PHY_RESET		1
+#define DWMAC_PHY_RECONFIG	2
 };
 
 #ifdef CONFIG_DM_ETH

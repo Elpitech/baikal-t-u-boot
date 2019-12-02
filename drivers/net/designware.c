@@ -374,6 +374,11 @@ int designware_eth_init(struct dw_eth_dev *priv, u8 *enetaddr)
 
 	writel(readl(&dma_p->busmode) | DMAMAC_SRST, &dma_p->busmode);
 
+#if defined(CONFIG_DM_ETH) && defined(CONFIG_DM_GPIO)
+	if (priv->flags & DWMAC_PHY_RESET)
+		dw_mdio_reset(priv->bus);
+#endif
+
 	/*
 	 * When a MII PHY is used, we must set the PS bit for the DMA
 	 * reset to succeed.
@@ -419,6 +424,9 @@ int designware_eth_init(struct dw_eth_dev *priv, u8 *enetaddr)
 #endif
 
 	/* Start up the PHY */
+	if (priv->flags & DWMAC_PHY_RECONFIG)
+		phy_config(priv->phydev);
+
 	ret = phy_startup(priv->phydev);
 	if (ret) {
 		printf("Could not initialize PHY %s\n",
@@ -946,6 +954,10 @@ int designware_eth_of_to_plat(struct udevice *dev)
 	} else if (ret == -ENOENT) {
 		ret = 0;
 	}
+	if (dev_read_bool(dev, "dwmac-reset-phy"))
+		priv->flags |= DWMAC_PHY_RESET;
+	if (dev_read_bool(dev, "dwmac-reconfig-phy"))
+		priv->flags |= DWMAC_PHY_RECONFIG;
 #endif
 
 	return ret;
