@@ -21,6 +21,31 @@ int read_spd(unsigned char *buf, int len)
 	int rc = -1;
 	unsigned cov, crc;
 
+#ifdef BAIKAL_SPD_NAME
+	struct udevice *dev;
+
+	rc = uclass_get_device_by_name(UCLASS_I2C_EEPROM, BAIKAL_SPD_NAME, &dev);
+	if (rc) {
+		printf("find eeprom failed (%d)\n", rc);
+		goto try_next;
+	}
+	rc = i2c_eeprom_read(dev, 0, buf, len);
+	if (rc) {
+		printf("i2c_eeprom_read failed (%d)\n", rc);
+		goto try_next;
+	}
+	cov = (buf[0] & (1 << 7)) ? 117 : 126;
+	crc = crc16_ccitt(0, buf, cov);
+	if (crc != (((unsigned)buf[127] << 8) | buf[126])) {
+		rc = -1;
+		printf("I2C SPD crc16 failed: %04x != %02x%02x\n",
+			crc, buf[126], buf[127]);
+	} else {
+		return 0;
+	}
+try_next:
+#endif
+
 #ifdef CONFIG_CUSTOM_SPD
 	memcpy(buf, ddr_user_spd, len);
 	cov = (buf[0] & (1 << 7)) ? 117 : 126;
