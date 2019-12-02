@@ -272,6 +272,7 @@
 		#address-cells = <1>;
 		#size-cells = <1>;
 		interrupt-parent = <&gic>;
+		u-boot,dm-pre-reloc;
 
 		ranges = <0x1F000000 0 0x1F000000 0x1000000>;
 
@@ -376,6 +377,7 @@
 			dsr-override;
 			cts-override;
 			ri-override;
+			u-boot,dm-pre-reloc;
 		};
 
 		uart1: serial1@1F04B000 {

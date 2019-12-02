@@ -23,6 +23,7 @@
 			#clock-cells = <1>;
 			clock-frequency  = <25000000>;
 			clock-output-names = "osc25";
+			u-boot,dm-pre-reloc;
 		};
 
 		/*** primary clock domains ***/
@@ -70,6 +71,7 @@
 			clock-names = "ref";
 			reg = <0x1F04D020 0x0008>;
 			clock-output-names = "ethpll";
+			u-boot,dm-pre-reloc;
 		};
 
 		/******** clocks ********/
@@ -213,6 +215,7 @@
 			clock-div = <10>;
 			clock-mult = <1>;
 			clock-output-names = "div125m";
+			u-boot,dm-pre-reloc;
 		};
 
 		div_156m:div_156m {
@@ -233,6 +236,7 @@
 			reg = <0x1F04D084 0x0004>;
 			clock-output-names = "baudclk";
 			divider-width = <9>;
+			u-boot,dm-pre-reloc;
 		};
 
 		wdt_clk:wdt_clk@1F04D150 {
@@ -360,6 +364,7 @@
 			clock-div = <1>;
 			clock-mult = <1>;
 			clock-output-names = "i2cclk";
+			u-boot,dm-pre-reloc;
 		};
 
 		/** eth_pll -> div_156m domain **/

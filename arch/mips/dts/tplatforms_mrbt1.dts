@@ -67,6 +67,7 @@
 &i2c1 {
 	status = "okay";
 	clock-frequency = <100000>;
+	u-boot,dm-pre-reloc;
 
 	eeprom@53 {
 		compatible = "atmel,24c32";
@@ -79,6 +80,7 @@
 		compatible = "atmel,24c02";
 		pagesize = <16>;
 		reg = <0x50>;
+		u-boot,dm-pre-reloc;
 	};
 
 	bmc@8 {
