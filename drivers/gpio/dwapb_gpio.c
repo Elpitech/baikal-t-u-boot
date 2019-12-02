@@ -8,7 +8,6 @@
 #include <common.h>
 #include <log.h>
 #include <malloc.h>
-#include <asm/arch/gpio.h>
 #include <asm/gpio.h>
 #include <asm/io.h>
 #include <dm.h>
@@ -181,7 +180,7 @@ static int gpio_dwapb_bind(struct udevice *dev)
 		if (!plat)
 			return -ENOMEM;
 
-		plat->base = (void *)base;
+		plat->base = map_physmem(base, 0x1000, MAP_NOCACHE);
 		plat->bank = bank;
 		plat->pins = ofnode_read_u32_default(node, "snps,nr-gpios", 0);
 
