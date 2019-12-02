@@ -239,8 +239,8 @@ static void tx_descs_init(struct dw_eth_dev *priv)
 
 	for (idx = 0; idx < CONFIG_TX_DESCR_NUM; idx++) {
 		desc_p = &desc_table_p[idx];
-		desc_p->dmamac_addr = (ulong)&txbuffs[idx * CONFIG_ETH_BUFSIZE];
-		desc_p->dmamac_next = (ulong)&desc_table_p[idx + 1];
+		desc_p->dmamac_addr = virt_to_phys(&txbuffs[idx * CONFIG_ETH_BUFSIZE]);
+		desc_p->dmamac_next = virt_to_phys(&desc_table_p[idx + 1]);
 
 #if defined(CONFIG_DW_ALTDESCRIPTOR)
 		desc_p->txrx_status &= ~(DESC_TXSTS_TXINT | DESC_TXSTS_TXLAST |
@@ -258,14 +258,14 @@ static void tx_descs_init(struct dw_eth_dev *priv)
 	}
 
 	/* Correcting the last pointer of the chain */
-	desc_p->dmamac_next = (ulong)&desc_table_p[0];
+	desc_p->dmamac_next = virt_to_phys(&desc_table_p[0]);
 
 	/* Flush all Tx buffer descriptors at once */
 	flush_dcache_range((ulong)priv->tx_mac_descrtable,
 			   (ulong)priv->tx_mac_descrtable +
 			   sizeof(priv->tx_mac_descrtable));
 
-	writel((ulong)&desc_table_p[0], &dma_p->txdesclistaddr);
+	writel(virt_to_phys(&desc_table_p[0]), &dma_p->txdesclistaddr);
 	priv->tx_currdescnum = 0;
 }
 
@@ -287,8 +287,8 @@ static void rx_descs_init(struct dw_eth_dev *priv)
 
 	for (idx = 0; idx < CONFIG_RX_DESCR_NUM; idx++) {
 		desc_p = &desc_table_p[idx];
-		desc_p->dmamac_addr = (ulong)&rxbuffs[idx * CONFIG_ETH_BUFSIZE];
-		desc_p->dmamac_next = (ulong)&desc_table_p[idx + 1];
+		desc_p->dmamac_addr = virt_to_phys(&rxbuffs[idx * CONFIG_ETH_BUFSIZE]);
+		desc_p->dmamac_next = virt_to_phys(&desc_table_p[idx + 1]);
 
 		desc_p->dmamac_cntl =
 			(MAC_MAX_FRAME_SZ & DESC_RXCTRL_SIZE1MASK) |
@@ -298,14 +298,14 @@ static void rx_descs_init(struct dw_eth_dev *priv)
 	}
 
 	/* Correcting the last pointer of the chain */
-	desc_p->dmamac_next = (ulong)&desc_table_p[0];
+	desc_p->dmamac_next = virt_to_phys(&desc_table_p[0]);
 
 	/* Flush all Rx buffer descriptors at once */
 	flush_dcache_range((ulong)priv->rx_mac_descrtable,
 			   (ulong)priv->rx_mac_descrtable +
 			   sizeof(priv->rx_mac_descrtable));
 
-	writel((ulong)&desc_table_p[0], &dma_p->rxdesclistaddr);
+	writel(virt_to_phys(&desc_table_p[0]), &dma_p->rxdesclistaddr);
 	priv->rx_currdescnum = 0;
 }
 
@@ -455,8 +455,8 @@ static int _dw_eth_send(struct dw_eth_dev *priv, void *packet, int length)
 	ulong desc_start = (ulong)desc_p;
 	ulong desc_end = desc_start +
 		roundup(sizeof(*desc_p), ARCH_DMA_MINALIGN);
-	ulong data_start = desc_p->dmamac_addr;
-	ulong data_end = data_start + roundup(length, ARCH_DMA_MINALIGN);
+	uchar *data_start = phys_to_virt(desc_p->dmamac_addr);
+	ulong data_end = (ulong)data_start + roundup(length, ARCH_DMA_MINALIGN);
 	/*
 	 * Strictly we only need to invalidate the "txrx_status" field
 	 * for the following check, but on some platforms we cannot
@@ -473,14 +473,14 @@ static int _dw_eth_send(struct dw_eth_dev *priv, void *packet, int length)
 		return -EPERM;
 	}
 
-	memcpy((void *)data_start, packet, length);
+	memcpy(data_start, packet, length);
 	if (length < ETH_ZLEN) {
-		memset(&((char *)data_start)[length], 0, ETH_ZLEN - length);
+		memset(&data_start[length], 0, ETH_ZLEN - length);
 		length = ETH_ZLEN;
 	}
 
 	/* Flush data to be sent */
-	flush_dcache_range(data_start, data_end);
+	flush_dcache_range((ulong)data_start, data_end);
 
 #if defined(CONFIG_DW_ALTDESCRIPTOR)
 	desc_p->txrx_status |= DESC_TXSTS_TXFIRST | DESC_TXSTS_TXLAST;
@@ -522,7 +522,7 @@ static int _dw_eth_recv(struct dw_eth_dev *priv, uchar **packetp)
 	ulong desc_start = (ulong)desc_p;
 	ulong desc_end = desc_start +
 		roundup(sizeof(*desc_p), ARCH_DMA_MINALIGN);
-	ulong data_start = desc_p->dmamac_addr;
+	uchar *data_start = phys_to_virt(desc_p->dmamac_addr);
 	ulong data_end;
 
 	/* Invalidate entire buffer descriptor */
@@ -537,9 +537,9 @@ static int _dw_eth_recv(struct dw_eth_dev *priv, uchar **packetp)
 			 DESC_RXSTS_FRMLENSHFT;
 
 		/* Invalidate received data */
-		data_end = data_start + roundup(length, ARCH_DMA_MINALIGN);
-		invalidate_dcache_range(data_start, data_end);
-		*packetp = (uchar *)(ulong)desc_p->dmamac_addr;
+		data_end = (ulong)data_start + roundup(length, ARCH_DMA_MINALIGN);
+		invalidate_dcache_range((ulong)data_start, data_end);
+		*packetp = phys_to_virt(desc_p->dmamac_addr);
 	}
 
 	return length;
@@ -775,7 +775,7 @@ int designware_eth_probe(struct udevice *dev)
 	struct eth_pdata *pdata = dev_get_plat(dev);
 	struct dw_eth_dev *priv = dev_get_priv(dev);
 	u32 iobase = pdata->iobase;
-	ulong ioaddr;
+	void __iomem *ioaddr;
 	int ret, err;
 	struct reset_ctl_bulk reset_bulk;
 #ifdef CONFIG_CLK
@@ -847,7 +847,7 @@ int designware_eth_probe(struct udevice *dev)
 #endif
 
 	debug("%s, iobase=%x, priv=%p\n", __func__, iobase, priv);
-	ioaddr = iobase;
+	ioaddr = map_physmem(iobase, 0x2000, MAP_NOCACHE);
 	priv->mac_regs_p = (struct eth_mac_regs *)ioaddr;
 	priv->dma_regs_p = (struct eth_dma_regs *)(ioaddr + DW_DMA_BASE_OFFSET);
 	priv->interface = pdata->phy_interface;
@@ -956,6 +956,7 @@ static const struct udevice_id designware_eth_ids[] = {
 	{ .compatible = "amlogic,meson6-dwmac" },
 	{ .compatible = "st,stm32-dwmac" },
 	{ .compatible = "snps,arc-dwmac-3.70a" },
+	{ .compatible = "snps,dwmac" },
 	{ }
 };
 
