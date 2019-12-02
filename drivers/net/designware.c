@@ -897,6 +897,10 @@ static int designware_eth_remove(struct udevice *dev)
 {
 	struct dw_eth_dev *priv = dev_get_priv(dev);
 
+#ifdef CONFIG_DM_GPIO
+	if (dm_gpio_is_valid(&priv->reset_gpio))
+		dm_gpio_free(dev, &priv->reset_gpio);
+#endif
 	free(priv->phydev);
 	mdio_unregister(priv->bus);
 	mdio_free(priv->bus);
