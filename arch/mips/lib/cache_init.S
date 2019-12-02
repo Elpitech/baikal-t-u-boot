@@ -221,12 +221,14 @@ l2_probe_cop0:
 	li	t1, 64
 	mul	R_L2_SIZE, R_L2_SIZE, t1
 
+#ifndef MACH_SKIP_L2_BYPASS
 	/* Attempt to bypass the L2 so that we can init the L1s early */
 	or	t0, t0, MIPS_CONF2_L2B
 	mtc0	t0, CP0_CONFIG, 2
 	ehb
 	mfc0	t0, CP0_CONFIG, 2
 	and	R_L2_BYPASSED, t0, MIPS_CONF2_L2B
+#endif
 
 	/* Zero the L2 tag registers */
 	mtc0	zero, CP0_TAGLO, 4

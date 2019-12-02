@@ -105,4 +105,11 @@
  */
 #define CONFIG_SYS_FLASH_BASE		0x9C000000
 
+/*
+ *-----------------------------------------------
+ * Misc parameters
+ *-----------------------------------------------
+ */
+#define MACH_SKIP_L2_BYPASS	/* Don't set L2B flag - it cannot be cleared */
+
 #endif /* __CONFIG_BAIKAL_MIPS_H */
