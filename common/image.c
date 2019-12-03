@@ -1399,10 +1399,10 @@ int boot_ramdisk_high(struct lmb *lmb, ulong rd_data, ulong rd_len,
 		} else {
 			if (initrd_high)
 				*initrd_start = (ulong)lmb_alloc_base(lmb,
-						rd_len, 0x1000, initrd_high);
+						rd_len, 0x10000, initrd_high);
 			else
 				*initrd_start = (ulong)lmb_alloc(lmb, rd_len,
-								 0x1000);
+								 0x10000);
 
 			if (*initrd_start == 0) {
 				puts("ramdisk - allocation error\n");
