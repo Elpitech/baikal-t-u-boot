@@ -167,6 +167,7 @@ config TARGET_BAIKAL_MIPS
 	select MIPS_L2_CACHE
 	select MIPS_CM
 	select MIPS_INIT_STACK_IN_SRAM
+	select DYNAMIC_IO_PORT_BASE
 
 endchoice
 
