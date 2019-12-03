@@ -13,8 +13,54 @@
 #include <asm/baikal_hw.h>
 #include <asm/io.h>
 #include <asm/pmu.h>
+#include <env.h>
 
 DECLARE_GLOBAL_DATA_PTR;
+
+unsigned long baikal_clk_freq = CONFIG_SYS_CLK_FREQ;
+
+static int baikal_set_freq(unsigned long freq)
+{
+	struct clk clk;
+	struct udevice *dev;
+	int rc;
+
+	rc = uclass_get_device_by_name(UCLASS_CLK, BAIKAL_CPU_CLK_NAME, &dev);
+	if (rc) {
+		printf("Can't get clk %s (%d)\n", BAIKAL_CPU_CLK_NAME, rc);
+		return rc;
+	}
+	rc = clk_get_by_index(dev, 0, &clk);
+	if (rc) {
+		printf("Can't get clk (%d)\n", rc);
+		return rc;
+	}
+	rc = clk_set_rate(&clk, freq);
+	if (!rc) {
+		baikal_clk_freq = freq;
+		gd->cpu_clk = freq;
+		printf("CPU frequency set to %luMHz\n", freq / 1000000);
+	} else {
+		printf("Can't set freq to %lu (%d)\n", freq, rc);
+	}
+
+	return rc;
+}
+
+static int on_cpufreq(const char *name, const char *value, enum env_op op, int flags)
+{
+	unsigned long freq;
+
+	freq = strtoul(value, NULL, 10);
+	if (freq < 100 || freq > 1200) {
+		printf("Frequency %lu out of range\n", freq);
+		return -EINVAL;
+	}
+	freq *= 1000000;
+
+	return baikal_set_freq(freq);
+}
+U_BOOT_ENV_CALLBACK(cpufreq, on_cpufreq);
 
 #ifdef CONFIG_BOARD_EARLY_INIT_R
 int board_early_init_r(void)

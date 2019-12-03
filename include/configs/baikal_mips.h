@@ -23,7 +23,10 @@
 #else
 #define CONFIG_SYS_CLK_FREQ		850000000
 #endif
-#define CONFIG_SYS_MIPS_TIMER_FREQ	(CONFIG_SYS_CLK_FREQ / 2)
+#ifndef __ASSEMBLER__
+extern unsigned long baikal_clk_freq;
+#define CONFIG_SYS_MIPS_TIMER_FREQ	(baikal_clk_freq / 2)
+#endif
 
 /*
  *-----------------------------------------------
@@ -125,5 +128,9 @@
  *-----------------------------------------------
  */
 #define MACH_SKIP_L2_BYPASS	/* Don't set L2B flag - it cannot be cleared */
+
+#define BAIKAL_CPU_CLK_NAME     "cpu_clk"
+
+#define CONFIG_ENV_CALLBACK_LIST_STATIC	"cpufreq:cpufreq,"
 
 #endif /* __CONFIG_BAIKAL_MIPS_H */
