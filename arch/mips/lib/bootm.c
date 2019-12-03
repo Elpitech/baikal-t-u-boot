@@ -302,7 +302,7 @@ static void boot_jump_linux(bootm_headers_t *images)
 		trap_restore();
 
 	if (images->ft_len)
-		kernel(-2, (ulong)images->ft_addr, 0, 0);
+		kernel(-2, virt_to_phys(images->ft_addr), 0, 0);
 	else
 		kernel(linux_argc, (ulong)linux_argv, (ulong)linux_env,
 			linux_extra);
