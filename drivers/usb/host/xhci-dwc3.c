@@ -12,6 +12,7 @@
 #include <generic-phy.h>
 #include <log.h>
 #include <usb.h>
+#include <clk.h>
 #include <dwc3-uboot.h>
 #include <linux/delay.h>
 
@@ -22,6 +23,7 @@
 
 struct xhci_dwc3_plat {
 	struct phy_bulk phys;
+	struct clk_bulk clk_bulk;
 };
 
 void dwc3_set_mode(struct dwc3 *dwc3_reg, u32 mode)
@@ -122,7 +124,15 @@ static int xhci_dwc3_probe(struct udevice *dev)
 	u32 reg;
 	int ret;
 
-	hccr = (struct xhci_hccr *)((uintptr_t)dev_remap_addr(dev));
+	ret = clk_get_bulk(dev, &plat->clk_bulk);
+	if (ret == -ENOSYS || ret == -ENOENT)
+		ret = 0; /* not supported or not specified - assume OK */
+	else if (CONFIG_IS_ENABLED(CLK) && ret == 0)
+		ret = clk_enable_bulk(&plat->clk_bulk);
+	if (ret)
+		return ret;
+
+	hccr = (struct xhci_hccr *)(devfdt_map_physmem(dev, 0x10000));
 	hcor = (struct xhci_hcor *)((uintptr_t)hccr +
 			HC_LENGTH(xhci_readl(&(hccr)->cr_capbase)));
 
