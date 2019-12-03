@@ -58,6 +58,10 @@
  */
 #define BAIKAL_USB_RESET_GPIO	"porta13"
 
+#define TP_FRU_NAME		"eeprom@53"
+
+#define BOARD_FRU_MAX_IFACES	2
+
 /*
  *-----------------------------------------------
  * Default boot parameters

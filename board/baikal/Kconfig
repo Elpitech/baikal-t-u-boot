@@ -12,6 +12,8 @@ config BAIKAL_QEMU
 config BOARD_TP_MRBT1
 	bool "T-Platforms MRBT1 Board"
 	select BAIKAL_T1
+	select TP_FRU
+	select TP_BOOTCONF
 	help
 	  Select this option for T-platforms Baikal-T1 based MRBT1 board
 

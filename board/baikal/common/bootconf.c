@@ -3,6 +3,7 @@
  */
 
 #include <common.h>
+#include <command.h>
 
 #define TP_BC_MAX_LINES	32
 

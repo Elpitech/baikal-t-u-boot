@@ -11,6 +11,7 @@
 #include <scsi.h>
 #include <usb.h>
 #include <asm/gpio.h>
+#include <../common/fru.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -57,6 +58,8 @@ int board_late_init(void)
 #ifdef CONFIG_DM_SCSI
 	scsi_scan(false);
 #endif
+	tp_check_fru();
+
 	return 0;
 }
 #endif
