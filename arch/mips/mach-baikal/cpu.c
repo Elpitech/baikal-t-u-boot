@@ -4,6 +4,7 @@
  */
 
 #include <common.h>
+#include <wdt.h>
 #include <asm/mipsregs.h>
 #include <asm/global_data.h>
 
@@ -73,4 +74,15 @@ int mach_cpu_init()
 	flush_tlb();
 
 	return 0;
+}
+
+void _machine_restart(void)
+{
+#ifdef CONFIG_WDT
+	wdt_expire_now(gd->watchdog_dev, 0);
+#else
+	printf("Reset not available.\n");
+#endif
+	while(1)
+		;
 }
