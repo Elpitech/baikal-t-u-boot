@@ -8,6 +8,8 @@
  */
 
 #include <common.h>
+#include <scsi.h>
+#include <usb.h>
 #include <asm/gpio.h>
 
 DECLARE_GLOBAL_DATA_PTR;
@@ -46,6 +48,15 @@ int board_late_init(void)
 	/* TBD */
 	debug("mrbt1: board_late_init\n");
 	board_usb_reset();
+#ifdef CONFIG_DM_PCI
+	pci_init();
+#endif
+#ifdef CONFIG_DM_USB
+	usb_init();
+#endif
+#ifdef CONFIG_DM_SCSI
+	scsi_scan(false);
+#endif
 	return 0;
 }
 #endif
