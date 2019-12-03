@@ -71,4 +71,8 @@ config TP_BOOTCONF
 	bool "T-Platforms bootconf support"
 	default n
 
+config TP_FRU
+	bool "T-Platforms FRU support"
+	default n
+
 endif
