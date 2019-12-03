@@ -66,4 +66,9 @@ config CUSTOM_SPD_FILE
 	  Read DDR3 SPD data from SPD_<name>.c file
 
 endif # CUSTOM_SPD
+
+config TP_BOOTCONF
+	bool "T-Platforms bootconf support"
+	default n
+
 endif
