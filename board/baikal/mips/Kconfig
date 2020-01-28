@@ -104,6 +104,11 @@ config TPLATFORMS_BN1BT1
 	help
 	  Select this option for T-platforms Baikal-T1 based BN1BT1 board
 
+config TPLATFORMS_SBC101
+	bool "Baikal-T1 for T-platforms SBC101 Board"
+	help
+	  Select this option for T-platforms Baikal-T1 based SBC101 (aka RBBT) board
+
 endchoice # Board type
 
 if TPLATFORMS_MITX || TPLATFORMS_BN1BT1
@@ -155,14 +160,14 @@ config SYS_CONFIG_NAME
 
 config TP_BOOTCONF
 	bool
-	default TPLATFORMS_MITX || TPLATFORMS_BN1BT1
+	default TPLATFORMS_MITX || TPLATFORMS_BN1BT1 || TPLATFORMS_MRBT1 || TPLATFORMS_SBC101
 
 config TP_FRU
 	bool
 	default TPLATFORMS_MITX || TPLATFORMS_MRBT1 || TPLATFORMS_MSBT2 || \
 		TPLATFORMS_BN1BT1 || TPLATFORMS_BC3BT1_MRBT1 || \
 		TPLATFORMS_TC_MSBT2 || TPLATFORMS_CNC_MSBT2 || \
-		TPLATFORMS_AXT1_MSBT2
+		TPLATFORMS_AXT1_MSBT2 || TPLATFORMS_SBC101
 
 endif # TARGET_BAIKAL_MIPS
 
