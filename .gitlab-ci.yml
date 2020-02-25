@@ -1,0 +1,24 @@
+# The Dockerfile for the image is in common/integration/buster-builder.  The
+# image is present on coldroom.tpl, but it is registered with hub.docker.com,
+# and you can pull it from there.
+image: "xxor/buster-builder:1.0"
+
+variables:
+  GIT_SSL_NO_VERIFY: "1"                     # Allow self-signed certificates (REQUIRED for gitlab.tpl)
+  CROSS_COMPILE:     "mipsel-linux-gnu-"
+  DEFAULTCONF:       "tplatforms_mitx_defconfig"
+
+before_script:
+  - export NJOBS="$(nproc)"
+
+build:
+  script:
+    # clean previous job failed artifacts
+    - make ARCH=mips CROSS_COMPILE=$CROSS_COMPILE clean
+    - make ARCH=mips CROSS_COMPILE=$CROSS_COMPILE distclean
+    - make ARCH=mips CROSS_COMPILE=$CROSS_COMPILE $DEFAULTCONF
+    - make -j$NJOBS ARCH=mips CROSS_COMPILE=$CROSS_COMPILE all
+  artifacts:
+    paths:
+    - ./u-boot.bin
+    expire_in: 1 month
