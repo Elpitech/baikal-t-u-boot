@@ -7,6 +7,9 @@ image: trini/u-boot-gitlab-ci-runner:bionic-20200807-02Sep2020
 variables:
   GIT_SSL_NO_VERIFY: "1"                     # Allow self-signed certificates (REQUIRED for gitlab.tpl)
 
+variables:
+  GIT_SSL_NO_VERIFY: "1"                     # Allow self-signed certificates (REQUIRED for gitlab.tpl)
+
 # We run some tests in different order, to catch some failures quicker.
 stages:
   - testsuites
