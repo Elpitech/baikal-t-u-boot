@@ -14,6 +14,7 @@ variables:
 stages:
   - testsuites
   - test.py
+  - baikal build
   - world build
 
 .buildman_and_testpy_template: &buildman_and_testpy_dfn
@@ -56,6 +57,23 @@ stages:
       ./test/py/test.py -ra --bd ${TEST_PY_BD} ${TEST_PY_ID}
         ${TEST_PY_TEST_SPEC:+"-k ${TEST_PY_TEST_SPEC}"}
         --build-dir "$UBOOT_TRAVIS_BUILD_DIR"
+
+build MRBT1:
+  tags: [ 'all' ]
+  variables:
+    BOARD: "tplatforms_mrbt1"
+  stage: baikal build
+  script:
+    - ret=0;
+     ./tools/buildman/buildman -o /tmp -P -E --boards=${BOARD} || ret=$?;
+     if [[ $ret -ne 0 && $ret -ne 129 ]]; then
+       ./tools/buildman/buildman -o /tmp -sdeP;
+       exit $ret;
+     fi;
+  artifacts:
+    paths:
+    - /tmp/.bm-work/${BOARD}/u-boot.bin
+    expire_in: 1 month
 
 build all 32bit ARM platforms:
   stage: world build
