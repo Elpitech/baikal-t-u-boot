@@ -115,19 +115,20 @@ sloccount:
 #  script:
 #    - if [ `./tools/genboardscfg.py -f 2>&1 | wc -l` -ne 0 ]; then exit 1; fi
 
+#Disable checks, targets are not available
 # Ensure host tools build
-Build tools-only:
-  tags: [ 'all' ]
-  stage: testsuites
-  script:
-    - make tools-only_config tools-only -j$(nproc)
+#Build tools-only:
+# tags: [ 'all' ]
+#  stage: testsuites
+#  script:
+#    - make tools-only_config tools-only -j$(nproc)
 
 # Ensure env tools build
-Build envtools:
-  tags: [ 'all' ]
-  stage: testsuites
-  script:
-    - make tools-only_config envtools -j$(nproc)
+#Build envtools:
+#  tags: [ 'all' ]
+#  stage: testsuites
+#  script:
+#    - make tools-only_config envtools -j$(nproc)
 
 # NDZ comment out, not everything available
 #Run binman, buildman, dtoc and patman testsuites:
