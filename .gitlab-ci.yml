@@ -26,10 +26,24 @@ build ours:
        exit $ret;
      fi;
   artifacts:
+    name: "uboot_tplatforms"
     paths:
-    - /tmp/current/current
+    - /tmp/current/current/tplatforms_axt1-msbt2/u-boot.bin
+    - /tmp/current/current/tplatforms_axt1-sfbt1/u-boot.bin
+    - /tmp/current/current/tplatforms_bc3bt1-mrbt1/u-boot.bin
+    - /tmp/current/current/tplatforms_bn1bt1/u-boot.bin
+    - /tmp/current/current/tplatforms_cnc-msbt2/u-boot.bin
+    - /tmp/current/current/tplatforms_cnc-sfbt1/u-boot.bin
+    - /tmp/current/current/tplatforms_mitx/u-boot.bin
+    - /tmp/current/current/tplatforms_mitx_jumper/u-boot.bin
+    - /tmp/current/current/tplatforms_mrbt1/u-boot.bin
+    - /tmp/current/current/tplatforms_msbt2/u-boot.bin
+    - /tmp/current/current/tplatforms_rt1mb/u-boot.bin
+    - /tmp/current/current/tplatforms_sbc101/u-boot.bin
+    - /tmp/current/current/tplatforms_sfbt1/u-boot.bin
+    - /tmp/current/current/tplatforms_tc-msbt2/u-boot.bin
+    - /tmp/current/current/tplatforms_tc-sfbt1/u-boot.bin
     expire_in: 1 month
-
 
 # QA jobs for code analytics
 # static code analysis with cppcheck (we can add --enable=all later)
@@ -56,11 +70,9 @@ sloccount:
   script:
     - sloccount .
 
-#NDZ Disable this check, lots of boards without maintainers
-# ensure all configs have MAINTAINERS entries
-#Check for configs without MAINTAINERS entry:
-#  tags: [ 'all' ]
-#  stage: testsuites
-#  script:
-#    - if [ `./tools/genboardscfg.py -f 2>&1 | wc -l` -ne 0 ]; then exit 1; fi
+Check for configs without MAINTAINERS entry:
+  tags: [ 'all' ]
+  stage: testsuites
+  script:
+    - if [ `./tools/genboardscfg.py -f 2>&1 | wc -l` -ne 0 ]; then exit 1; fi
 
