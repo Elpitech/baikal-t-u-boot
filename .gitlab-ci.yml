@@ -27,7 +27,7 @@ build ours:
      fi;
   artifacts:
     paths:
-    - /tmp/current/current/*/u-boot.bin
+    - /tmp/current/current
     expire_in: 1 month
 
 
