@@ -21,7 +21,7 @@ build ours:
   stage: tplatforms build
   script:
     - ret=0;
-     ./tools/buildman/buildman -k tplatforms || ret=$?;
+     ./tools/buildman/buildman -o . -k tplatforms || ret=$?;
      if [[ $ret -ne 0 && $ret -ne 129 ]]; then
        ./tools/buildman/buildman -o .. -sde;
        exit $ret;
@@ -29,21 +29,21 @@ build ours:
   artifacts:
     name: "uboot_tplatforms"
     paths:
-    - ../current/current/tplatforms_axt1-msbt2/u-boot.bin
-    - ../current/current/tplatforms_axt1-sfbt1/u-boot.bin
-    - ../current/current/tplatforms_bc3bt1-mrbt1/u-boot.bin
-    - ../current/current/tplatforms_bn1bt1/u-boot.bin
-    - ../current/current/tplatforms_cnc-msbt2/u-boot.bin
-    - ../current/current/tplatforms_cnc-sfbt1/u-boot.bin
-    - ../current/current/tplatforms_mitx/u-boot.bin
-    - ../current/current/tplatforms_mitx_jumper/u-boot.bin
-    - ../current/current/tplatforms_mrbt1/u-boot.bin
-    - ../current/current/tplatforms_msbt2/u-boot.bin
-    - ../current/current/tplatforms_rt1mb/u-boot.bin
-    - ../current/current/tplatforms_sbc101/u-boot.bin
-    - ../current/current/tplatforms_sfbt1/u-boot.bin
-    - ../current/current/tplatforms_tc-msbt2/u-boot.bin
-    - ../current/current/tplatforms_tc-sfbt1/u-boot.bin
+    - current/current/tplatforms_axt1-msbt2/u-boot.bin
+    - current/current/tplatforms_axt1-sfbt1/u-boot.bin
+    - current/current/tplatforms_bc3bt1-mrbt1/u-boot.bin
+    - current/current/tplatforms_bn1bt1/u-boot.bin
+    - current/current/tplatforms_cnc-msbt2/u-boot.bin
+    - current/current/tplatforms_cnc-sfbt1/u-boot.bin
+    - current/current/tplatforms_mitx/u-boot.bin
+    - current/current/tplatforms_mitx_jumper/u-boot.bin
+    - current/current/tplatforms_mrbt1/u-boot.bin
+    - current/current/tplatforms_msbt2/u-boot.bin
+    - current/current/tplatforms_rt1mb/u-boot.bin
+    - current/current/tplatforms_sbc101/u-boot.bin
+    - current/current/tplatforms_sfbt1/u-boot.bin
+    - current/current/tplatforms_tc-msbt2/u-boot.bin
+    - current/current/tplatforms_tc-sfbt1/u-boot.bin
     expire_in: 1 month
 
 # QA jobs for code analytics
