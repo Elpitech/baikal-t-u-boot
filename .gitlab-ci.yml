@@ -19,12 +19,7 @@ build ours:
   tags: [ 'all' ]
   stage: tplatforms build
   script:
-    - ret=0;
-     ./tools/buildman/buildman -o /tmp -k tplatforms || ret=$?;
-     if [[ $ret -ne 0 && $ret -ne 129 ]]; then
-       ./tools/buildman/buildman -o /tmp -sde;
-       exit $ret;
-     fi;
+    - ./tools/buildman/buildman -o /tmp -k tplatforms
   artifacts:
     name: "uboot_tplatforms"
     paths:
