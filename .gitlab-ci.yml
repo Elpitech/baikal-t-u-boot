@@ -15,13 +15,13 @@ stages:
 # NDZ disable for now, takes too long
 #  - world build
 
+# 129 is returned for warnings, so ignore them for now
 build ours:
   tags: [ 'all' ]
   stage: tplatforms build
   script:
     - ret=0;
      ./tools/buildman/buildman -k tplatforms || ret=$?;
-     # 129 is returned for warnings, so ignore them for now
      if [[ $ret -ne 0 && $ret -ne 129 ]]; then
        ./tools/buildman/buildman -o .. -sde;
        exit $ret;
