@@ -12,32 +12,23 @@ stages:
   - testsuites
   - test.py
   - tplatforms build
-# NDZ disable for now, takes too long
-#  - world build
+  - world build
 
+# 129 is returned for warnings, so ignore them for now
 build ours:
   tags: [ 'all' ]
   stage: tplatforms build
   script:
-    - ./tools/buildman/buildman -o /tmp -k tplatforms
+    - ret=0;
+     ./tools/buildman/buildman -o . -k tplatforms || ret=$?;
+     if [[ $ret -ne 0 && $ret -ne 129 ]]; then
+       ./tools/buildman/buildman -o . -sde;
+       exit $ret;
+     fi;
   artifacts:
     name: "uboot_tplatforms"
     paths:
-    - /tmp/current/current/tplatforms_axt1-msbt2/u-boot.bin
-    - /tmp/current/current/tplatforms_axt1-sfbt1/u-boot.bin
-    - /tmp/current/current/tplatforms_bc3bt1-mrbt1/u-boot.bin
-    - /tmp/current/current/tplatforms_bn1bt1/u-boot.bin
-    - /tmp/current/current/tplatforms_cnc-msbt2/u-boot.bin
-    - /tmp/current/current/tplatforms_cnc-sfbt1/u-boot.bin
-    - /tmp/current/current/tplatforms_mitx/u-boot.bin
-    - /tmp/current/current/tplatforms_mitx_jumper/u-boot.bin
-    - /tmp/current/current/tplatforms_mrbt1/u-boot.bin
-    - /tmp/current/current/tplatforms_msbt2/u-boot.bin
-    - /tmp/current/current/tplatforms_rt1mb/u-boot.bin
-    - /tmp/current/current/tplatforms_sbc101/u-boot.bin
-    - /tmp/current/current/tplatforms_sfbt1/u-boot.bin
-    - /tmp/current/current/tplatforms_tc-msbt2/u-boot.bin
-    - /tmp/current/current/tplatforms_tc-sfbt1/u-boot.bin
+    - current/current
     expire_in: 1 month
 
 # QA jobs for code analytics
@@ -71,3 +62,62 @@ Check for configs without MAINTAINERS entry:
   script:
     - if [ `./tools/genboardscfg.py -f 2>&1 | wc -l` -ne 0 ]; then exit 1; fi
 
+build non-TP MIPS platforms:
+  tags: [ 'all' ]
+  stage: world build
+  script:
+    - ret=0;
+     ./tools/buildman/buildman -o /tmp -k mips -x tplatforms || ret=$?;
+     if [[ $ret -ne 0 && $ret -ne 129 ]]; then
+       ./tools/buildman/buildman -o /tmp -sde mips -x tplatforms;
+       exit $ret;
+     fi;
+
+# These platforms fail to build.
+
+#build all 32bit ARM platforms:
+#  tags: [ 'all' ]
+#  stage: world build
+#  script:
+#    - ret=0;
+#     ./tools/buildman/buildman -o /tmp -k arm -x aarch64 || ret=$?;
+#     if [[ $ret -ne 0 && $ret -ne 129 ]]; then
+#       ./tools/buildman/buildman -o /tmp -sde;
+#       exit $ret;
+#     fi;
+#
+#build all 64bit ARM platforms:
+#  tags: [ 'all' ]
+#  stage: world build
+#  script:
+#    - virtualenv /tmp/venv
+#    - . /tmp/venv/bin/activate
+#    - pip install pyelftools
+#    - ret=0;
+#     ./tools/buildman/buildman -o /tmp -k aarch64 || ret=$?;
+#     if [[ $ret -ne 0 && $ret -ne 129 ]]; then
+#       ./tools/buildman/buildman -o /tmp -sde;
+#       exit $ret;
+#     fi;
+#
+#build all PowerPC platforms:
+#  tags: [ 'all' ]
+#  stage: world build
+#  script:
+#    - ret=0;
+#     ./tools/buildman/buildman -o /tmp -k powerpc || ret=$?;
+#     if [[ $ret -ne 0 && $ret -ne 129 ]]; then
+#       ./tools/buildman/buildman -o /tmp -sde;
+#       exit $ret;
+#     fi;
+#
+#build all other platforms:
+#  tags: [ 'all' ]
+#  stage: world build
+#  script:
+#    - ret=0;
+#     ./tools/buildman/buildman -o /tmp -k -x arm,powerpc || ret=$?;
+#     if [[ $ret -ne 0 && $ret -ne 129 ]]; then
+#       ./tools/buildman/buildman -o /tmp -sde;
+#       exit $ret;
+#     fi;
