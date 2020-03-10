@@ -35,6 +35,9 @@ static int designware_wdt_settimeout(void __iomem *base, unsigned int clk_khz,
 
 	/* calculate the timeout range value */
 	i = fls(timeout * clk_khz - 1) - 16;
+#ifdef CONFIG_TARGET_BAIKAL_MIPS
+	i += 4;
+#endif
 	i = clamp(i, 0, 15);
 
 	writel(i | (i << 4), base + DW_WDT_TORR);
