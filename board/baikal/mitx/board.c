@@ -8,12 +8,53 @@
  */
 
 #include <common.h>
+#include <dm.h>
 #include <scsi.h>
 #include <usb.h>
+#include <i2c.h>
 #include <asm/gpio.h>
 #include <../common/fru.h>
 
 DECLARE_GLOBAL_DATA_PTR;
+
+#define USB_HUB_NAME	"usb_hub@2c"
+
+/* USB hub initialization data */
+static u8 usb_hub_cfg0[] = {
+	17, /* size of data */
+	0x24, 0x04, 0x17, 0x25,
+	0x00, 0x00, 0x9b, 0x20,
+	0x00, 0x00, 0x00, 0x00,
+	0x32, 0x32, 0x32, 0x32,
+	0x32
+};
+
+static u8 usb_hub_cfgff[] = {
+	1,
+	0x01 /* .[0xff] = 1 - enable */
+};
+
+int board_usb_hub_configure(void)
+{
+	int rc;
+	struct udevice *dev;
+
+	rc = uclass_get_device_by_name(UCLASS_MISC, USB_HUB_NAME, &dev);
+	if (rc) {
+		printf("%s not found (%d)\n", USB_HUB_NAME, rc);
+		return rc;
+	}
+	rc = dm_i2c_write(dev, 0, usb_hub_cfg0, sizeof(usb_hub_cfg0));
+	if (rc) {
+		printf("usb_hub_cfg0 write failed (%d)\n", rc);
+		return rc;
+	}
+	rc = dm_i2c_write(dev, 0xff, usb_hub_cfgff, sizeof(usb_hub_cfgff));
+	if (rc)
+		printf("usb_hub_cfgff write failed (%d)\n", rc);
+
+	return rc;
+}
 
 int board_usb_reset(void)
 {
@@ -40,14 +81,16 @@ int board_usb_reset(void)
 		return rc;
 	}
 
+	udelay(1000);
+	board_usb_hub_configure();
+
 	return 0;
 }
 
 #ifdef CONFIG_BOARD_LATE_INIT
 int board_late_init(void)
 {
-	/* TBD */
-	debug("mrbt1: board_late_init\n");
+	debug("mitx: board_late_init\n");
 	board_usb_reset();
 #ifdef CONFIG_DM_PCI
 	pci_init();

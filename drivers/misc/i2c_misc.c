@@ -33,6 +33,7 @@ static int i2c_misc_probe(struct udevice *dev)
 
 static const struct udevice_id i2c_misc_ids[] = {
 	{ .compatible = "i2c-generic" },
+	{ .compatible = "microchip,usb251x" },
 	{ }
 };
 

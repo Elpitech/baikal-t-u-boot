@@ -89,6 +89,11 @@
 	clock-frequency = <100000>;
 	u-boot,dm-pre-reloc;
 
+	usb_hub: usb_hub@2c {
+		compatible = "microchip,usb251x", "i2c-generic";
+		reg = <0x2c>;
+	};
+
 	eeprom@53 {
 		compatible = "atmel,24c32";
 		pagesize = <32>;
