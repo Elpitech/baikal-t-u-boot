@@ -515,4 +515,11 @@ config ESM_PMIC
 	  Support ESM (Error Signal Monitor) on PMIC devices. ESM is used
 	  typically to reboot the board in error condition.
 
+config I2C_MISC
+	bool "I2C generic slave driver"
+	depends on MISC && DM_I2C
+	help
+	  Support generic I2C slave device. Also works for devices which
+	  are not detectable.
+
 endmenu
