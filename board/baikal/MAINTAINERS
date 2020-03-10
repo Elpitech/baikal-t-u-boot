@@ -1,0 +1,7 @@
+MRBT1
+M:	Vadim Vlasov <vadim@gmx.com>
+S:	Maintained
+F:	board/baikal/mrbt1/
+F:	board/baikal/mitx/
+F:	include/configs/tplatforms_*.h
+F:	configs/tplatforms_*_defconfig
