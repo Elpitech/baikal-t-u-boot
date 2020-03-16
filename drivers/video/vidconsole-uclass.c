@@ -89,7 +89,13 @@ static int vidconsole_back(struct udevice *dev)
 		if (priv->ycur < 0)
 			priv->ycur = 0;
 	}
-	return video_sync(dev->parent, false);
+
+	video_sync(dev->parent, false);
+
+	if (ops->set_cursor)
+		ops->set_cursor(dev, priv->xcur_frac, priv->ycur);
+
+	return 0;
 }
 
 /* Move to a newline, scrolling the display if necessary */
@@ -188,6 +194,9 @@ static char *parsenum(char *s, int *num)
  */
 static void set_cursor_position(struct vidconsole_priv *priv, int row, int col)
 {
+	struct udevice *dev = priv->sdev.priv;
+	struct vidconsole_ops *ops = vidconsole_get_ops(dev);
+
 	/*
 	 * Ensure we stay in the bounds of the screen.
 	 */
@@ -199,6 +208,9 @@ static void set_cursor_position(struct vidconsole_priv *priv, int row, int col)
 	priv->ycur = row * priv->y_charsize;
 	priv->xcur_frac = priv->xstart_frac +
 			  VID_TO_POS(col * priv->x_charsize);
+
+	if (ops->set_cursor)
+		ops->set_cursor(dev, priv->xcur_frac, priv->ycur);
 }
 
 /**

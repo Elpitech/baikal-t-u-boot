@@ -157,6 +157,10 @@ struct vidconsole_ops {
 	 * characters.
 	 */
 	int (*backspace)(struct udevice *dev);
+	/**
+	 * set_cursor() - Set cursor position
+	 */
+	int (*set_cursor)(struct udevice *dev, uint x_frac, uint y);
 };
 
 /* Get a pointer to the driver operations for a video console device */
