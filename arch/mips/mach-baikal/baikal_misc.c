@@ -9,6 +9,7 @@
 #include <common.h>
 #include <dm.h>
 #include <clk.h>
+#include <fdt_support.h>
 #include <asm/baikal_hw.h>
 #include <asm/io.h>
 #include <asm/pmu.h>
@@ -68,3 +69,25 @@ void board_preboot_os(void)
 	writel(val, (void __iomem *)BAIKAL_BOOT_BASE);
 }
 
+int ft_board_setup(void *blob, struct bd_info *bd)
+{
+	u64 mem_start[2], mem_size[2];
+	unsigned long bank1_size = gd->arch.highmem_size;
+	unsigned long mem_max;
+
+	mem_start[0] = DDR_BANK0_START;
+	mem_size[0] = DDR_BANK0_SIZE;
+	mem_start[1] = DDR_BANK1_START;
+
+	/* Setting "mem_max" can limit top of memory passed to linux.
+	 * This may be useful for older kernels not supporting XPA
+	 * and/or 32-bit FDT.
+	 */
+	mem_max = env_get_ulong("mem_max", 10, 65536);
+	if ((bank1_size + 512) > mem_max)
+		mem_size[1] = (((u64)mem_max << 20) - 1 - mem_start[1]) & ~(0xffffULL);
+	else
+		mem_size[1] = (u64)bank1_size << 20;
+
+	return fdt_fixup_memory_banks(blob, mem_start, mem_size, 2);
+}

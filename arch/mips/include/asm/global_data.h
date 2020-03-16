@@ -26,6 +26,9 @@ struct arch_global_data {
 	unsigned long rev;
 	unsigned long ver;
 #endif
+#ifdef CONFIG_TARGET_BAIKAL_MIPS
+	unsigned long highmem_size;	/* In MB */
+#endif
 #ifdef CONFIG_SYS_CACHE_SIZE_AUTO
 	unsigned short l1i_line_size;
 	unsigned short l1d_line_size;

@@ -78,15 +78,17 @@ int dram_init(void)
 
 	rc = ddr_parse_spd(spd_buf, &spd_t, &spd_g);
 	if (rc) {
-		puts("SPD parse error\n");
+		printf("SPD parse error (%d)\n", rc);
 		return -1;
 	}
 
 	mem_size_mb = spd_g.whole_mem;
 
 	rc = ddr_prepare_regs(&spd_t, &spd_g, ddr_regs);
-	if (rc)
-		puts("prepare_regs failed?\n");
+	if (rc) {
+		printf("prepare_regs failed? (%d)\n", rc);
+		return -1;
+	}
 #ifdef DEBUG
 	{
 		int i;
@@ -96,23 +98,15 @@ int dram_init(void)
 #endif
 	rc = ddr_init(ddr_regs);
 	if (rc) {
-		puts("DDR init failed\n");
-		return -1;
+		printf("DDR init failed: %d\n", rc);
+		return rc;
 	}
 	printf("%uMB, %s%d-bit\n", mem_size_mb,
-		ddr_regs[DDR3_SPD_ECCCFG0]?"ECC, ":"",
-		(spd_g.bus_width >= 32)?32:16);
+		ddr_regs[DDR3_SPD_ECCCFG0] ? "ECC, " : "",
+		(spd_g.bus_width >= 32) ? 32 : 16);
 
-#if CONFIG_NR_DRAM_BANKS == 1
 	gd->ram_size = DDR_BANK0_SIZE; // 128MB
-#else
-	/*
-	 * This is a wrong value, but there seems no better place
-	 * to save memory size until relocation.
-	 * We fix that later in dram_init_banksize().
-	 */
-	gd->ram_size = mem_size_mb;
-#endif
+	gd->arch.highmem_size = mem_size_mb - 256;
 
 	return 0;
 }
@@ -122,31 +116,18 @@ phys_size_t get_effective_memsize(void)
 	return DDR_BANK0_SIZE;
 }
 
-#if CONFIG_NR_DRAM_BANKS > 1
 int dram_init_banksize()
 {
-	int i;
 	struct bd_info *bd = gd->bd;
 
-	bd->bi_dram[0].start = DDR_BANK0_START;
+	/* This is virtual(!) address. It is used in lmb and we need
+	 * virtual addresses there.
+	 * (The values set in fdt by arch_fixup_fdt() are later
+	 * overwritten in ft_board_setup().)
+	 */
+	bd->bi_dram[0].start = CONFIG_SYS_SDRAM_BASE;
 	bd->bi_dram[0].size = DDR_BANK0_SIZE;
-	bd->bi_dram[1].start = DDR_BANK1_START;
-#ifdef CONFIG_64BIT_PHYS_ADDR
-	bd->bi_dram[1].size = (gd->ram_size << 20) - 0x10000000;
-#else
-	if (gd->ram_size < (4096 - 128))
-		bd->bi_dram[1].size = (gd->ram_size << 20) - 0x10000000;
-	else
-		bd->bi_dram[1].size = 0xDFFF0000;
-#endif
-	/* Restore gd->ram_size to the value in bytes. */
-	gd->ram_size = DDR_BANK0_SIZE;
-
-	for (i = 0; i < CONFIG_NR_DRAM_BANKS; i++)
-		printf("Mem %d: %08x - %08x\n", i, gd->bd->bi_dram[i].start,
-		       gd->bd->bi_dram[i].size);
 
 	return 0;
 }
-#endif
 
