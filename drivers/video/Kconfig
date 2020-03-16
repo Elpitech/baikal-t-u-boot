@@ -602,6 +602,12 @@ config VIDEO_IVYBRIDGE_IGD
 	  a special tool which configures the VGA ROM, but the graphics
 	  resolution can be selected in U-Boot.
 
+config VIDEO_SMI
+	bool "Enable SiliconMotion PCI graphics support"
+	depends on DM_VIDEO
+	help
+	  This enables support for SM750/SM768 cards.
+
 config VIDEO_FSL_DCU_FB
 	bool "Enable Freescale Display Control Unit"
 	depends on VIDEO || DM_VIDEO
