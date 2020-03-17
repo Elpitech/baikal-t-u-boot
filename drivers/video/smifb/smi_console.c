@@ -142,7 +142,16 @@ static int console_smi_putc_xy(struct udevice *dev, uint x_frac, uint y,
 		line += vid_priv->line_length;
 	}
 
+	smi_set_cursor(vid, VID_TO_PIXEL(x_frac) + VIDEO_FONT_WIDTH, y);
+
 	return VID_TO_POS(VIDEO_FONT_WIDTH);
+}
+
+static int console_smi_set_cursor(struct udevice *dev, uint x_frac, uint y)
+{
+	struct udevice *vid = dev->parent;
+
+	return smi_set_cursor(vid, VID_TO_PIXEL(x_frac), y);
 }
 
 static int console_smi_probe(struct udevice *dev)
@@ -163,6 +172,7 @@ struct vidconsole_ops console_smi_ops = {
 	.putc_xy	= console_smi_putc_xy,
 	.move_rows	= console_smi_move_rows,
 	.set_row	= console_smi_set_row,
+	.set_cursor	= console_smi_set_cursor,
 };
 
 U_BOOT_DRIVER(vidconsole_smi) = {

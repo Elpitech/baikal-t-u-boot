@@ -11,6 +11,7 @@
 #include "sm750.h"
 #include "smifb.h"
 #include "sm750_accel.h"
+#include "sm750_cursor.h"
 #include "ddk750_chip.h"
 #include <dm/devres.h>
 
@@ -59,6 +60,17 @@ int smi_fill_rect(struct udevice *dev, uint dx, uint dy, uint w, uint h,
 				dx, dy, w, h, clr, HW_ROP2_COPY);
 
 	return rc;
+}
+
+int smi_set_cursor(struct udevice *dev, int x, int y)
+{
+	struct smifb_priv *priv = dev_get_priv(dev);
+	struct sm750_dev *sm750_dev = &priv->sm750_dev;
+	struct lynxfb_par *par = sm750_dev->fbinfo[0]->par;
+
+	hw_cursor_setPos(&par->crtc.cursor, x, y);
+
+	return 0;
 }
 
 static int smi_video_probe(struct udevice *dev)

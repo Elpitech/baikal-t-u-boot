@@ -411,7 +411,16 @@ int lynxfb_set_fbinfo(struct fb_info *info, int index)
 	crtc->cursor.vstart = (char *)sm750_dev->pvMem + crtc->cursor.offset;
 	memset_io(crtc->cursor.vstart, 0, crtc->cursor.size);
 
-	hw_cursor_disable(&crtc->cursor);
+	/* Use color #1 for cursor, set lines 12-13 */
+	*(u32 *)(crtc->cursor.vstart + 16 * 12) = 0x5555;
+	*(u32 *)(crtc->cursor.vstart + 16 * 13) = 0x5555;
+#ifdef CONFIG_SYS_WHITE_ON_BLACK
+	hw_cursor_setColor(&crtc->cursor, 0xc318, 0); /* light grey */
+#else
+	hw_cursor_setColor(&crtc->cursor, 0, 0); /* black */
+#endif
+	hw_cursor_setPos(&crtc->cursor, 0, 0);
+	hw_cursor_enable(&crtc->cursor);
 
 	if (!g_fbmode[index]) {
 		mode = g_def_fbmode;
