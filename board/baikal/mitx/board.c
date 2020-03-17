@@ -12,6 +12,7 @@
 #include <scsi.h>
 #include <usb.h>
 #include <i2c.h>
+#include <stdio_dev.h>
 #include <asm/gpio.h>
 #include <../common/fru.h>
 
@@ -90,13 +91,25 @@ int board_usb_reset(void)
 #ifdef CONFIG_BOARD_LATE_INIT
 int board_late_init(void)
 {
+	char *stdio_name;
+
 	debug("mitx: board_late_init\n");
 	board_usb_reset();
 #ifdef CONFIG_DM_PCI
 	pci_init();
+#ifdef CONFIG_DM_VIDEO
+	stdio_name = env_get("stdout");
+	if (stdio_name && strstr(stdio_name, "vidconsole"))
+		env_set("stdout", stdio_name);
+#endif
 #endif
 #ifdef CONFIG_DM_USB
 	usb_init();
+#ifdef CONFIG_USB_KEYBOARD
+	stdio_name = env_get("stdin");
+	if (stdio_name && strstr(stdio_name, "usbkbd"))
+		env_set("stdin", stdio_name);
+#endif
 #endif
 #ifdef CONFIG_DM_SCSI
 	scsi_scan(false);
