@@ -466,6 +466,10 @@ fru_open_parse(struct fru *f) {
 			f->power_policy = f->mrec[i].data[0];
 			fru_dbg("FRU: found power policy record [0x%02x]\n",
 				f->power_policy);
+		} else if (f->mrec[i].type == MR_POWER_STATE_REC) {
+			f->power_state = f->mrec[i].data[0];
+			fru_dbg("FRU: found power state record [0x%02x]\n",
+				f->power_state);
 		} else {
 			printf("FRU: unexpected multirecord %x (length %d)\n",
 				f->mrec[i].type, f->mrec[i].length);
