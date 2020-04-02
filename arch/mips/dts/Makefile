@@ -35,6 +35,7 @@ dtb-$(CONFIG_SOC_SERVALT) += servalt_pcb116.dtb
 dtb-$(CONFIG_SOC_SERVAL) += serval_pcb105.dtb serval_pcb106.dtb
 dtb-$(CONFIG_BOARD_TP_MRBT1) += tplatforms_mrbt1.dtb
 dtb-$(CONFIG_BOARD_TP_MITX) += tplatforms_mitx.dtb
+dtb-$(CONFIG_BOARD_TP_SBC101) += tplatforms_sbc101.dtb
 
 targets += $(dtb-y)
 
