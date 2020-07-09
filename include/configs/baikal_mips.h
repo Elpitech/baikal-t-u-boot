@@ -35,7 +35,7 @@ extern unsigned long baikal_clk_freq;
  */
 #define CONFIG_SYS_MONITOR_BASE		CONFIG_SYS_TEXT_BASE
 #define CONFIG_SYS_MONITOR_LEN		(1 << 20)	/* 1 MB */
-#define CONFIG_SYS_MALLOC_LEN		(1 << 20)	/* 1 MB */
+#define CONFIG_SYS_MALLOC_LEN		(1 << 24)	/* 16 MB */
 #define CONFIG_SYS_BOOTPARAMS_LEN	(128 << 10)	/* 128 KB */
 #define CONFIG_SYS_BOOTM_LEN 		0x01000000
 
