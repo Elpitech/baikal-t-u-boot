@@ -33,6 +33,13 @@ config BOARD_TP_SBC101
 	help
 	  Select this option for T-platforms Baikal-T1 based SBC101 board
 
+config BOARD_TP_RT1MB
+	bool "T-Platforms RT1MB Board"
+	select BAIKAL_T1
+	select TP_BOOTCONF
+	help
+	  Select this option for T-platforms Baikal-T1 based RT1MB board
+
 endchoice # Board type
 
 config BAIKAL_T1
@@ -44,6 +51,7 @@ config SYS_BOARD
 	default "mrbt1" if BOARD_TP_MRBT1
 	default "mitx" if BOARD_TP_MITX
 	default "sbc101" if BOARD_TP_SBC101
+	default "rt1mb" if BOARD_TP_RT1MB
 	default "qemu"
 
 config SYS_VENDOR
@@ -53,6 +61,7 @@ config SYS_CONFIG_NAME
 	default "tplatforms_mrbt1" if BOARD_TP_MRBT1
 	default "tplatforms_mitx" if BOARD_TP_MITX
 	default "tplatforms_sbc101" if BOARD_TP_SBC101
+	default "tplatforms_rt1mb" if BOARD_TP_RT1MB
 	default "baikal_qemu"
 
 config SYS_TEXT_BASE
