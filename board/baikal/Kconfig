@@ -40,6 +40,13 @@ config BOARD_TP_RT1MB
 	help
 	  Select this option for T-platforms Baikal-T1 based RT1MB board
 
+config BOARD_TP_AZURE
+	bool "T-Platforms Azure Switch"
+	select BAIKAL_T1
+	select TP_BOOTCONF
+	help
+	  Select this option for T-platforms Baikal-T1 based Azure switch
+
 endchoice # Board type
 
 config BAIKAL_T1
@@ -52,6 +59,7 @@ config SYS_BOARD
 	default "mitx" if BOARD_TP_MITX
 	default "sbc101" if BOARD_TP_SBC101
 	default "rt1mb" if BOARD_TP_RT1MB
+	default "azure" if BOARD_TP_AZURE
 	default "qemu"
 
 config SYS_VENDOR
@@ -62,6 +70,7 @@ config SYS_CONFIG_NAME
 	default "tplatforms_mitx" if BOARD_TP_MITX
 	default "tplatforms_sbc101" if BOARD_TP_SBC101
 	default "tplatforms_rt1mb" if BOARD_TP_RT1MB
+	default "tplatforms_azure" if BOARD_TP_AZURE
 	default "baikal_qemu"
 
 config SYS_TEXT_BASE
