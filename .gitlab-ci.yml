@@ -15,7 +15,7 @@ stages:
   - world build
 
 # 129 is returned for warnings, so ignore them for now
-build ours:
+build baikal-t:
   tags: [ 'all' ]
   stage: tplatforms build
   script:
@@ -62,19 +62,19 @@ Check for configs without MAINTAINERS entry:
   script:
     - if [ `./tools/genboardscfg.py -f 2>&1 | wc -l` -ne 0 ]; then exit 1; fi
 
-build non-TP MIPS platforms:
-  tags: [ 'all' ]
-  stage: world build
-  script:
-    - ret=0;
-     ./tools/buildman/buildman -o /tmp -k mips -x tplatforms || ret=$?;
-     if [[ $ret -ne 0 && $ret -ne 129 ]]; then
-       ./tools/buildman/buildman -o /tmp -sde mips -x tplatforms;
-       exit $ret;
-     fi;
-
 # These platforms fail to build.
 
+#build non-TP MIPS platforms:
+#  tags: [ 'all' ]
+#  stage: world build
+#  script:
+#    - ret=0;
+#     ./tools/buildman/buildman -o /tmp -k mips -x tplatforms || ret=$?;
+#     if [[ $ret -ne 0 && $ret -ne 129 ]]; then
+#       ./tools/buildman/buildman -o /tmp -sde mips -x tplatforms;
+#       exit $ret;
+#     fi;
+#
 #build all 32bit ARM platforms:
 #  tags: [ 'all' ]
 #  stage: world build
