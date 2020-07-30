@@ -70,9 +70,82 @@ build MRBT1:
        ./tools/buildman/buildman -o /tmp -sdeP;
        exit $ret;
      fi;
+     mv /tmp/.bm-work/${BOARD} $(pwd);
   artifacts:
     paths:
-    - /tmp/.bm-work/${BOARD}/u-boot.bin
+    - ${BOARD}/u-boot*
+    expire_in: 1 month
+
+build SBC101:
+  tags: [ 'all' ]
+  variables:
+    BOARD: "tplatforms_sbc101"
+  stage: baikal build
+  script:
+    - ret=0;
+     ./tools/buildman/buildman -o /tmp -P -E --boards=${BOARD} || ret=$?;
+     if [[ $ret -ne 0 && $ret -ne 129 ]]; then
+       ./tools/buildman/buildman -o /tmp -sdeP;
+       exit $ret;
+     fi;
+     mv /tmp/.bm-work/${BOARD} $(pwd);
+  artifacts:
+    paths:
+    - ${BOARD}/u-boot*
+    expire_in: 1 month
+
+build AZURE:
+  tags: [ 'all' ]
+  variables:
+    BOARD: "tplatforms_azure"
+  stage: baikal build
+  script:
+    - ret=0;
+     ./tools/buildman/buildman -o /tmp -P -E --boards=${BOARD} || ret=$?;
+     if [[ $ret -ne 0 && $ret -ne 129 ]]; then
+       ./tools/buildman/buildman -o /tmp -sdeP;
+       exit $ret;
+     fi;
+     mv /tmp/.bm-work/${BOARD} $(pwd);
+  artifacts:
+    paths:
+    - ${BOARD}/u-boot*
+    expire_in: 1 month
+
+build RT1MB:
+  tags: [ 'all' ]
+  variables:
+    BOARD: "tplatforms_rt1mb"
+  stage: baikal build
+  script:
+    - ret=0;
+     ./tools/buildman/buildman -o /tmp -P -E --boards=${BOARD} || ret=$?;
+     if [[ $ret -ne 0 && $ret -ne 129 ]]; then
+       ./tools/buildman/buildman -o /tmp -sdeP;
+       exit $ret;
+     fi;
+     mv /tmp/.bm-work/${BOARD} $(pwd);
+  artifacts:
+    paths:
+    - ${BOARD}/u-boot*
+    expire_in: 1 month
+
+build MITX:
+  tags: [ 'all' ]
+  variables:
+    BOARD: "tplatforms_mitx"
+  stage: baikal build
+  script:
+    - ret=0;
+     ./tools/buildman/buildman -o /tmp -P -E --boards=${BOARD} || ret=$?;
+     if [[ $ret -ne 0 && $ret -ne 129 ]]; then
+       ./tools/buildman/buildman -o /tmp -sdeP;
+       exit $ret;
+     fi;
+     mv /tmp/.bm-work/${BOARD} $(pwd);
+  artifacts:
+    paths:
+    - ${BOARD}/u-boot*
     expire_in: 1 month
 
 build all 32bit ARM platforms:
@@ -288,12 +361,6 @@ qemu-riscv32 test.py:
     TEST_PY_TEST_SPEC: "not sleep"
   <<: *buildman_and_testpy_dfn
 
-qemu-riscv64 test.py:
-  variables:
-    TEST_PY_BD: "qemu-riscv64"
-    TEST_PY_TEST_SPEC: "not sleep"
-  <<: *buildman_and_testpy_dfn
-
 qemu-riscv32_spl test.py:
   variables:
     TEST_PY_BD: "qemu-riscv32_spl"
@@ -305,6 +372,14 @@ qemu-riscv64_spl test.py:
     TEST_PY_BD: "qemu-riscv64_spl"
     TEST_PY_TEST_SPEC: "not sleep"
   <<: *buildman_and_testpy_dfn
+
+#qemu-riscv64 test.py:
+#  tags: [ 'all' ]
+#  variables:
+#    TEST_PY_BD: "qemu-riscv64"
+#    TEST_PY_TEST_SPEC: "not sleep"
+#    BUILDMAN: "^qemu-riscv64$"
+#  <<: *buildman_and_testpy_dfn
 
 qemu-x86 test.py:
   variables:
