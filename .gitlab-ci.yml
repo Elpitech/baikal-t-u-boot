@@ -5,7 +5,7 @@
 image: uboot2014-builder:1.0
 
 variables:
-  GIT_SSL_NO_VERIFY: "1"                     # Allow self-signed certificates (REQUIRED for gitlab.tpl)
+  GIT_SSL_NO_VERIFY: "1"                     # Allow self-signed certificates (REQUIRED for self-signed)
 
 # We run some tests in different order, to catch some failures quicker.
 stages:
