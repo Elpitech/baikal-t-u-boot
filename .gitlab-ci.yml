@@ -38,6 +38,7 @@ stages:
   after_script:
     - rm -rf /tmp/uboot-test-hooks /tmp/venv
   script:
+
     # If we've been asked to use clang only do one configuration.
     - export UBOOT_TRAVIS_BUILD_DIR=/tmp/${TEST_PY_BD}
     - tools/buildman/buildman -o ${UBOOT_TRAVIS_BUILD_DIR} -w -E -W -e
@@ -59,7 +60,6 @@ stages:
         --build-dir "$UBOOT_TRAVIS_BUILD_DIR"
 
 build MRBT1:
-  tags: [ 'all' ]
   variables:
     BOARD: "tplatforms_mrbt1"
   stage: baikal build
@@ -77,7 +77,6 @@ build MRBT1:
     expire_in: 1 month
 
 build SBC101:
-  tags: [ 'all' ]
   variables:
     BOARD: "tplatforms_sbc101"
   stage: baikal build
@@ -95,7 +94,6 @@ build SBC101:
     expire_in: 1 month
 
 build AZURE:
-  tags: [ 'all' ]
   variables:
     BOARD: "tplatforms_azure"
   stage: baikal build
@@ -113,7 +111,6 @@ build AZURE:
     expire_in: 1 month
 
 build RT1MB:
-  tags: [ 'all' ]
   variables:
     BOARD: "tplatforms_rt1mb"
   stage: baikal build
@@ -131,7 +128,6 @@ build RT1MB:
     expire_in: 1 month
 
 build MITX:
-  tags: [ 'all' ]
   variables:
     BOARD: "tplatforms_mitx"
   stage: baikal build
@@ -328,6 +324,7 @@ qemu_malta test.py:
     TEST_PY_ID: "--id qemu"
   <<: *buildman_and_testpy_dfn
 
+
 qemu_maltael test.py:
   variables:
     TEST_PY_BD: "maltael"
@@ -374,7 +371,6 @@ qemu-riscv64_spl test.py:
   <<: *buildman_and_testpy_dfn
 
 #qemu-riscv64 test.py:
-#  tags: [ 'all' ]
 #  variables:
 #    TEST_PY_BD: "qemu-riscv64"
 #    TEST_PY_TEST_SPEC: "not sleep"

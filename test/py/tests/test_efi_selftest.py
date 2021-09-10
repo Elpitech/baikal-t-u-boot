@@ -212,3 +212,4 @@ def test_efi_selftest_text_input_ex(u_boot_console):
     if m != 0:
         raise Exception('Failures occurred during the EFI selftest')
     u_boot_console.restart_uboot()
+

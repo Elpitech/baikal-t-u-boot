@@ -18,3 +18,4 @@ if __name__ == '__main__':
     args = [os.path.dirname(__file__) + '/tests']
     args.extend(sys.argv)
     sys.exit(pytest.main(args))
+
