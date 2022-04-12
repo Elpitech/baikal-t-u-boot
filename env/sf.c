@@ -285,6 +285,10 @@ static int env_sf_load(void)
 		goto err_read;
 	}
 
+#if CONFIG_TARGET_BAIKAL_MIPS
+	gd->env_addr = (long unsigned int)buf + offsetof(struct environment_s, data);
+#endif
+
 	ret = env_import(buf, 1, H_EXTERNAL);
 	if (!ret)
 		gd->env_valid = ENV_VALID;
