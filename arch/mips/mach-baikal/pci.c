@@ -9,6 +9,7 @@
 #include <asm/io.h>
 #include <asm/baikal_hw.h>
 #include <asm/pmu.h>
+#include <linux/delay.h>
 
 void board_pcie_dw_start(void *regs)
 {

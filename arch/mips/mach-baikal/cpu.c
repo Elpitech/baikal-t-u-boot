@@ -7,6 +7,7 @@
 #include <wdt.h>
 #include <asm/mipsregs.h>
 #include <asm/global_data.h>
+#include <init.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 

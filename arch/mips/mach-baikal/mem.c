@@ -9,6 +9,8 @@
 #include <i2c.h>
 #include <asm/baikal_hw.h>
 #include <asm/ddr.h>
+#include <u-boot/crc.h>
+#include <init.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 

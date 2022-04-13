@@ -14,6 +14,7 @@
 #include "sm750_cursor.h"
 #include "ddk750_chip.h"
 #include <dm/devres.h>
+#include <env.h>
 
 #define PCI_VENDOR_ID_SMI	0x126f
 #define PCI_CHIP_SM750		0x750

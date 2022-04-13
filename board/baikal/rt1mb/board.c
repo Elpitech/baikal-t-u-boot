@@ -14,6 +14,7 @@
 #include <dm/uclass.h>
 #include <asm/gpio.h>
 #include <../common/fru.h>
+#include <init.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 

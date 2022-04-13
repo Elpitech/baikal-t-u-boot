@@ -15,6 +15,9 @@
 #include <stdio_dev.h>
 #include <asm/gpio.h>
 #include <../common/fru.h>
+#include <linux/delay.h>
+#include <init.h>
+#include <env.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 

@@ -12,6 +12,7 @@
 #include <asm/io.h>
 #include <asm/clk.h>
 #include <dm/device_compat.h>
+#include <linux/delay.h>
 
 /**
  * struct be_pll_clk_data - clock controller information structure
