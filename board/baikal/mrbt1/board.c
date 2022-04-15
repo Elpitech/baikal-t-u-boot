@@ -8,14 +8,44 @@
  */
 
 #include <common.h>
+#include <asm/gpio.h>
 
 DECLARE_GLOBAL_DATA_PTR;
+
+int board_usb_reset(void)
+{
+	struct gpio_desc usb_reset_gpio;
+	int rc;
+
+	rc = dm_gpio_lookup_name(BAIKAL_USB_RESET_GPIO, &usb_reset_gpio);
+	if (rc) {
+		printf("board_usb_reset: can't lookup gpio (%d)\n", rc);
+		return rc;
+	}
+
+	rc = dm_gpio_request(&usb_reset_gpio, "usb-reset");
+	if (rc) {
+		printf("board_usb_reset: can't request gpio (%d)\n", rc);
+		return rc;
+	}
+
+	rc = dm_gpio_set_dir_flags(&usb_reset_gpio, GPIOD_IS_OUT);
+	if (!rc)
+		rc = dm_gpio_set_value(&usb_reset_gpio, 1);
+	if (rc) {
+		printf("board_usb_reset: can't set gpio dir/value (%d)\n", rc);
+		return rc;
+	}
+
+	return 0;
+}
 
 #ifdef CONFIG_BOARD_LATE_INIT
 int board_late_init(void)
 {
 	/* TBD */
-	printf("mrbt1: board_late_init\n");
+	debug("mrbt1: board_late_init\n");
+	board_usb_reset();
 	return 0;
 }
 #endif
