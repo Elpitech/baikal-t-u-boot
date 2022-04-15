@@ -1,0 +1,39 @@
+if TARGET_BAIKAL_MIPS
+
+choice
+	prompt "Board type"
+	default BAIKAL_QEMU
+
+config BAIKAL_QEMU
+	bool "Baikal-T for QEMU"
+	help
+	  Select this option for Baikal-T for QEMU support
+
+config BOARD_TP_MRBT1
+	bool "T-Platforms MRBT1 Board"
+	select BAIKAL_T1
+	help
+	  Select this option for T-platforms Baikal-T1 based MRBT1 board
+
+endchoice # Board type
+
+config BAIKAL_T1
+	bool "Use Baikal-T1 CPU"
+	help
+	  Select this option to use Baikal-T1 CPU.
+
+config SYS_BOARD
+	default "mrbt1" if BOARD_TP_MRBT1
+	default "qemu"
+
+config SYS_VENDOR
+	default "baikal"
+
+config SYS_CONFIG_NAME
+	default "tplatforms_mrbt1" if BOARD_TP_MRBT1
+	default "baikal_qemu"
+
+config SYS_TEXT_BASE
+	default 0x9FC00000
+
+endif

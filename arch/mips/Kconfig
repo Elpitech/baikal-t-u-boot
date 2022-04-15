@@ -159,11 +159,21 @@ config TARGET_XILFPGA
 	help
 	  This supports IMGTEC MIPSfpga platform
 
+config TARGET_BAIKAL_MIPS
+	bool "Support Baikal-T/T1 SoC (mips32)"
+	select ROM_EXCEPTION_VECTORS
+	select SUPPORTS_CPU_MIPS32_R2
+	select SUPPORTS_LITTLE_ENDIAN
+	select MIPS_L2_CACHE
+	select MIPS_CM
+	select MIPS_INIT_STACK_IN_SRAM
+
 endchoice
 
 source "board/imgtec/boston/Kconfig"
 source "board/imgtec/malta/Kconfig"
 source "board/imgtec/xilfpga/Kconfig"
+source "board/baikal/Kconfig"
 source "arch/mips/mach-ath79/Kconfig"
 source "arch/mips/mach-mscc/Kconfig"
 source "arch/mips/mach-bmips/Kconfig"

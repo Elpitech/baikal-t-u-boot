@@ -18,6 +18,7 @@ machine-$(CONFIG_MACH_PIC32) += pic32
 machine-$(CONFIG_ARCH_MTMIPS) += mtmips
 machine-$(CONFIG_ARCH_MSCC) += mscc
 machine-${CONFIG_ARCH_OCTEON} += octeon
+machine-$(CONFIG_TARGET_BAIKAL_MIPS) += baikal
 
 machdirs := $(patsubst %,arch/mips/mach-%/,$(machine-y))
 libs-y += $(machdirs)
