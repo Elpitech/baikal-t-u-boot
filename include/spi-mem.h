@@ -10,7 +10,7 @@
 
 #ifndef __UBOOT_SPI_MEM_H
 #define __UBOOT_SPI_MEM_H
-
+#include <spi.h>
 struct udevice;
 
 #define SPI_MEM_OP_CMD(__opcode, __buswidth)			\
