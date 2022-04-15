@@ -29,6 +29,12 @@
 		reg = <0 0x00000000 0 0x08000000>,
 		      <0 0x20000000 0 0x70000000>;
 	};
+
+	sata_phy: phy@0 {
+		compatible = "nop-phy";
+		#phy-cells = <0>;
+		clocks;
+	};
 };
 
 &usb {
@@ -37,6 +43,8 @@
 
 &sata {
 	status = "okay";
+	phys = <&sata_phy>;
+	phy-names = "sata-phy";
 };
 
 &pcie {
