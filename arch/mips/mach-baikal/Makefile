@@ -1,4 +1,4 @@
-obj-y	= lowlevel_init.o mem.o ddr3.o ddrc_init.o
+obj-y	= lowlevel_init.o mem.o ddr3.o ddrc_init.o baikal_misc.o
 ifeq ($(CONFIG_CUSTOM_SPD),y)
 SPD_FILE := $(patsubst "%", SPD_%.o, $(CONFIG_CUSTOM_SPD_FILE))
 obj-y += $(SPD_FILE)
