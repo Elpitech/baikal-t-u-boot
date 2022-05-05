@@ -24,6 +24,14 @@ config BOARD_TP_MITX
 	select TP_BOOTCONF
 	help
 	  Select this option for T-platforms Baikal-T1 based MITX board
+	  
+config BOARD_TP_ET412
+  bool "Elpitech et412 Board"
+  select BAIKAL_T1
+  select TP_FRU
+  select TP_BOOTCONF
+  help
+    Select this option for Elpitech Baikal-T1 based et412 board
 
 config BOARD_TP_SBC101
 	bool "T-Platforms SBC101 Board"
@@ -57,6 +65,7 @@ config BAIKAL_T1
 config SYS_BOARD
 	default "mrbt1" if BOARD_TP_MRBT1
 	default "mitx" if BOARD_TP_MITX
+	default "mitx" if BOARD_TP_ET412
 	default "sbc101" if BOARD_TP_SBC101
 	default "rt1mb" if BOARD_TP_RT1MB
 	default "azure" if BOARD_TP_AZURE
@@ -68,6 +77,7 @@ config SYS_VENDOR
 config SYS_CONFIG_NAME
 	default "tplatforms_mrbt1" if BOARD_TP_MRBT1
 	default "tplatforms_mitx" if BOARD_TP_MITX
+	default "elpitech_et412" if BOARD_TP_ET412
 	default "tplatforms_sbc101" if BOARD_TP_SBC101
 	default "tplatforms_rt1mb" if BOARD_TP_RT1MB
 	default "tplatforms_azure" if BOARD_TP_AZURE

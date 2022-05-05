@@ -1,7 +1,10 @@
 MIPS BAIKAL
 M:	Vadim Vlasov <vadim@gmx.com>
+M:     Tatiana Kopytsa <Tatiyana.Kopytsa@elpitech.ru>
 S:	Maintained
 F:	board/baikal/
 F:	include/configs/tplatforms_*.h
 F:	configs/tplatforms_*_defconfig
 F:	arch/mips/mach-baikal/
+F:     include/configs/elpitech_*.h
+F:     configs/elpitech_*_defconfig
