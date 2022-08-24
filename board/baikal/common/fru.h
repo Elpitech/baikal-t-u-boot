@@ -30,6 +30,10 @@
 
 #define TP_FRU_BUG
 
+//IANA Private Enterprise Number
+#define ELPITECH_PEN 58584
+#define OEM_ID ELPITECH_PEN
+
 enum POWER_POLICY {
 	PP_OFF=0,
 	PP_KEEP,
@@ -41,6 +45,7 @@ struct multirec {
 	uint8_t type;
 	uint8_t format;
 	unsigned int length;
+	unsigned int oem_id;
 	uint8_t *data;
 };
 

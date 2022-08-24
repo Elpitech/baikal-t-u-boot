@@ -41,12 +41,20 @@ fru_mk_multirecord(uint8_t *buf, unsigned int buf_size, struct multirec *mr, boo
 
 	mrec->type = mr->type;
 	mrec->format_version = (last ? (1 << 7) : 0) | 0x02;
-	mrec->len = mr->length;
-	memcpy(mrec->data, mr->data, mr->length);
-	mrec->rec_cs = 256 - calc_cs(buf + 5, mr->length);
+	if (mr->oem_id) {
+		mrec->data[0] = mr->oem_id & 0xff;
+		mrec->data[1] = (mr->oem_id >> 8) & 0xff;
+		mrec->data[2] = (mr->oem_id >> 16) & 0xff;
+		mrec->len = mr->length + 3;
+		memcpy(mrec->data + 3, mr->data, mr->length);
+	} else {
+		mrec->len = mr->length;
+		memcpy(mrec->data, mr->data, mr->length);
+	}
+	mrec->rec_cs = 256 - calc_cs(buf + 5, mrec->len);
 	mrec->hdr_cs = 256 - calc_cs(buf, 4);
 
-	return mr->length + 5;
+	return mrec->len + 5;
 }
 
 static uint8_t
@@ -267,7 +275,17 @@ fru_parse_multirecord(struct multirec *m, uint8_t *buf, unsigned int buf_len) {
 		printf("FRU: multirecord data checksum is invalid [0x%02x]\n", data_cs);
 		return -3;
 	}
-	memcpy(m->data, buf + 5, len);
+	if (m->type >= 0xc0 && len > 3 &&
+	    buf[5] == (OEM_ID & 0xff) &&
+	    buf[6] == ((OEM_ID >> 8) & 0xff) &&
+	    buf[7] == ((OEM_ID >> 16) & 0xff)) {
+		m->oem_id = OEM_ID;
+		m->length -= 3;
+		memcpy(m->data, buf + 8, m->length);
+	} else {
+		m->oem_id = 0;
+		memcpy(m->data, buf + 5, len);
+	}
 
 	return (buf[1] & 0x80) ? 0 : len + 5;
 }
@@ -326,9 +344,9 @@ parse_fru(struct fru *f, uint8_t *buf, unsigned int buf_len) {
 		ret = fru_parse_multirecord(&f->mrec[mrec_n], &buf[offt], buf_len - offt);
 		if (ret > 0) {
 			f->mrec_count++;
-			mrec_n++;
 			offt += ret;
-			f->mr_buf_used += ret;
+			f->mr_buf_used += f->mrec[mrec_n].length;
+			mrec_n++;
 		} else if (ret == 0) {
 			f->mrec_count++;
 			/* Account for buffer space used by last record. */
@@ -391,6 +409,7 @@ fru_mrec_update_mac(struct fru *f, uint8_t *mac, int iface) {
 	f->mrec[i].format = 2;
 	f->mrec[i].data = f->mac_data + iface * 6;
 	f->mrec[i].length = 6;
+	f->mrec[i].oem_id = OEM_ID;
 	f->mrec_count++;
 
 	return 0;
