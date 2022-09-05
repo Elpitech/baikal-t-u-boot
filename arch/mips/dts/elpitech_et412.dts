@@ -36,40 +36,18 @@
 		      <0 0x20000000 0 0x70000000>;
 	};
 
-	sata_phy: phy@0 {
-		compatible = "nop-phy";
-		#phy-cells = <0>;
-		clocks;
-	};
-
-	macgpio0: macgpio@1F05E0E0 {
-		compatible = "snps,dwmac-gpio";
-		reg = <0 0x1f05e0e0 0 0x4>;
-		#gpio-cells = <2>;
-	};
-
 };
 
 &usb {
 	status = "okay";
 };
 
-&sata {
-	status = "okay";
-	phys = <&sata_phy>;
-	phy-names = "sata-phy";
-};
-
-&pcie {
-	status = "okay";
-	snps,reset-gpio = <&porta 12 GPIO_ACTIVE_LOW>;
-};
-
 &gmac0 {
 	status = "okay";
-	snps,reset-gpio = <&macgpio0 0 GPIO_ACTIVE_LOW>;
-	dwmac-reset-phy;
-	dwmac-reconfig-phy;
+	snps,reset-gpio = <&porta 15 GPIO_ACTIVE_LOW>;
+	snps,reset-active-low;
+	snps,reset-delays-us = <10>, <10000>, <50000>;
+	phy-mode = "rgmii-rxid";
 };
 
 &gpio {
@@ -89,11 +67,6 @@
 	clock-frequency = <100000>;
 	u-boot,dm-pre-reloc;
 
-	usb_hub: usb_hub@2c {
-		compatible = "microchip,usb251x", "i2c-generic";
-		reg = <0x2c>;
-	};
-
 	eeprom@53 {
 		compatible = "atmel,24c32";
 		pagesize = <32>;
@@ -108,40 +81,23 @@
 		u-boot,dm-pre-reloc;
 	};
 
+	rtc@51 {
+		compatible = "nxp,pcf2127", "pcf2127-rtc";
+		reg = <0x51>;
+	};
+
 	bmc@8 {
 		compatible = "tp,mitx2-bmc", "t-platforms,mitx2-bmc";
 		reg = <0x08>;
 	};
-
-	shred: gpio@21 {
-		compatible = "nxp,pcf8574";
-		reg = <0x21>;
-		gpio-controller;
-		#gpio-cells = <2>;
-		lines-initial-states = <0x0>;
-	};
-
-	rtc: rtc@51 {
-		compatible = "nxp,pcf2127", "pcf2127-rtc";
-		reg = <0x51>;
-	};
 };
 
 &spi0 {
-	num-cs = <2>;
-	cs-gpios = <&porta 14 GPIO_ACTIVE_LOW>, <0>;
-	cs-gpio = <&porta 14 GPIO_ACTIVE_LOW>;
+	num-cs = <1>;
+	cs-gpios = <&porta 8 GPIO_ACTIVE_LOW>;
 	status = "okay";
-	spi-max-frequency = <5000000>;
-	dummy-tx = <0xff>;
+	spi-max-frequency = <50000000>;
 
-	mmc-slot@0 {
-		compatible = "fsl,mpc8323rdb-mmc-slot", "mmc-spi-slot";
-		reg = <0>;
-//		gpios = <&porta 15 GPIO_ACTIVE_LOW>, <0>;
-		voltage-ranges = <2700 3600>;
-		max-frequency = <5000000>;
-	};
 };
 
 &spi1 {
@@ -155,12 +111,11 @@
 	status = "okay";
 	num-cs = <1>;
 	spi-max-frequency = <25000000>;
-	cs-gpios = <&porta 7 GPIO_ACTIVE_HIGH>;
 	boot_flash: spi_flash@0 {
 		#address-cells = <1>;
 		#size-cells = <1>;
 		reg = <0>;
-		compatible = "micron,mt25qu128", "jedec,spi-nor";
+		compatible = "jedec,spi-nor";
 		spi-max-frequency = <12500000>;
 		m25p,fast-read;
 

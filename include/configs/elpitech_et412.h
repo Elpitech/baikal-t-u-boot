@@ -23,4 +23,7 @@
 #undef  BOARD_NAME
 #define BOARD_NAME			"ET412"
 
+#undef BAIKAL_USB_RESET_GPIO
+#define BAIKAL_USB_RESET_GPIO		"porta10"
+
 #endif /* __CONFIG_ELPITECH_ET412_H */
