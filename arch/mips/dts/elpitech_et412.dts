@@ -68,27 +68,14 @@
 	u-boot,dm-pre-reloc;
 
 	eeprom@53 {
-		compatible = "atmel,24c32";
-		pagesize = <32>;
-		reg = <0x53>;
-		u-boot,i2c-offset-len = <2>;
-	};
-
-	eeprom@50 {
 		compatible = "atmel,24c02";
 		pagesize = <16>;
-		reg = <0x50>;
-		u-boot,dm-pre-reloc;
+		reg = <0x53>;
 	};
 
 	rtc@51 {
 		compatible = "nxp,pcf2127", "pcf2127-rtc";
 		reg = <0x51>;
-	};
-
-	bmc@8 {
-		compatible = "tp,mitx2-bmc", "t-platforms,mitx2-bmc";
-		reg = <0x08>;
 	};
 };
 
