@@ -107,12 +107,14 @@ int board_early_init_r(void)
 
 void board_preboot_os(void)
 {
+#ifndef BOARD_KEEP_BOOT_SPI
 	u32 val;
 
 	/* restore boot controller to "ROM" state */
 	val = readl((void __iomem *)BAIKAL_BOOT_BASE);
 	val &= ~0x100;
 	writel(val, (void __iomem *)BAIKAL_BOOT_BASE);
+#endif
 }
 
 int ft_board_setup(void *blob, struct bd_info *bd)
