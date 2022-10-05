@@ -48,6 +48,8 @@
 	snps,reset-active-low;
 	snps,reset-delays-us = <10>, <10000>, <50000>;
 	phy-mode = "rgmii-rxid";
+	mac-address = [ 00 00 00 00 00 00 ];
+	local-mac-address = [ 00 00 00 00 00 00 ];
 };
 
 &gpio {
