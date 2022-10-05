@@ -73,7 +73,7 @@ config BAIKAL_T1
 config SYS_BOARD
 	default "mrbt1" if BOARD_TP_MRBT1
 	default "mitx" if BOARD_TP_MITX
-	default "mitx" if BOARD_TP_ET412
+	default "et412" if BOARD_TP_ET412
 	default "sbc101" if BOARD_TP_SBC101
 	default "rt1mb" if BOARD_TP_RT1MB
 	default "azure" if BOARD_TP_AZURE
