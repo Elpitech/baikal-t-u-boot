@@ -367,6 +367,7 @@ _ddr_spd_stat_wait:
 	move	v0,zero
 
 _ddr_spd_init_exit:
+	sw	t2, (DDR_SPD_LAST * 4)(v1)	/* vvv: debug */
 	lw	s0,16(sp)
 	lw	s1,12(sp)
 	lw	ra,20(sp)

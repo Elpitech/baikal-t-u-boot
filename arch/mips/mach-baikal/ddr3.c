@@ -602,7 +602,7 @@ int ddr_prepare_regs(struct ddr3_timings *spd_t, struct ddr3_geometry *spd_g, ui
 
 	SET_SPD_REG(DDR_PUB_SPD_DTCR0, 0x800031c7);
 	SET_SPD_REG(DDR_PUB_SPD_PIR_VAL1, 0x00000073);
-	SET_SPD_REG(DDR_PUB_SPD_DXCCR, 0x20401004);
+	SET_SPD_REG(DDR_PUB_SPD_DXCCR, 0x20401884);
 	SET_SPD_REG(DDR_PUB_SPD_PIR_VAL2, 0x0000ff81);
 	SET_SPD_REG(DDR_BYTE_WIDTH, byte_width);
 

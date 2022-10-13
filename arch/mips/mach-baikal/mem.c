@@ -100,7 +100,7 @@ int dram_init(void)
 #endif
 	rc = ddr_init(ddr_regs);
 	if (rc) {
-		printf("DDR init failed: %d\n", rc);
+		printf("DDR init failed: %d (%x)\n", rc, ddr_regs[DDR_SPD_LAST]);
 		return rc;
 	}
 	printf("%uMB, %s%d-bit\n", mem_size_mb,
